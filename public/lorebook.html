@@ -256,6 +256,9 @@
             background-color: transparent;
             color: var(--primary-color);
             border: 1.5px solid var(--primary-color); /* Etwas dickerer Rand */
+            padding: 8px 12px; /* Kompakteres Padding */
+            font-size: 14px; /* Kleinere Schriftgröße */
+            white-space: nowrap; /* Verhindert Umbruch des Button-Textes */
         }
 
         .outline-button:hover {
@@ -342,18 +345,21 @@
 
         .card-footer {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column; /* Standardmäßig untereinander */
+            gap: 8px; /* Kleiner Abstand zwischen den Elementen im Footer */
+            justify-content: flex-start; /* Elemente oben beginnen lassen */
+            align-items: center; /* Zentriert Elemente horizontal in der Spalte */
             margin-top: 20px; /* Mehr Abstand */
             padding-top: 15px;
             border-top: 1px solid var(--light-color);
             font-size: 14px;
             color: var(--dark-gray); /* Dunkleres Grau */
-            gap: 10px; /* Fügt einen kleinen Abstand zwischen Code und Buttons hinzu, falls sie direkt nebeneinander liegen */
         }
         .card-footer-actions {
             display: flex;
             gap: 10px; /* Abstand zwischen den Buttons */
+            width: 100%; /* Nimmt die volle Breite ein im Spaltenlayout */
+            justify-content: space-between; /* Verteilt die Buttons */
             /* margin-left: 15px; */ /* Entfernt, da hier keine Ratings sind und es Platz wegnimmt */
         }
         .card-footer-right-group {
@@ -471,12 +477,14 @@
             font-size: 13px; /* Etwas kleiner */
             color: var(--accent-color); /* Akzentfarbe für Code */
             border: 1px solid var(--medium-gray);
-            display: inline-block; /* Behält das inline-block Verhalten bei */
-            min-width: 165px;  /* Letzte moderate Erhöhung der Mindestbreite */
+            display: block; /* Wird ein Block-Element für das Spaltenlayout */
+            width: 100%; /* Nimmt die volle Breite ein */
+            min-width: 165px;  /* Behält eine Mindestbreite bei, falls der Inhalt kürzer ist */
             white-space: nowrap; /* Verhindert Textumbruch im Kasten */
             overflow: hidden;    /* Versteckt überlaufenden Text */
             text-overflow: ellipsis; /* Zeigt "..." für überlaufenden Text */
-            vertical-align: middle; /* Hilft bei der Ausrichtung mit benachbarten Elementen, wenn als inline-block behandelt */
+            vertical-align: middle; /* Beibehalten, falls es in anderen Kontexten nützlich ist */
+            margin-bottom: 5px; /* Kleiner Abstand nach unten im Spaltenlayout */
         }
 
         .pagination {
@@ -933,8 +941,26 @@
                 font-size: 18px;
             }
         }
-
-
+        
+        /* Alternative layout for screens wider than 500px */
+        @media (min-width: 500px) {
+          .card-footer {
+            flex-direction: row; /* Zurück zum Reihenlayout */
+            justify-content: space-between; /* Code links, Buttons rechts */
+            align-items: center; /* Vertikal zentrieren */
+          }
+          
+          .code-display {
+            display: inline-block; /* Wieder inline-block für Reihenlayout */
+            width: auto; /* Breite an Inhalt anpassen */
+            margin-bottom: 0; /* Kein unterer Margin im Reihenlayout */
+          }
+          
+          .card-footer-actions {
+            width: auto; /* Breite an Inhalt anpassen */
+          }
+        }
+        
         /* Upload/file input styling */
         .file-input-container {
             position: relative;
