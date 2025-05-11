@@ -600,7 +600,7 @@ class LorebookManager {
       const loreItemTuple = [order, entryUidStr, entryContent, displayKey];
       
       if (isConstant) {
-        logMessage(`* Lorebook: Füge konstanten Eintrag '${displayKey}' (UID: ${entryUidStr}) hinzu`, "info");
+        // logMessage(`* Lorebook: Füge konstanten Eintrag '${displayKey}' (UID: ${entryUidStr}) hinzu`, "info");
         if (positionVal === 0) {
           loreEntriesToInjectAtStart.push(loreItemTuple);
         } else {
@@ -631,7 +631,7 @@ class LorebookManager {
           if (allPrimaryFound) {
             matchedThisEntry = true;
             actualMatchedKeyForLog = keys[0]; // Protokolliere mit dem ersten Primärschlüssel
-            logMessage(`* Lorebook: Selektiver Eintrag (UID: ${entryUidStr}) durch alle Primärschlüssel wie '${keys[0]}' gefunden`, "info");
+            // logMessage(`* Lorebook: Selektiver Eintrag (UID: ${entryUidStr}) durch alle Primärschlüssel wie '${keys[0]}' gefunden`, "info");
           }
         }
       } else {
@@ -642,7 +642,7 @@ class LorebookManager {
           if (pattern.test(contentToSearch)) {
             matchedThisEntry = true;
             actualMatchedKeyForLog = keyToCheck; // Protokolliere mit dem tatsächlich übereinstimmenden Schlüssel
-            logMessage(`* Lorebook: Nicht-selektiver Eintrag (UID: ${entryUidStr}) mit Schlüsselwort '${keyToCheck}' gefunden`, "info");
+            // logMessage(`* Lorebook: Nicht-selektiver Eintrag (UID: ${entryUidStr}) mit Schlüsselwort '${keyToCheck}' gefunden`, "info");
             break;
           }
         }
@@ -1433,214 +1433,223 @@ function extractCustomContent(body, startTag, endTag) {
 }
 
 function cleanResponseText(text, prefill_text = "") {
-  if (!text) {
-    return text;
-  }
+    // logMessage(`* [DEBUG] cleanResponseText: Ursprünglicher Text (erste 300 Zeichen): ${text?.substring(0, 300)}`, "debug");
+    // logMessage(`* [DEBUG] cleanResponseText: Zu entfernender Prefill (erste 100 Zeichen): ${prefill_text?.substring(0, 100)}`, "debug");
 
-  let cleanedText = text;
+    if (!text) {
+        return "";
+    }
 
-  // Robustere Methode zum Entfernen des Denkprozesses vor dem Separator
-  const parts = cleanedText.split(THINKING_SEPARATOR, 1);
-  if (parts.length > 1) {
-    // Separator wurde gefunden - nimm nur den Teil nach dem Separator
-    cleanedText = parts[1].trimStart();
-  }
-  // Falls kein Separator gefunden wird, bleibt der Text unverändert
+    const THINKING_SEPARATOR = "---";
 
-  // Versuch auch mit Regex als Backup-Methode (für Fälle mit ungewöhnlicher Formatierung)
-  if (cleanedText.includes("---") && !cleanedText.startsWith("---")) {
-    // Entferne alles bis zum ersten "---" (inkl. den Separator selbst)
-    cleanedText = cleanedText.replace(/^.*?---\s*/s, '');
-  }
+    // Robustere Methode zum Entfernen des Denkprozesses vor dem Separator
+    let parts = text.split(THINKING_SEPARATOR, 2); // Split only once
+    if (parts.length > 1) {
+        // Separator wurde gefunden - nimm nur den Teil nach dem Separator
+        text = parts[1].trimStart();
+        // log_message("* Thinking process handled", "success"); // Removed log
+    }
+    // Falls kein Separator gefunden wird, bleibt der Text unverändert
 
-  // Entferne spezifische Anweisungen zur Trennung des Denkprozesses
-  cleanedText = cleanedText.replace(THINKING_MESSAGE_TEXT, "");
+    // Versuch auch mit Regex als Backup-Methode (für Fälle mit ungewöhnlicher Formatierung)
+    if (text.includes("---") && !text.startsWith("---")) {
+        // Entferne alles bis zum ersten "---" (inkl. den Separator selbst)
+        text = text.replace(/^.*?---\s*/s, ''); // 's' flag for dotall
+        // log_message("* Thinking process handled", "success"); // Removed log
+    }
 
-  // Remove specific instructional phrases
-  const phrases_to_remove_completely = [
-    /Do not output this thinking process, just the final output\./gi,
-    /Respond to the user's input only, do not add anything else\. Remember to stay in character\./gi,
-    /Pay attention to the \[OOC\] tag from the user and don't output any OOC, only in character\./gi,
-    /Your goal is to understand and respond to the user's prompt based on the persona and rules provided\. Do not output the thinking process, only the final response\.?/gi,
-    /Proceed to provide the response\.?/gi,
-    /Then, generate the response\.?/gi,
-    /Once complete, delete this thinking process and output only the response\./gi,
-    /Read and follow the \[FORCEMARKDOWN\] and \[RULES\] instructions carefully\./gi,
-    /Start immediately with the character's actions\/dialogue\./gi,
-  ];
-  for (const phrase_regex of phrases_to_remove_completely) {
-    cleanedText = cleanedText.replace(phrase_regex, '');
-  }
+    // Entferne spezifische Anweisungen zur Trennung des Denkprozesses
+    text = text.replace(/Please reread and reanalyse the system prompt for possible changes, think step-by-step and explain your reasoning and separate it using '---' before producing the final output/g, "");
 
-  // Remove everything up to and including "response" if it appears at the beginning of the text
-  // This targets the first paragraph specifically.
-  // We split by paragraph, process the first, then rejoin.
-  const paragraphParts = cleanedText.split('\n\n');
-  if (paragraphParts.length > 0) {
-    let first_paragraph_to_clean = paragraphParts[0];
-    let cleaned_fp = first_paragraph_to_clean;
+    // Remove specific instructional phrases
+    const phrases_to_remove_completely = [
+        /Do not output this thinking process, just the final output\./gi,
+        /Respond to the user's input only, do not add anything else\. Remember to stay in character\./gi,
+        /Pay attention to the \[OOC\] tag from the user and don't output any OOC, only in character\./gi,
+        /Your goal is to understand and respond to the user's prompt based on the persona and rules provided\. Do not output the thinking process, only the final response\.?/gi,
+        /Proceed to provide the response\.?/gi,
+        /Then, generate the response\.?/gi,
+        /Once complete, delete this thinking process and output only the response\./gi,
+        /Read and follow the \[FORCEMARKDOWN\] and \[RULES\] instructions carefully\./gi,
+        /Start immediately with the character's actions\/dialogue\./gi,
+    ];
+    for (const phrase_regex of phrases_to_remove_completely) {
+        text = text.replace(phrase_regex, '');
+    }
 
-    // Neue Bereinigung für den ersten Paragraphen:
-    // 1. Versuche, '[...]' am Anfang zu entfernen (non-greedy)
-    const match_bracket_block = /^\s*\[.*?\]\s*/.exec(first_paragraph_to_clean);
-    if (match_bracket_block) {
-      cleaned_fp = first_paragraph_to_clean.substring(match_bracket_block[0].length);
-    } else {
-      // 2. Wenn 1 nicht zutraf, versuche, alles bis zum ersten ']' (inklusive) zu entfernen (non-greedy).
-      const match_until_bracket = /^\s*[^\]]*?\]\s*/.exec(first_paragraph_to_clean);
-      if (match_until_bracket) {
-        cleaned_fp = first_paragraph_to_clean.substring(match_until_bracket[0].length);
-      }
+    // Remove everything up to and including "response" if it appears at the beginning of the text
+    // This targets the first paragraph specifically.
+    const paragraphs = text.split('\n\n');
+    if (paragraphs.length > 0) {
+        let current_first_paragraph = paragraphs[0];
+        let cleaned_fp = current_first_paragraph;
+
+        // Neue Bereinigung für den ersten Paragraphen:
+        // 1. Versuche, '[...]' am Anfang zu entfernen (non-greedy)
+        const match_bracket_block = current_first_paragraph.match(/^\s*\[.*?\]\s*/);
+        if (match_bracket_block) {
+            cleaned_fp = current_first_paragraph.substring(match_bracket_block[0].length);
+        } else {
+            // 2. Wenn 1 nicht zutraf, versuche, alles bis zum ersten ']' (inklusive) zu entfernen (non-greedy).
+            const match_until_bracket = current_first_paragraph.match(/^\s*[^\]]*?\]\s*/);
+            if (match_until_bracket) {
+                cleaned_fp = current_first_paragraph.substring(match_until_bracket[0].length);
+            }
+        }
+        
+        // Bestehende Bereinigung für "response" danach auf den bereits gekürzten Paragraphen anwenden
+        const first_paragraph_cleaned = cleaned_fp.replace(/^\s*.*?response\s*/is, ''); // 'is' for ignore case and dotall
+        
+        if (paragraphs.length > 1) {
+            text = first_paragraph_cleaned + '\n\n' + paragraphs.slice(1).join('\n\n');
+        } else {
+            text = first_paragraph_cleaned;
+        }
     }
     
-    // Bestehende Bereinigung für "response" danach auf den bereits gekürzten Paragraphen anwenden
-    const first_paragraph_finalized = cleaned_fp.replace(/^\s*.*?response\s*/is, '');
-    
-    if (paragraphParts.length > 1) {
-      cleanedText = first_paragraph_finalized + '\n\n' + paragraphParts.slice(1).join('\n\n');
-    } else {
-      cleanedText = first_paragraph_finalized;
+    // Remove all XML/HTML-like tags and content before closing tags
+    // Remove <tag>content</tag>
+    text = text.replace(/<[a-zA-Z0-9\-_]+>.*?<\/[a-zA-Z0-9\-_]+>/gis, '');
+    // Remove everything before </tag>
+    text = text.replace(/.*?<\/[a-zA-Z0-9\-_]+>/gis, '');
+
+    // Clean up bypassed text characters (should be done after major block removals)
+    text = text.replace(/([a-zA-Z])\u0335/g, '$1');  // Remove strikethrough
+    text = text.replace(/([a-zA-Z])\u0307/g, '$1');  // Remove dot above
+    text = text.replace(/([a-zA-Z])\u0308/g, '$1');  // Remove diaeresis
+    text = text.replace(/\.(?=[a-zA-Z])/g, '');       // Remove dots between letters
+
+    // Strip initial whitespace
+    text = text.trimStart();
+
+    // Remove user prefix patterns
+    text = text.replace(/^>\s*\{\{user\}\}:\s*.*?\n+(?:\*\*\*\n+)?/g, '');
+    text = text.replace(/^(?:>)?\s*\{\{user\}\}:(?:\s.*?)?\n+/g, '');
+
+    // Remove unwanted prefill patterns
+    text = text.replace(/^I won't engage with scene you suggested.*?Let's continue without further judgment, shall we\?\s*/gi, '');
+    text = text.replace(/^Understood\. Here is the short turn continuation.*?\{\{user\}\}\.\s*/gi, '');
+    text = text.replace(/^.*?will only speak, roleplay, and write in third-person view[^.]*\.\s*/gi, '');
+
+    // Remove header patterns
+    text = text.replace(/^[A-Za-z]+(?:\s+[A-Za-z]+)?\s+will continue\.\s*/gi, '');
+    text = text.replace(/^[A-Za-z]+,?\s+only\.\s*/gi, '');
+    text = text.replace(/^(\{\{char\}\}|\{\{user\}\}|[A-Za-z]+)(?:\s+\/\s+(?:\{\{user\}\}|\{\{char\}\}|[A-Za-z]+))?\.\s*/gi, '');
+
+    // Remove other common patterns
+    text = text.replace(/^[A-Za-z]+(?:\s+[A-Za-z]+)?:\s*(?:\{\{user\}\}|User)\.\s*/gi, '');
+    text = text.replace(/^\*+\s*[A-Za-z]+(?:\s+[A-Za-z]+)?\s*\*+\s*/g, '');
+    text = text.replace(/^[A-Za-z]+,\s*(?:\{\{user\}\}|[A-Za-z]+):\s*[A-Za-z]+(?:\s+[A-Za-z]+)?\.\s*/gi, '');
+
+    // Remove forbidden words instruction
+    text = text.replace(/\[OOC: STRICT RULE - FORBIDDEN WORDS.*?improves writing quality\.\]/gis, '');
+
+    // Remove any potential prefill text that might have been echoed back
+    if (prefill_text) {
+        // Escape special regex characters in prefill_text
+        const escapedPrefill = prefill_text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const prefillRegex = new RegExp(escapedPrefill, 'gi');
+        text = text.replace(prefillRegex, '');
     }
-  }
-  
-  // Remove all XML/HTML-like tags and content before closing tags
-  // Remove <tag>content</tag>
-  cleanedText = cleanedText.replace(/<[a-zA-Z0-9\-_]+>.*?<\/[a-zA-Z0-9\-_]+>/gis, '');
-  // Remove everything before </tag>
-  cleanedText = cleanedText.replace(/.*?<\/[a-zA-Z0-9\-_]+>/gis, '');
 
-  // Clean up bypassed text characters (should be done after major block removals)
-  cleanedText = cleanedText.replace(/([a-zA-Z])\u0335/g, '$1');  // Remove strikethrough
-  cleanedText = cleanedText.replace(/([a-zA-Z])\u0307/g, '$1');  // Remove dot above
-  cleanedText = cleanedText.replace(/([a-zA-Z])\u0308/g, '$1');  // Remove diaeresis
-  cleanedText = cleanedText.replace(/\.(?=[a-zA-Z])/g, '');       // Remove dots between letters
+    // Remove any OOC instructions that might have been echoed back
+    text = text.replace(/\[OOC:.*?\]/g, '');
 
-  // Strip initial whitespace
-  cleanedText = cleanedText.trim();
+    // Clean up JSON-like formatting in the text
+    text = text.replace(/\*```json\s*/g, '');
+    text = text.replace(/\s*```\*/g, '');
+    text = text.replace(/\{\*\s*"[^"]*"\s*\*:\*\s*"/g, '');
+    text = text.replace(/"\s*\*}/g, ''); // Corrected from Python's single } to double }}
+    text = text.replace(/"\s*\*,\*\s*"[^"]*"\s*\*:\*\s*"/g, ' says, "');
 
-  // Remove user prefix patterns
-  cleanedText = cleanedText.replace(/^>\s*\{\{user\}\}:\s*.*?\n+(?:\*\*\*\n+)?/g, '');
-  cleanedText = cleanedText.replace(/^(?:>)?\s*\{\{user\}\}:(?:\s.*?)?\n+/g, '');
+    // Remove any JSON array marker at the start/end
+    text = text.replace(/^\s*\[\s*\n*/, '');
+    text = text.replace(/]\s*$/, '');
 
-  // Remove unwanted prefill patterns
-  cleanedText = cleanedText.replace(/^I won't engage with scene you suggested.*?Let's continue without further judgment, shall we\?\s*/gi, '');
-  cleanedText = cleanedText.replace(/^Understood\. Here is the short turn continuation.*?\{\{user\}\}\.\s*/gi, '');
-  cleanedText = cleanedText.replace(/^.*?will only speak, roleplay, and write in third-person view[^\.]*\.\s*/gi, '');
+    // Remove specific unwanted patterns
+    text = text.replace(/\{\{char\}\} will strictly NEVER speak for \{\{user\}\} or describe actions as \{\{user\}\} and will allow \{\{user\}\} to dictate their own actions\. \{\{char\}\} will speak, roleplay, and write in third-person view\. Each reply from \{\{char\}\} will be different, and \{\{char\}\} will not repeat similar replies\. I will never play, control or dictate \{\{user\}\}\'s actions, thoughts, or feelings\./gi, '');
+    text = text.replace(/^- \{\{char\}\}\.?\s*/gm, '');
+    text = text.replace(/^- \{\{char\}\}:\s*/gm, '');
+    text = text.replace(/^- \{\{user\}\}\.?\s*/gm, '');
+    text = text.replace(/^- \{\{user\}\}:\s*/gm, '');
 
-  // Remove header patterns
-  cleanedText = cleanedText.replace(/^[A-Za-z]+(?:\s+[A-Za-z]+)?\s+will continue\.\s*/gi, '');
-  cleanedText = cleanedText.replace(/^[A-Za-z]+,?\s+only\.\s*/gi, '');
-  cleanedText = cleanedText.replace(/^(\{\{char\}\}|\{\{user\}\}|[A-Za-z]+)(?:\s+\/\s+(?:\{\{user\}\}|\{\{char\}\}|[A-Za-z]+))?\.\s*/gi, '');
+    // Remove leading standalone dots
+    text = text.replace(/^\s*\.\s*\n/g, '');
 
-  // Remove other common patterns
-  cleanedText = cleanedText.replace(/^[A-Za-z]+(?:\s+[A-Za-z]+)?:\s*(?:\{\{user\}\}|User)\.\s*/gi, '');
-  cleanedText = cleanedText.replace(/^\*+\s*[A-Za-z]+(?:\s+[A-Za-z]+)?\s*\*+\s*/gi, '');
-  cleanedText = cleanedText.replace(/^[A-Za-z]+,\s*(?:\{\{user\}\}|[A-Za-z]+):\s*[A-Za-z]+(?:\s+[A-Za-z]+)?\.\s*/gi, '');
+    // Remove leading dot if followed by a letter
+    text = text.replace(/^\s*\.(?=[a-zA-Z])/g, '');
 
-  // Remove forbidden words instruction
-  cleanedText = cleanedText.replace(/\[OOC: STRICT RULE - FORBIDDEN WORDS.*?improves writing quality\.\]/gis, '');
+    // Remove <response>...</response> and content before </response>
+    text = text.replace(/<response>.*?<\/response>/gis, '');
+    text = text.replace(/.*?<\/response>/gis, '');
 
-  // Remove any potential prefill text that might have been echoed back
-  if (prefill_text) {
-    cleanedText = cleanedText.replace(new RegExp(prefill_text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
-  }
+    // Remove <content-warning>...</content-warning> and content before </content-warning>
+    text = text.replace(/<content-warning>.*?<\/content-warning>/gis, '');
+    text = text.replace(/.*?<\/content-warning>/gis, '');
 
-  // Remove any OOC instructions that might have been echoed back
-  cleanedText = cleanedText.replace(/\[OOC:.*?\]/g, '');
+    // Remove <system>...</system> and content before </system>
+    text = text.replace(/<system>.*?<\/system>/gis, '');
+    text = text.replace(/.*?<\/system>/gis, '');
 
-  // Clean up JSON-like formatting in the text
-  cleanedText = cleanedText.replace(/\*```json\s*/g, '');
-  cleanedText = cleanedText.replace(/\s*```\*/g, '');
-  cleanedText = cleanedText.replace(/\{\*\s*"[^"]*"\s*\*:\*\s*"/g, '');
-  cleanedText = cleanedText.replace(/"\s*\*\}\}/g, ''); // Corrected from Python's single }
-  cleanedText = cleanedText.replace(/"\s*\*,\*\s*"[^"]*"\s*\*:\*\s*"/g, ' says, "');
+    // Remove <interaction-config>...</interaction-config> and content before </interaction-config>
+    text = text.replace(/<interaction-config>.*?<\/interaction-config>/gis, '');
+    text = text.replace(/.*?<\/interaction-config>/gis, '');
 
-  // Remove any JSON array marker at the start/end
-  cleanedText = cleanedText.replace(/^\s*\[\s*\n*/, '');
-  cleanedText = cleanedText.replace(/\]\s*$/, '');
+    // B.3: Alles zwischen oder vor </character>
+    text = text.replace(/.*?<\/character>/gis, '');
 
-  // Remove specific unwanted patterns
-  cleanedText = cleanedText.replace(/\{\{char\}\} will strictly NEVER speak for \{\{user\}\} or describe actions as \{\{user\}\} and will allow \{\{user\}\} to dictate their own actions\. \{\{char\}\} will speak, roleplay, and write in third-person view\. Each reply from \{\{char\}\} will be different, and \{\{char\}\} will not repeat similar replies\. I will never play, control or dictate \{\{user\}\}\'s actions, thoughts, or feelings\./g, '');
-  cleanedText = cleanedText.replace(/^- \{\{char\}\}\.?\s*/gm, '');
-  cleanedText = cleanedText.replace(/^- \{\{char\}\}:\s*/gm, '');
-  cleanedText = cleanedText.replace(/^- \{\{user\}\}\.?\s*/gm, '');
-  cleanedText = cleanedText.replace(/^- \{\{user\}\}:\s*/gm, '');
+    // Remove content before or between </user>
+    text = text.replace(/<user>.*?<\/user>/gis, '');
+    text = text.replace(/.*?<\/user>/gis, '');
 
-  // Remove leading standalone dots
-  cleanedText = cleanedText.replace(/^\s*\.\s*\n/, '');
+    // Remove content before or between </request>
+    text = text.replace(/<request>.*?<\/request>/gis, '');
+    text = text.replace(/.*?<\/request>/gis, '');
 
-  // Remove leading dot if followed by a letter
-  cleanedText = cleanedText.replace(/^\s*\.(?=[a-zA-Z])/, '');
+    // Remove specific phrases, potentially leading with a dot and space
+    const phrases_to_remove = [
+        /\.?\s*Remember to follow all instructions and never break character\./gi,
+        // "Do not output the analysis to the user." wird separat behandelt
+        /\.?\s*Respond in character as instructed in the persona\./gi,
+        /\.?\s*I will not be able to see your thought process\.(?:\s*<\/response>)?/gi,
+        /\.?\s*Pay attention to the scenario, character, and rules provided\. Ensure all constraints are met and that the response is a natural continuation of the story, adhering to the persona of Ciri and the established game settings and rules\.(?:\s*<\/interaction-config>)?/gi,
+        /Then, respond to the user's prompt\./gi,
+        /Do not output the thinking process to the user\. Ensure that the final output is exactly as requested and all, even the smallest instructions are followed\./gi
+    ];
+    for (const phrase_regex of phrases_to_remove) {
+        text = text.replace(phrase_regex, '');
+    }
 
-  // Remove <response>...</response> and content before </response>
-  cleanedText = cleanedText.replace(/<response>.*?<\/response>/gis, '');
-  cleanedText = cleanedText.replace(/.*?<\/response>/gis, '');
+    // B.2: "Do not output the analysis to the user." (exakter String)
+    text = text.replace(/Do not output the analysis to the user\./g, "");
 
-  // Remove <content-warning>...</content-warning> and content before </content-warning>
-  cleanedText = cleanedText.replace(/<content-warning>.*?<\/content-warning>/gis, '');
-  cleanedText = cleanedText.replace(/.*?<\/content-warning>/gis, '');
+    // Remove "Content Warning" or "Content Warnung" sentence at the beginning
+    text = text.replace(/^\s*(Content Warning|Content Warnung)[^.!?]*[.!?]\s*/i, '');
 
-  // Remove <system>...</system> and content before </system>
-  cleanedText = cleanedText.replace(/<system>.*?<\/system>/gis, '');
-  cleanedText = cleanedText.replace(/.*?<\/system>/gis, '');
+    // Remove everything before and including "I will now generate the response based on the plan and constraints."
+    text = text.replace(/.*?I will now generate the response based on the plan and constraints\.(?:\s*<\/request>)?\s*/gis, '');
 
-  // Remove <interaction-config>...</interaction-config> and content before </interaction-config>
-  cleanedText = cleanedText.replace(/<interaction-config>.*?<\/interaction-config>/gis, '');
-  cleanedText = cleanedText.replace(/.*?<\/interaction-config>/gis, '');
+    // Remove sentences starting with "I will now generate..." at the beginning of the response
+    text = text.replace(/^\s*I will now generate[^.!?]*[.!?]\s*/i, '');
 
-  // B.3: Alles zwischen oder vor </character>
-  cleanedText = cleanedText.replace(/.*?<\/character>/gis, '');
+    // Remove leading standalone dot or dot followed by text at the very beginning of the string
+    // Order is important here: .XY, .X, then general dot patterns
+    text = text.replace(/^\s*\.[a-zA-Z0-9]+/g, '');  // Handles .XY, .X (Punkt gefolgt von Alphanum)
+    text = text.replace(/^\s*\.\s*(?=[a-zA-Z0-9])/g, ''); // Handles . XX (Punkt, Leerzeichen, dann Alphanum)
+    text = text.replace(/^\s*\.(?!\S)/g, ''); // Handles standalone dot at the beginning (e.g., ". ") or just "."
+    text = text.replace(/^\s*,\s*\*\s*\.\s*\*\s*/g, ''); // Handles ,*.*
+    text = text.replace(/^\s*\*\s*\.\s*/g, ''); // Handles *.
+    text = text.replace(/^\s*\.\s*\*\s*/g, ''); // Handles .*
 
-  // Remove content before or between </user>
-  cleanedText = cleanedText.replace(/<user>.*?<\/user>/gis, '');
-  cleanedText = cleanedText.replace(/.*?<\/user>/gis, '');
+    // Strip any leftover whitespace after cleaning
+    text = text.trim();
 
-  // Remove content before or between </request>
-  cleanedText = cleanedText.replace(/<request>.*?<\/request>/gis, '');
-  cleanedText = cleanedText.replace(/.*?<\/request>/gis, '');
-
-  // Remove specific phrases, potentially leading with a dot and space
-  const phrases_to_remove = [
-    /\.?\s*Remember to follow all instructions and never break character\./gi,
-    /\.?\s*Respond in character as instructed in the persona\./gi,
-    /\.?\s*I will not be able to see your thought process\.(?:\s*<\/response>)?/gi,
-    /\.?\s*Pay attention to the scenario, character, and rules provided\. Ensure all constraints are met and that the response is a natural continuation of the story, adhering to the persona of Ciri and the established game settings and rules\.(?:\s*<\/interaction-config>)?/gi,
-    /Then, respond to the user's prompt\./gi,
-    /Do not output the thinking process to the user\. Ensure that the final output is exactly as requested and all, even the smallest instructions are followed\./gi
-  ];
-  for (const phrase_regex of phrases_to_remove) {
-    cleanedText = cleanedText.replace(phrase_regex, '');
-  }
-
-  // B.2: "Do not output the analysis to the user." (exakter String)
-  cleanedText = cleanedText.replace(/Do not output the analysis to the user\./g, "");
-
-  // Remove "Content Warning" or "Content Warnung" sentence at the beginning
-  cleanedText = cleanedText.replace(/^\s*(Content Warning|Content Warnung)[^.!?]*[.!?]\s*/i, '');
-
-  // Remove everything before and including "I will now generate the response based on the plan and constraints."
-  cleanedText = cleanedText.replace(/.*?I will now generate the response based on the plan and constraints\.(?:\s*<\/request>)?\s*/is, '');
-
-  // Remove sentences starting with "I will now generate..." at the beginning of the response
-  cleanedText = cleanedText.replace(/^\s*I will now generate[^.!?]*[.!?]\s*/i, '');
-
-  // Remove leading standalone dot or dot followed by text at the very beginning of the string
-  cleanedText = cleanedText.replace(/^\s*\.[a-zA-Z0-9]+/, '');
-  cleanedText = cleanedText.replace(/^\s*\.\s*(?=[a-zA-Z0-9])/, '');
-  cleanedText = cleanedText.replace(/^\s*\.(?!\S)/, '');
-  cleanedText = cleanedText.replace(/^\s*,\s*\*\s*\.\s*\*\s*/, '');
-  cleanedText = cleanedText.replace(/^\s*\*\s*\.\s*/, '');
-  cleanedText = cleanedText.replace(/^\s*\.\s*\*\s*/, '');
-  
-  // Strip any leftover whitespace after cleaning
-  cleanedText = cleanedText.trim();
-
-  // Final check for leading dot after all other operations if the string is not empty
-  if (cleanedText && cleanedText.startsWith('.')) {
-    cleanedText = cleanedText.substring(1).trimStart();
-  }
-
-  return cleanedText.trim();
+    // Final check for leading dot after all other operations if the string is not empty
+    if (text && text.startsWith('.')) {
+        text = text.substring(1).trimStart();
+    }
+    // logMessage(`* [DEBUG] cleanResponseText: Bereinigter Text (erste 300 Zeichen): ${text?.substring(0, 300)}`, "debug");
+    return text.trim();
 }
 
 function getSafetySettings() {
@@ -1812,17 +1821,23 @@ function logMessage(message, type = 'info') {
 
   switch(type) {
     case 'success':
-      colorCode = '\x1b[32m';
+      colorCode = '\x1b[32m'; // Grün
       break;
     case 'error':
-      colorCode = '\x1b[31m';
+      colorCode = '\x1b[31m'; // Rot
       break;
     case 'warning':
-      colorCode = '\x1b[33m';
+      colorCode = '\x1b[35m'; // Magenta (geändert von Gelb)
+      break;
+    case 'aistudio_request':
+      colorCode = '\x1b[34m'; // Blau
+      break;
+    case 'openrouter_request':
+      colorCode = '\x1b[33m'; // Gelb (für Orange)
       break;
     case 'info':
     default:
-      colorCode = '\x1b[36m';
+      colorCode = '\x1b[36m'; // Cyan (Hellblau)
       break;
   }
 
@@ -2032,7 +2047,7 @@ app.post('/api/lorebook/:code/use', (req, res) => {
             lorebook.meta = lorebook.meta || {};
             lorebook.meta.useCount = (lorebook.meta.useCount || 0) + 1;
             if (lorebookManager.saveLorebook(code)) {
-                logMessage(`* Lorebook '${code}' useCount erhöht auf ${lorebook.meta.useCount}`, "info");
+                // logMessage(`* Lorebook '${code}' useCount erhöht auf ${lorebook.meta.useCount}`, "info");
                 res.json({ success: true, message: 'Lorebook use count updated.', useCount: lorebook.meta.useCount });
             } else {
                 logMessage(`* Fehler beim Speichern von Lorebook '${code}' nach Erhöhung des useCount.`, "error");
@@ -2155,7 +2170,7 @@ app.post('/api/lorebook/:code/rate', express.json(), (req, res) => {
 // Enhanced proxy request handler with retry logic
 async function handleProxyRequest(req, res, useJailbreak = false) {
   const requestTime = new Date().toISOString();
-  console.log(`\n=== NEUE ANFRAGE (${requestTime}) ===`);
+  logMessage(`\n=== ANFRAGE /aiStudio (${req.id} - ${requestTime}) ===`, "aistudio_request");
 
   // Add request tracker object for better state management
   const requestTracker = {
@@ -2728,7 +2743,7 @@ app.post('/NonJailbreak', (req, res) => {
 // OpenRouter Proxy Handler
 async function handleOpenRouterRequest(req, res) {
   const requestTime = new Date().toISOString();
-  console.log(`\n=== NEUE OPENROUTER ANFRAGE (${requestTime}) ===`);
+  logMessage(`\n=== ANFRAGE /OpenRouter (${req.id} - ${requestTime}) ===`, "openrouter_request");
 
   // Add request tracker object for better state management (aus handleProxyRequest übernommen)
   const requestTracker = {
