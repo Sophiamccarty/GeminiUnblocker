@@ -1597,6 +1597,9 @@
                     <p>Your lorebook code is: <span id="used-lorebook-code" class="code-display"></span></p>
                     <p>To use it, include this command in your prompt or summary (e.g., in JanitorAI or other platforms).</p>
                 </div>
+                <div class="alert alert-info" style="margin-top: 15px;">
+                    <strong>Note for Colab Users:</strong> The codes mentioned above only work directly in prompts on servers that support this system. If you are using Colab or another environment that does not support direct code embedding, please download the JSON file and upload it to your target application.
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="success-button modal-close-button">Close</button>
@@ -1616,7 +1619,7 @@
                 <!-- Content will be injected here -->
             </div>
             <div class="modal-footer">
-                <button id="download-lorebook-json-button" class="button secondary-button"><i class="fa fa-download"></i> Download JSON</button>
+                <button id="download-lorebook-json-button-details" class="button secondary-button"><i class="fa fa-download"></i> Download JSON</button>
                 <button class="button modal-close-button">Close</button>
             </div>
         </div>
@@ -2233,15 +2236,15 @@
             }
         });
 
-        // Download-Button im "Use Lorebook"-Modal
-        const downloadJsonButton = document.getElementById('download-lorebook-json-button');
-        if (downloadJsonButton) {
-            downloadJsonButton.addEventListener('click', async () => {
+        // Download-Button im "View Details"-Modal
+        const downloadJsonButtonDetails = document.getElementById('download-lorebook-json-button-details');
+        if (downloadJsonButtonDetails) {
+            downloadJsonButtonDetails.addEventListener('click', async () => {
                 if (currentLorebookCodeForModal) {
                     await downloadLorebookAsJson(currentLorebookCodeForModal);
                 } else {
                     alert('Error: No Lorebook code found to download.');
-                    console.error('Download Error: currentLorebookCodeForModal is not set.');
+                    console.error('Download Error: currentLorebookCodeForModal is not set for details modal.');
                 }
             });
         }
@@ -2297,9 +2300,11 @@
                 </div>
                 <div class="card-body">
                     <p class="card-description">${lorebook.description || 'No description available.'}</p>
+                    ${ (lorebook.tags && lorebook.tags.length > 0) ? `
                     <div class="card-tags">
-                        ${(lorebook.meta?.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        ${lorebook.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                     </div>
+                    ` : '' }
                 </div>
                 <div class="card-footer">
                     <span class="code-display">Code: ${lorebook.code}</span>
