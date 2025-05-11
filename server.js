@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Erstelle den Lorebook-Speicherordner, falls er nicht existiert
 // Auf Render dauerhaften Speicher verwenden oder auf lokalen Pfad zurückfallen
-const LOREBOOK_DIR = path.join(__dirname, 'lorebooks');
+const LOREBOOK_DIR = process.env.LOREBOOK_PERSISTENT_PATH || path.join(__dirname, 'lorebooks');
 if (!fs.existsSync(LOREBOOK_DIR)) {
   fs.mkdirSync(LOREBOOK_DIR, { recursive: true });
   logMessage(`* Lorebook-Verzeichnis erstellt: ${LOREBOOK_DIR}`, "info");
