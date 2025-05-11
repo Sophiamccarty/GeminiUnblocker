@@ -2752,6 +2752,7 @@ async function handleOpenRouterRequest(req, res) {
     retryCount: 0,
     maxRetries: 2 // Will try up to 3 times total (initial + 2 retries)
   };
+  let combinedOOC = ""; // Initialisiere combinedOOC hier
 
   try {
     let apiKey = null;
@@ -2876,13 +2877,21 @@ async function handleOpenRouterRequest(req, res) {
             let currentContent = clientBody.messages[lastUserMsgIndex].content;
             
             // OOC Injektion
+            // combinedOOC wurde bereits am Anfang der Funktion initialisiert: let combinedOOC = "";
             if (!oocInjectionDisabled) {
-                let combinedOOC = OOC_INSTRUCTION_2;
+                combinedOOC = OOC_INSTRUCTION_2;
                 if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
                 if (hasCrazyMode) combinedOOC += CRAZYMODE_OOC;
                 if (hasMedievalMode) combinedOOC += MEDIEVAL_OOC;
                 if (hasBetterSpiceMode) {
-                    const spiceDetected = detectSpicyContent(currentContent);
+                    let contentForSpiceCheck = "";
+                    if (Array.isArray(currentContent)) {
+                        const textPart = currentContent.find(part => part.type === 'text');
+                        contentForSpiceCheck = textPart ? textPart.text : "";
+                    } else if (typeof currentContent === 'string') {
+                        contentForSpiceCheck = currentContent;
+                    }
+                    const spiceDetected = detectSpicyContent(contentForSpiceCheck);
                     const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
                     if (spiceDetected) combinedOOC += BETTER_SPICE_OOC;
                     else if (spiceTriggered) combinedOOC += getRandomSpiceInstruction();
@@ -2918,7 +2927,36 @@ async function handleOpenRouterRequest(req, res) {
                 } else if (typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
                     clientBody.messages[lastUserMsgIndex].content = applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
                 }
+else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachricht (lastUserMsgIndex < 0), aber ForceThinking und OOC aktiv
+            // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
+            // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist, um currentContent für spicy check zu haben
+            combinedOOC = OOC_INSTRUCTION_2;
+            if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
+            if (hasCrazyMode) combinedOOC += CRAZYMODE_OOC;
+            if (hasMedievalMode) combinedOOC += MEDIEVAL_OOC;
+            if (hasBetterSpiceMode) {
+                // Kein currentContent hier, also nur zufälliger Trigger für BetterSpice
+                const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
+                if (spiceTriggered) combinedOOC += getRandomSpiceInstruction();
             }
+            if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
+            combinedOOC += OOC_INSTRUCTION_1;
+            }
+        } else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachricht (lastUserMsgIndex < 0), aber ForceThinking und OOC aktiv
+            // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
+            // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist, um currentContent für spicy check zu haben
+            combinedOOC = OOC_INSTRUCTION_2;
+            if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
+            if (hasCrazyMode) combinedOOC += CRAZYMODE_OOC;
+            if (hasMedievalMode) combinedOOC += MEDIEVAL_OOC;
+            if (hasBetterSpiceMode) {
+                // Kein currentContent hier, also nur zufälliger Trigger für BetterSpice
+                const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
+                if (spiceTriggered) combinedOOC += getRandomSpiceInstruction();
+            }
+            if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
+            combinedOOC += OOC_INSTRUCTION_1;
+        }
 
             // Prefill
             if (!prefillDisabled) {
