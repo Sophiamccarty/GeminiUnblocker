@@ -1616,6 +1616,7 @@
                 <!-- Content will be injected here -->
             </div>
             <div class="modal-footer">
+                <button id="download-lorebook-json-button" class="button secondary-button"><i class="fa fa-download"></i> Download JSON</button>
                 <button class="button modal-close-button">Close</button>
             </div>
         </div>
@@ -2207,6 +2208,8 @@
                 performSearch();
             }
         });
+
+        let currentLorebookCodeForModal = null; // Variable für den aktuellen Lorebook-Code im Modal
         
         // Use Lorebook buttons (event delegation for dynamically added cards)
         document.getElementById('lorebook-grid').addEventListener('click', function(event) {
@@ -2215,6 +2218,7 @@
 
             if (useButton) {
                 const code = useButton.getAttribute('data-code');
+                currentLorebookCodeForModal = code; // Aktuellen Code für Download speichern
                 const displayCode = code || "N/A";
                 document.getElementById('used-lorebook-code').textContent = `<LORE:${displayCode}>`;
                 document.getElementById('used-lorebook-modal').style.display = 'flex';
@@ -2224,9 +2228,57 @@
                 // .catch(error => console.error('Error pinging use-lorebook:', error));
             } else if (detailsButton) {
                 const code = detailsButton.getAttribute('data-code');
+                currentLorebookCodeForModal = code; // Auch für Details-Modal setzen, falls Download dort auch gewünscht wäre
                 showLorebookDetails(code);
             }
         });
+
+        // Download-Button im "Use Lorebook"-Modal
+        const downloadJsonButton = document.getElementById('download-lorebook-json-button');
+        if (downloadJsonButton) {
+            downloadJsonButton.addEventListener('click', async () => {
+                if (currentLorebookCodeForModal) {
+                    await downloadLorebookAsJson(currentLorebookCodeForModal);
+                } else {
+                    alert('Error: No Lorebook code found to download.');
+                    console.error('Download Error: currentLorebookCodeForModal is not set.');
+                }
+            });
+        }
+
+        async function downloadLorebookAsJson(code) {
+            try {
+                const response = await fetch(`/api/lorebook/${code}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({})); // Versuche, Fehlerdetails zu parsen
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message || 'Failed to fetch lorebook'}`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.lorebook) {
+                    const lorebookToDownload = data.lorebook;
+                    // Entferne client-spezifische oder temporäre Daten, falls nötig (hier nicht der Fall)
+                    // const { someClientOnlyProperty, ...downloadableLorebook } = lorebookToDownload;
+
+                    const filename = `${lorebookToDownload.meta?.name || code}.json`;
+                    const jsonStr = JSON.stringify(lorebookToDownload, null, 2);
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('Could not load lorebook data for download: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error downloading lorebook JSON:', error);
+                alert(`Error downloading lorebook: ${error.message}`);
+            }
+        }
         
         // Function to load and display public lorebooks
         const lorebookGrid = document.getElementById('lorebook-grid');
