@@ -1602,6 +1602,7 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button id="download-lorebook-json-button" class="button secondary-button"><i class="fa fa-download"></i> Download JSON</button>
                 <button class="success-button modal-close-button">Close</button>
             </div>
         </div>
@@ -1619,7 +1620,6 @@
                 <!-- Content will be injected here -->
             </div>
             <div class="modal-footer">
-                <button id="download-lorebook-json-button-details" class="button secondary-button"><i class="fa fa-download"></i> Download JSON</button>
                 <button class="button modal-close-button">Close</button>
             </div>
         </div>
@@ -2236,15 +2236,15 @@
             }
         });
 
-        // Download-Button im "View Details"-Modal
-        const downloadJsonButtonDetails = document.getElementById('download-lorebook-json-button-details');
-        if (downloadJsonButtonDetails) {
-            downloadJsonButtonDetails.addEventListener('click', async () => {
+        // Download-Button im "Use Lorebook"-Modal
+        const downloadJsonButton = document.getElementById('download-lorebook-json-button');
+        if (downloadJsonButton) {
+            downloadJsonButton.addEventListener('click', async () => {
                 if (currentLorebookCodeForModal) {
                     await downloadLorebookAsJson(currentLorebookCodeForModal);
                 } else {
                     alert('Error: No Lorebook code found to download.');
-                    console.error('Download Error: currentLorebookCodeForModal is not set for details modal.');
+                    console.error('Download Error: currentLorebookCodeForModal is not set for "Use Lorebook" modal.');
                 }
             });
         }
