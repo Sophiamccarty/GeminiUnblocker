@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lorebook System - Google AI Proxy</title>
+    <title>SOPHIAS LORE-BARY</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #5E81AC; /* Bläuliches Grau */
-            --primary-dark: #4C6A8D;
-            --secondary-color: #88C0D0; /* Helles Blaugrün */
+            --primary-color: #A08FD5; /* Helles Lila */
+            --primary-dark: #8A78B4; /* Dunkleres Lila */
+            --secondary-color: #88C0D0; /* Helles Blaugrün - bleibt vorerst, kann später angepasst werden */
             --accent-color: #BF616A; /* Sanftes Rot */
             --success-color: #A3BE8C; /* Sanftes Grün */
             --error-color: #BF616A; /* Sanftes Rot (gleich wie Akzent für Konsistenz) */
@@ -19,11 +19,11 @@
             --dark-gray: #4C566A;
             --text-color: #2E3440; /* Dunkles Grau für Text */
             --background-color: #F8F9FA; /* Heller Hintergrund */
-            --border-radius: 6px;
+            --border-radius: 10px; /* Erhöht für mehr Rundung */
             --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
             --font-main: 'Roboto', sans-serif;
             --font-headings: 'Montserrat', sans-serif;
-            --primary-color-rgb: 94, 129, 172; /* Entspricht #5E81AC */
+            --primary-color-rgb: 160, 143, 213; /* Entspricht #A08FD5 */
             --dark-gray-rgb: 76, 86, 106; /* Entspricht #4C566A */
         }
 
@@ -349,6 +349,11 @@
             border-top: 1px solid var(--light-color);
             font-size: 14px;
             color: var(--dark-gray); /* Dunkleres Grau */
+        }
+        .card-footer-actions {
+            display: flex;
+            gap: 10px; /* Abstand zwischen den Buttons */
+            margin-left: 15px; /* Abstand zu den Ratings */
         }
 
         .card-tags {
@@ -1031,7 +1036,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-container">
-            <h1>📚 Lorebook System - Google AI Proxy</h1>
+            <h1>SOPHIAS LORE-BARY</h1>
             <nav class="header-nav">
                 <a href="#" class="active" id="nav-home">Home</a>
                 <a href="#" id="nav-creator">Creator</a>
@@ -2089,8 +2094,8 @@
                         <span class="upvotes" title="Upvotes"><i class="fa fa-thumbs-up"></i> ${lorebook.meta?.upvotes || 0}</span>
                         <span class="downvotes" title="Downvotes"><i class="fa fa-thumbs-down"></i> ${lorebook.meta?.downvotes || 0}</span>
                     </div>
-                    <div style="margin-left: 10px;">
-                        <button class="button outline-button view-details-button" data-code="${lorebook.code}" style="margin-right: 5px;">
+                    <div class="card-footer-actions">
+                        <button class="button outline-button view-details-button" data-code="${lorebook.code}">
                             <i class="fa fa-eye"></i> View Details
                         </button>
                         <button class="button outline-button use-lorebook-button" data-code="${lorebook.code}">
