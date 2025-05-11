@@ -98,13 +98,6 @@ app.post('/api/admin/login', (req, res) => {
         return res.status(503).json({ success: false, message: 'Admin functionality is disabled.' });
     }
 
-    // Temporäre Debug-Ausgaben
-    console.log(`[DEBUG] Admin Login Attempt:`);
-    console.log(`[DEBUG]   Password from request body: '${password}' (Length: ${password?.length})`);
-    console.log(`[DEBUG]   ADMIN_PASSWORD from env: '${ADMIN_PASSWORD}' (Length: ${ADMIN_PASSWORD?.length})`);
-    console.log(`[DEBUG]   Are they equal? (strict comparison): ${password === ADMIN_PASSWORD}`);
-    // Ende temporäre Debug-Ausgaben
-
     if (password === ADMIN_PASSWORD) {
         // Generiere einen einfachen "Token". In einer echten App wäre dies ein JWT oder ein sicherer, zufälliger Token.
         // Hier verwenden wir einen Hash des Admin-Passworts als "Token" für Demozwecke.
@@ -428,6 +421,55 @@ class LorebookManager {
     this.saveLorebook(code);
     logMessage(`* Lorebook '${code}' bewertet: ${ratingType}. Up: ${this.lorebooks[code].meta.upvotes}, Down: ${this.lorebooks[code].meta.downvotes}`, "info");
     return this.lorebooks[code].meta; // Gebe aktualisierte Meta-Daten zurück
+  }
+
+  // Aktualisiere ein vorhandenes Lorebook (für Admin)
+  updateLorebook(code, updatedData) {
+    try {
+      if (!this.lorebooks[code]) {
+        logMessage(`* [WARN] updateLorebook: Lorebook mit Code ${code} nicht gefunden.`, "warn");
+        return null;
+      }
+
+      const lorebookToUpdate = this.lorebooks[code];
+
+      // Validiere und aktualisiere Einträge, falls vorhanden
+      if (updatedData.entries) {
+        const validatedEntries = this.validateAndProcessLorebook({ entries: updatedData.entries });
+        if (validatedEntries && validatedEntries.entries) {
+          lorebookToUpdate.entries = validatedEntries.entries;
+        } else {
+          // Behalte alte Einträge, wenn die neuen ungültig sind, oder gib einen Fehler zurück
+          logMessage(`* [WARN] updateLorebook: Ungültige Einträge für Lorebook ${code} bereitgestellt. Einträge nicht aktualisiert.`, "warn");
+          // Optional: return null; oder einen spezifischen Fehler werfen, wenn Einträge erforderlich sind
+        }
+      }
+
+      // Aktualisiere Meta-Daten, falls vorhanden
+      if (updatedData.meta) {
+        // Behalte bestehende upvotes/downvotes, falls sie nicht explizit im Update enthalten sind
+        const currentUpvotes = lorebookToUpdate.meta.upvotes || 0;
+        const currentDownvotes = lorebookToUpdate.meta.downvotes || 0;
+        
+        lorebookToUpdate.meta = { ...lorebookToUpdate.meta, ...updatedData.meta };
+        
+        // Stelle sicher, dass upvotes/downvotes nicht versehentlich überschrieben werden, wenn nicht im Update-Payload
+        if (updatedData.meta.upvotes === undefined) {
+            lorebookToUpdate.meta.upvotes = currentUpvotes;
+        }
+        if (updatedData.meta.downvotes === undefined) {
+            lorebookToUpdate.meta.downvotes = currentDownvotes;
+        }
+      }
+      
+      lorebookToUpdate.lastUsed = Date.now(); // Aktualisiere auch lastUsed bei einem Update
+      this.saveLorebook(code);
+      logMessage(`* Lorebook '${code}' erfolgreich aktualisiert.`, "success");
+      return lorebookToUpdate;
+    } catch (err) {
+      logMessage(`* Fehler beim Aktualisieren des Lorebooks ${code}: ${err.message}`, "error");
+      return null;
+    }
   }
   
   // Prüfe, ob ein Lorebook-Code in der Nachricht enthalten ist
@@ -1878,6 +1920,30 @@ app.delete('/api/admin/lorebook/:code', isAdminAuthenticated, (req, res) => {
     } catch (error) {
         logMessage(`* API Fehler in /api/admin/lorebook/:code (DELETE): ${error.message}`, "error");
         res.status(500).json({ success: false, message: 'Interner Serverfehler beim Löschen des Lorebooks.' });
+    }
+});
+
+app.put('/api/admin/lorebook/:code', isAdminAuthenticated, express.json({ limit: '10mb' }), async (req, res) => {
+    try {
+        const code = req.params.code.toUpperCase();
+        const updatedData = req.body;
+
+        if (!updatedData) {
+            return res.status(400).json({ success: false, message: 'Keine Aktualisierungsdaten bereitgestellt.' });
+        }
+
+        const updatedLorebook = lorebookManager.updateLorebook(code, updatedData);
+
+        if (updatedLorebook) {
+            logMessage(`* Admin hat Lorebook '${code}' aktualisiert.`, "info");
+            res.json({ success: true, message: `Lorebook ${code} erfolgreich aktualisiert.`, lorebook: updatedLorebook });
+        } else {
+            logMessage(`* Admin konnte Lorebook '${code}' nicht aktualisieren (nicht gefunden oder Validierungsfehler).`, "warn");
+            res.status(404).json({ success: false, message: 'Lorebook nicht gefunden oder konnte nicht aktualisiert werden.' });
+        }
+    } catch (error) {
+        logMessage(`* API Fehler in /api/admin/lorebook/:code (PUT): ${error.message}`, "error");
+        res.status(500).json({ success: false, message: 'Interner Serverfehler beim Aktualisieren des Lorebooks.' });
     }
 });
 
