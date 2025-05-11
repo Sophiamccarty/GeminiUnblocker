@@ -1536,6 +1536,61 @@
         });
 
         // Admin Login Logic
+
+        function adminLogout() {
+            localStorage.removeItem('adminToken');
+            isAdminLoggedIn = false;
+            const adminNavLink = document.getElementById('nav-admin');
+            if (adminNavLink) {
+                adminNavLink.remove(); // Entferne den Admin-Tab komplett
+            }
+            const logoutLink = document.getElementById('nav-logout');
+            if(logoutLink) logoutLink.remove();
+
+            // Zeige die Homepage oder eine andere Standardseite nach dem Logout
+            showPage('home-page');
+            // Optional: Benachrichtigung für den User
+            // alert('You have been logged out.');
+        }
+
+        // Füge einen Logout-Button hinzu, wenn der Admin eingeloggt ist
+        function updateAdminNavOnLogin() {
+            let adminNavLink = document.getElementById('nav-admin');
+            let logoutLink = document.getElementById('nav-logout');
+            const navContainer = navHelp.parentNode; // Annahme: navHelp existiert und ist im Container
+
+            if (isAdminLoggedIn) {
+                if (!adminNavLink && navContainer) {
+                    adminNavLink = document.createElement('a');
+                    adminNavLink.href = '#';
+                    adminNavLink.id = 'nav-admin';
+                    adminNavLink.textContent = 'Admin';
+                    navContainer.appendChild(adminNavLink);
+                    adminNavLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (isAdminLoggedIn) showPage('admin-page');
+                        else adminLoginLink.click();
+                    });
+                }
+
+                if(!logoutLink && navContainer) {
+                    logoutLink = document.createElement('a');
+                    logoutLink.href = '#';
+                    logoutLink.id = 'nav-logout';
+                    logoutLink.textContent = 'Logout';
+                    logoutLink.style.marginLeft = "10px";
+                    logoutLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        adminLogout();
+                    });
+                    navContainer.appendChild(logoutLink);
+                }
+            } else {
+                if (adminNavLink) adminNavLink.remove();
+                if (logoutLink) logoutLink.remove();
+            }
+        }
+
         adminLoginLink.addEventListener('click', (e) => {
             e.preventDefault();
             adminPasswordModal.style.display = 'flex';
@@ -1571,7 +1626,8 @@
 
                 const data = await response.json();
 
-                if (response.ok && data.success) {
+                if (response.ok && data.success && data.token) {
+                    localStorage.setItem('adminToken', data.token); // Token speichern
                     isAdminLoggedIn = true;
                     adminPasswordModal.style.display = 'none';
                     
@@ -1583,25 +1639,25 @@
                         adminNavLink.id = 'nav-admin';
                         adminNavLink.textContent = 'Admin';
                         
-                        // Füge den Admin-Link zur Hauptnavigation hinzu (z.B. nach 'Help')
-                        const navContainer = navHelp.parentNode; // Annahme: navHelp existiert und ist im Container
+                        const navContainer = navHelp.parentNode;
                         if (navContainer) {
                              navContainer.appendChild(adminNavLink);
                         }
 
                         adminNavLink.addEventListener('click', (e) => {
                             e.preventDefault();
-                            if (isAdminLoggedIn) {
+                            if (isAdminLoggedIn) { // Prüfe erneut, falls Token zwischenzeitlich entfernt wurde
                                 showPage('admin-page');
                             } else {
-                                // Sollte nicht passieren, wenn ausgeloggt, wird der Link entfernt oder deaktiviert
                                 adminLoginLink.click();
                             }
                         });
                     }
-                    // Alle Nav-Links deselektieren und dann Admin aktivieren
-                    [navHome, navCreator, navHelp, adminNavLink].forEach(nav => nav?.classList.remove('active'));
-                    adminNavLink.classList.add('active');
+                    
+                    // Aktiviere Admin-Tab und deaktiviere andere
+                    [navHome, navCreator, navHelp].forEach(nav => nav.classList.remove('active'));
+                    if(adminNavLink) adminNavLink.classList.add('active');
+
 
                     showPage('admin-page');
                     loadAdminLorebooks();
@@ -1609,6 +1665,7 @@
                     adminLoginError.textContent = data.message || 'Login failed. Please try again.';
                     adminLoginError.style.display = 'block';
                     isAdminLoggedIn = false;
+                    localStorage.removeItem('adminToken'); // Bei Fehler Token entfernen
                 }
             } catch (error) {
                 console.error("Admin login error:", error);
@@ -1882,20 +1939,37 @@ async function handleRating(code, ratingType) {
                 button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Deleting...';
 
                 if (confirm(`Are you sure you want to delete the lorebook "${lorebook.name || lorebook.code}"? This action cannot be undone.`)) {
+                    const token = localStorage.getItem('adminToken');
+                    if (!token) {
+                        adminLogout();
+                        adminLoginLink.click();
+                        alert("Admin session expired. Please login again.");
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fa fa-trash"></i> Delete';
+                        return;
+                    }
                     try {
-                        const response = await fetch(`/api/admin/lorebook/${lorebook.code}`, { method: 'DELETE' });
+                        const response = await fetch(`/api/admin/lorebook/${lorebook.code}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
                         const data = await response.json();
 
                         if (response.ok && data.success) {
                             alert('Lorebook deleted successfully.');
-                            item.remove(); // Entferne das Element direkt aus der Liste
+                            item.remove();
                             const listIsEmpty = adminLorebookList.querySelector('.card') === null;
                             if (listIsEmpty && !adminLorebookList.querySelector('.empty-state')) {
                                 adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found or all have been deleted.</p></div>';
                             }
-                            // loadAdminLorebooks(); // Alternativ: Liste neu laden, kann aber flackern
                         } else {
-                            alert(`Failed to delete lorebook: ${data.message || 'Unknown server error'}`);
+                             if (response.status === 401) {
+                                adminLogout();
+                                adminLoginLink.click();
+                                alert(`Failed to delete lorebook: ${data.message || 'Session expired. Please login again.'}`);
+                             } else {
+                                alert(`Failed to delete lorebook: ${data.message || 'Unknown server error'}`);
+                             }
                         }
                     } catch (error) {
                         console.error("Error deleting lorebook:", error);
@@ -1915,15 +1989,30 @@ async function handleRating(code, ratingType) {
         async function loadAdminLorebooks() {
             if (!isAdminLoggedIn) return;
             adminLorebookList.innerHTML = '<div class="spinner"></div><p style="text-align:center;">Loading lorebooks...</p>';
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                adminLogout(); // Stellt sicher, dass der User ausgeloggt wird, falls kein Token da ist
+                adminLoginLink.click(); // Zeige Login Modal
+                adminLorebookList.innerHTML = '<div class="empty-state"><p>Admin token not found. Please login.</p></div>';
+                return;
+            }
 
             try {
-                const response = await fetch('/api/admin/lorebooks');
+                const response = await fetch('/api/admin/lorebooks', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (!response.ok) {
                     let errorMsg = `Failed to fetch lorebooks. Status: ${response.status}`;
-                    try {
-                        const errData = await response.json();
-                        errorMsg = errData.message || errorMsg;
-                    } catch (e) { /* ignore json parsing error */ }
+                    if (response.status === 401) { // Unautorisiert, Token könnte abgelaufen/ungültig sein
+                        adminLogout();
+                        adminLoginLink.click();
+                        errorMsg = 'Session expired or invalid. Please login again.';
+                    } else {
+                        try {
+                            const errData = await response.json();
+                            errorMsg = errData.message || errorMsg;
+                        } catch (e) { /* ignore json parsing error */ }
+                    }
                     throw new Error(errorMsg);
                 }
                 const data = await response.json();
@@ -1934,8 +2023,6 @@ async function handleRating(code, ratingType) {
                         return;
                     }
                     data.lorebooks.forEach(lb => {
-                        // Das lb-Objekt vom Server sollte bereits die benötigte Struktur haben
-                        // (code, name, description, meta, entries)
                         adminLorebookList.appendChild(createAdminLorebookItem(lb));
                     });
                 } else {
@@ -1945,7 +2032,7 @@ async function handleRating(code, ratingType) {
                 console.error('Error loading admin lorebooks:', error);
                 adminLorebookList.innerHTML = `<div class="empty-state"><p>Error loading lorebooks: ${error.message}. Check console.</p></div>`;
             }
-            filterAdminLorebooks(); // Filter auch nach dem Laden anwenden (oder wenn leer)
+            filterAdminLorebooks();
         }
 
         function filterAdminLorebooks() {
@@ -2603,6 +2690,20 @@ async function handleRating(code, ratingType) {
         updateJsonPreview();
         
         // Initial load
+        function checkInitialAdminState() {
+            const token = localStorage.getItem('adminToken');
+            // Hier könnte man einen stillen Ping an einen Admin-Check-Endpunkt senden, um den Token serverseitig zu validieren.
+            // Fürs Erste: Wenn Token da ist, gehen wir davon aus, dass der User eingeloggt sein könnte.
+            // Die API-Calls werden den Token validieren und ggf. den Logout erzwingen.
+            if (token) {
+                isAdminLoggedIn = true;
+                updateAdminNavOnLogin(); // Stellt sicher, dass Admin-Tab und Logout-Link angezeigt werden
+            } else {
+                isAdminLoggedIn = false;
+                updateAdminNavOnLogin(); // Stellt sicher, dass Admin-Tab und Logout-Link entfernt werden
+            }
+        }
+        checkInitialAdminState();
         showPage('home-page'); // Show home page by default
         loadPublicLorebooks(); // Load public lorebooks on initial page load
     </script>
