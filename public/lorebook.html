@@ -353,7 +353,7 @@
         .card-footer-actions {
             display: flex;
             gap: 10px; /* Abstand zwischen den Buttons */
-            margin-left: 15px; /* Abstand zu den Ratings */
+            /* margin-left: 15px; */ /* Entfernt, da hier keine Ratings sind und es Platz wegnimmt */
         }
         .card-footer-right-group {
             display: flex;
@@ -1397,11 +1397,12 @@
             <h2>Admin - All Lorebooks</h2>
             <div class="search-container">
                 <input type="search" id="admin-lorebook-search" placeholder="Search all lorebooks..." style="width: 100%; margin-bottom: 15px;">
-<!-- Proxy Info Page -->
+            </div> <!-- Closing search-container here -->
+        <!-- Proxy Info Page -->
         <div id="proxy-info-page" class="main-content" style="display: none;">
             <h2>Proxy Server Information</h2>
             <p>This page provides details on how to use the proxy server with different AI model providers.</p>
-
+        
             <div class="info-box">
                 <h3><i class="fa fa-cogs"></i> Google AI Studio Models</h3>
                 <p>To use models via Google AI Studio, configure your application (e.g., JanitorAI, SillyTavern) with the following API endpoint:</p>
@@ -1422,7 +1423,7 @@
                 </ul>
                 <p class="help-text">Ensure your API key for Google AI Studio is correctly set up in the proxy's environment variables.</p>
             </div>
-
+        
             <div class="info-box">
                 <h3><i class="fa fa-rocket"></i> OpenRouter Models</h3>
                 <p>To use models via OpenRouter, configure your application with the following API endpoint:</p>
@@ -1446,7 +1447,6 @@
                 <p class="help-text">Ensure your OpenRouter API key is correctly set up in the proxy's environment variables.</p>
             </div>
         </div>
-            </div>
             <div id="admin-lorebook-list">
                 <!-- Lorebooks will be listed here -->
                 <div class="empty-state">
@@ -2149,7 +2149,8 @@
 
             if (useButton) {
                 const code = useButton.getAttribute('data-code');
-                document.getElementById('used-lorebook-code').innerHTML = `<LORE:${code}>`; // Zeigt <LORE:CODE> an
+                const displayCode = code || "N/A";
+                document.getElementById('used-lorebook-code').textContent = `<LORE:${displayCode}>`;
                 document.getElementById('used-lorebook-modal').style.display = 'flex';
                 
                 // Optional: Ping server to mark as used (if needed for stats, etc.)
@@ -2897,7 +2898,8 @@
                         if(adminNavLink) adminNavLink.classList.add('active');
 
                     } else {
-                        document.getElementById('used-lorebook-code').textContent = `<LORE:${data.code}>`;
+                        const displayCode = data.code || "N/A";
+                        document.getElementById('used-lorebook-code').textContent = `<LORE:${displayCode}>`;
                         document.getElementById('used-lorebook-modal').style.display = 'flex';
                     }
                     
