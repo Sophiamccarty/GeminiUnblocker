@@ -252,13 +252,12 @@
             color: var(--text-color);
         }
 
-        .outline-button {
-            background-color: transparent;
-            color: var(--primary-color);
-            border: 1.5px solid var(--primary-color); /* Etwas dickerer Rand */
-            padding: 8px 12px; /* Kompakteres Padding */
-            font-size: 14px; /* Kleinere Schriftgröße */
-            white-space: nowrap; /* Verhindert Umbruch des Button-Textes */
+/* Redesign card buttons to be more compact */
+        .card .outline-button,
+        .card .button {
+            padding: 6px 12px;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
         .outline-button:hover {
@@ -343,24 +342,26 @@
             line-height: 1.6;
         }
 
+/* Completely redesign the card footer layout */
         .card-footer {
             display: flex;
-            flex-direction: column; /* Standardmäßig untereinander */
-            gap: 8px; /* Kleiner Abstand zwischen den Elementen im Footer */
-            justify-content: flex-start; /* Elemente oben beginnen lassen */
-            align-items: center; /* Zentriert Elemente horizontal in der Spalte */
-            margin-top: 20px; /* Mehr Abstand */
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
             padding-top: 15px;
             border-top: 1px solid var(--light-color);
             font-size: 14px;
-            color: var(--dark-gray); /* Dunkleres Grau */
+            color: var(--dark-gray);
+            flex-wrap: wrap;
+            gap: 10px;
         }
+/* Create action container for buttons */
         .card-footer-actions {
             display: flex;
-            gap: 10px; /* Abstand zwischen den Buttons */
-            width: 100%; /* Nimmt die volle Breite ein im Spaltenlayout */
-            justify-content: space-between; /* Verteilt die Buttons */
-            /* margin-left: 15px; */ /* Entfernt, da hier keine Ratings sind und es Platz wegnimmt */
+            gap: 8px;
+            flex-wrap: nowrap;
+            margin-left: auto;
         }
         .card-footer-right-group {
             display: flex;
@@ -469,22 +470,22 @@
             gap: 20px;
         }
 
+/* Make code display more compact */
         .code-display {
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Bessere Monospace-Schriftarten */
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
             background-color: var(--light-color);
-            padding: 6px 10px; /* Angepasstes Padding */
+            padding: 4px 8px;
             border-radius: var(--border-radius);
-            font-size: 13px; /* Etwas kleiner */
-            color: var(--accent-color); /* Akzentfarbe für Code */
+            font-size: 12px;
+            color: var(--accent-color);
             border: 1px solid var(--medium-gray);
-            display: block; /* Wird ein Block-Element für das Spaltenlayout */
-            width: 100%; /* Nimmt die volle Breite ein */
-            min-width: 165px;  /* Behält eine Mindestbreite bei, falls der Inhalt kürzer ist */
-            white-space: nowrap; /* Verhindert Textumbruch im Kasten */
-            overflow: hidden;    /* Versteckt überlaufenden Text */
-            text-overflow: ellipsis; /* Zeigt "..." für überlaufenden Text */
-            vertical-align: middle; /* Beibehalten, falls es in anderen Kontexten nützlich ist */
-            margin-bottom: 5px; /* Kleiner Abstand nach unten im Spaltenlayout */
+            display: inline-block;
+            min-width: auto;
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
         }
 
         .pagination {
@@ -941,24 +942,38 @@
                 font-size: 18px;
             }
         }
-        
-        /* Alternative layout for screens wider than 500px */
-        @media (min-width: 500px) {
-          .card-footer {
-            flex-direction: row; /* Zurück zum Reihenlayout */
-            justify-content: space-between; /* Code links, Buttons rechts */
-            align-items: center; /* Vertikal zentrieren */
-          }
-          
-          .code-display {
-            display: inline-block; /* Wieder inline-block für Reihenlayout */
-            width: auto; /* Breite an Inhalt anpassen */
-            margin-bottom: 0; /* Kein unterer Margin im Reihenlayout */
-          }
-          
-          .card-footer-actions {
-            width: auto; /* Breite an Inhalt anpassen */
-          }
+
+/* Make cards more responsive */
+        @media (max-width: 500px) {
+            .card-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .card-footer-actions {
+                margin-left: 0;
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .code-display {
+                max-width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+
+/* Add specific styles for lorebook grid cards */
+        .lorebook-grid .card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lorebook-grid .card-body {
+            flex-grow: 1;
+        }
+
+        .lorebook-grid .card-footer {
+            margin-top: auto;
         }
         
         /* Upload/file input styling */
