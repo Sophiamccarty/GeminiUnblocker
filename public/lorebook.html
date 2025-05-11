@@ -2161,22 +2161,16 @@
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 
-                const filter = button.getAttribute('data-filter');
-                const cards = document.querySelectorAll('.card');
-                
-                if (filter === 'all') {
-                    cards.forEach(card => {
-                        card.style.display = 'block';
-                    });
-                } else {
-                    cards.forEach(card => {
-                        if (card.getAttribute('data-category').includes(filter)) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
+                const sortBy = button.getAttribute('data-filter'); // 'all' (useCount), 'popular' (useCount), 'newest' (createdAt)
+                let sortParam = 'useCount';
+                if (sortBy === 'newest') {
+                    sortParam = 'createdAt';
                 }
+                // Für 'all' und 'popular' wird 'useCount' verwendet, was der Standard im Backend ist.
+                // 'all' zeigt einfach alle an, die Sortierung bleibt beim Backend-Standard (useCount)
+                // oder wird explizit gesetzt, falls 'all' eine andere Sortierung bedeuten soll.
+                // Hier laden wir für 'all' und 'popular' mit useCount, für 'newest' mit createdAt.
+                loadPublicLorebooks(sortParam);
             });
         });
         
@@ -2226,9 +2220,19 @@
                 document.getElementById('used-lorebook-code').textContent = `<LORE:${displayCode}>`;
                 document.getElementById('used-lorebook-modal').style.display = 'flex';
                 
-                // Optional: Ping server to mark as used (if needed for stats, etc.)
-                // fetch('/api/use-lorebook/' + code, { method: 'GET' })
-                // .catch(error => console.error('Error pinging use-lorebook:', error));
+                // Ping server to increment useCount
+                fetch(`/api/lorebook/${code}/use`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log(`Use count for ${code} incremented.`);
+                            // Optional: Update UI if needed, e.g., refresh popular list if currently viewed
+                        } else {
+                            console.warn(`Could not increment use count for ${code}: ${data.message}`);
+                        }
+                    })
+                    .catch(error => console.error('Error incrementing use count:', error));
+
             } else if (detailsButton) {
                 const code = detailsButton.getAttribute('data-code');
                 currentLorebookCodeForModal = code; // Auch für Details-Modal setzen, falls Download dort auch gewünscht wäre
@@ -2323,12 +2327,34 @@
             return card;
         }
 
-        async function loadPublicLorebooks() {
+        async function loadPublicLorebooks(sortBy = 'useCount') { // sortBy Parameter hinzugefügt
             try {
-// Modal elements for details
-        const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
-        const detailsModalTitle = document.getElementById('details-modal-title');
-        const detailsModalBody = document.getElementById('details-modal-body');
+                const response = await fetch(`/api/lorebooks/public?sortBy=${sortBy}`); // sortBy an API übergeben
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                lorebookGrid.innerHTML = ''; // Clear existing static or old cards
+                
+                if (data.success && data.lorebooks && data.lorebooks.length > 0) {
+                    data.lorebooks.forEach(lb => {
+                        const card = createLorebookCard(lb);
+                        lorebookGrid.appendChild(card);
+                    });
+                } else {
+                    lorebookGrid.innerHTML = '<p class="alert alert-info">No public lorebooks available at the moment.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading public lorebooks:', error);
+                lorebookGrid.innerHTML = '<p class="alert alert-error">Could not load public lorebooks. Please try again later.</p>';
+            }
+        }
+        
+        // Modal elements for details (Ensure these are declared only once, typically at a higher scope or where first needed)
+        // const lorebookDetailsModal = document.getElementById('lorebook-details-modal'); // Already declared or should be moved
+        // const detailsModalTitle = document.getElementById('details-modal-title'); // Already declared or should be moved
+        // const detailsModalBody = document.getElementById('details-modal-body'); // Already declared or should be moved
 
         async function showLorebookDetails(code) {
             try {
@@ -2397,27 +2423,6 @@
         // This listener is already attached to lorebookGrid for "Use Lorebook" button,
         // we can add the "View Details" logic to the same delegated event listener.
         // The existing listener is at line 1354. I will modify it.
-                const response = await fetch('/api/lorebooks/public');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                
-                lorebookGrid.innerHTML = ''; // Clear existing static or old cards
-                
-                if (data.success && data.lorebooks && data.lorebooks.length > 0) {
-                    data.lorebooks.forEach(lb => {
-                        const card = createLorebookCard(lb);
-                        lorebookGrid.appendChild(card);
-                    });
-                } else {
-                    lorebookGrid.innerHTML = '<p class="alert alert-info">No public lorebooks available at the moment.</p>';
-                }
-            } catch (error) {
-                console.error('Error loading public lorebooks:', error);
-                lorebookGrid.innerHTML = '<p class="alert alert-error">Could not load public lorebooks. Please try again later.</p>';
-            }
-        }
         
         // Modal elements for details
         const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
