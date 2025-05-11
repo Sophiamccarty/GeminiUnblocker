@@ -3,42 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lorebook System - Google AI Proxy</title>
+    <title>Sophia's Lorebook Library</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4080C0;
-            --primary-dark: #336699;
-            --secondary-color: #2C3E50;
-            --success-color: #27AE60;
-            --error-color: #E74C3C;
-            --warning-color: #F39C12;
-            --light-color: #ECF0F1;
-            --dark-color: #2C3E50;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --primary-color: #7B68EE;
+            --primary-light: #9B89F6;
+            --primary-dark: #5A46DA;
+            --secondary-color: #6C63FF;
+            --accent-color: #FF6B6B;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+            --warning-color: #FF9800;
+            --light-color: #F8F9FA;
+            --dark-color: #343A40;
+            --gray-100: #F8F9FA;
+            --gray-200: #E9ECEF;
+            --gray-300: #DEE2E6;
+            --gray-400: #CED4DA;
+            --gray-500: #ADB5BD;
+            --gray-600: #6C757D;
+            --gray-700: #495057;
+            --gray-800: #343A40;
+            --gray-900: #212529;
+            --border-radius: 12px;
+            --card-border-radius: 16px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            --box-shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f5f7fa;
+            color: var(--gray-800);
+            background-color: #f9f7ff;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            width: 100%;
         }
 
+        /* Header */
         .header {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            padding: 25px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 10%, transparent 70%);
+            z-index: 1;
+            animation: pulse 15s infinite linear;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+            50% { transform: translate(5%, 5%) scale(1.05); opacity: 0.9; }
+            100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
         }
 
         .header-container {
@@ -48,110 +97,189 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            position: relative;
+            z-index: 2;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: 28px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            text-shadow: var(--text-shadow);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            font-size: 32px;
         }
 
         .header-nav {
             display: flex;
-            gap: 15px;
+            gap: 20px;
         }
 
         .header-nav a {
             color: white;
             text-decoration: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 16px;
+            position: relative;
+        }
+
+        .header-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 3px;
+        }
+
+        .header-nav a:hover::after, .header-nav a.active::after {
+            width: 70%;
         }
 
         .header-nav a:hover, .header-nav a.active {
             background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
+        /* Main Content */
         .main-content {
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            transition: var(--transition);
+        }
+
+        .main-content:hover {
+            box-shadow: var(--box-shadow-hover);
         }
 
         h2 {
             color: var(--primary-color);
             margin-top: 0;
-            border-bottom: 2px solid var(--light-color);
-            padding-bottom: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 15px;
+            font-size: 28px;
+            position: relative;
+            display: inline-block;
         }
 
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60%;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+
+        /* Tabs */
         .tab-container {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .tabs {
             display: flex;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--gray-300);
+            margin-bottom: 20px;
         }
 
         .tab {
-            padding: 10px 20px;
+            padding: 12px 24px;
             cursor: pointer;
             border: 1px solid transparent;
             border-bottom: none;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-            transition: all 0.3s;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            transition: var(--transition);
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
         }
 
         .tab.active {
             background-color: white;
-            border-color: #ddd;
+            border-color: var(--gray-300);
             border-bottom-color: white;
             margin-bottom: -1px;
-            font-weight: bold;
             color: var(--primary-color);
+            box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
         }
 
         .tab:hover:not(.active) {
-            background-color: #f5f5f5;
+            background-color: var(--gray-100);
+            color: var(--primary-color);
         }
 
         .tab-content {
             display: none;
-            padding: 20px;
-            border: 1px solid #ddd;
+            padding: 25px;
+            border: 1px solid var(--gray-300);
             border-top: none;
-            border-bottom-left-radius: 4px;
-            border-bottom-right-radius: 4px;
+            border-radius: 0 0 8px 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .tab-content.active {
             display: block;
         }
 
+        /* Forms */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--secondary-color);
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--gray-700);
+            font-size: 16px;
         }
 
         input[type="text"],
         input[type="search"],
         textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border: 2px solid var(--gray-300);
+            border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--gray-100);
         }
 
         input[type="text"]:focus,
@@ -159,39 +287,53 @@
         textarea:focus {
             border-color: var(--primary-color);
             outline: none;
+            box-shadow: 0 0 0 4px rgba(123, 104, 238, 0.2);
         }
 
         textarea {
             min-height: 150px;
-            font-family: monospace;
+            font-family: 'Poppins', monospace;
+            resize: vertical;
         }
 
+        /* Buttons */
         button, .button {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 30px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s;
+            font-weight: 500;
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         button:hover, .button:hover {
             background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active, .button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         button i, .button i {
-            margin-right: 8px;
+            font-size: 18px;
         }
 
         .button-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .success-button {
@@ -199,7 +341,7 @@
         }
 
         .success-button:hover {
-            background-color: #219653;
+            background-color: #3d8b40;
         }
 
         .error-button {
@@ -207,7 +349,7 @@
         }
 
         .error-button:hover {
-            background-color: #c0392b;
+            background-color: #d32f2f;
         }
 
         .secondary-button {
@@ -215,212 +357,309 @@
         }
 
         .secondary-button:hover {
-            background-color: #1a252f;
+            background-color: #5753cc;
         }
 
         .outline-button {
             background-color: transparent;
             color: var(--primary-color);
-            border: 1px solid var(--primary-color);
+            border: 2px solid var(--primary-color);
+            font-weight: 500;
         }
 
         .outline-button:hover {
-            background-color: rgba(64, 128, 192, 0.1);
+            background-color: rgba(123, 104, 238, 0.1);
+            color: var(--primary-dark);
+            border-color: var(--primary-dark);
         }
 
+        /* Alerts */
         .alert {
             padding: 15px;
             margin-bottom: 20px;
-            border-radius: 4px;
+            border-radius: 8px;
+            border-left: 5px solid;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert::before {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 20px;
         }
 
         .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-color: var(--success-color);
+        }
+
+        .alert-success::before {
+            content: "\f00c";
+            color: var(--success-color);
         }
 
         .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background-color: #ffebee;
+            color: #c62828;
+            border-color: var(--error-color);
+        }
+
+        .alert-error::before {
+            content: "\f00d";
+            color: var(--error-color);
         }
 
         .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
+            background-color: #fff8e1;
+            color: #ef6c00;
+            border-color: var(--warning-color);
+        }
+
+        .alert-warning::before {
+            content: "\f071";
+            color: var(--warning-color);
         }
 
         .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background-color: #e3f2fd;
+            color: #0277bd;
+            border-color: #2196F3;
         }
 
+        .alert-info::before {
+            content: "\f05a";
+            color: #2196F3;
+        }
+
+        /* Cards */
         .card {
             background-color: white;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: var(--card-border-radius);
+            border: 1px solid var(--gray-200);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: var(--transition);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--box-shadow);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+            transition: var(--transition);
+            opacity: 0.7;
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-hover);
+        }
+
+        .card:hover::before {
+            width: 7px;
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 15px;
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
             color: var(--primary-color);
             margin: 0;
         }
 
         .card-body {
-            color: #666;
+            color: var(--gray-700);
         }
 
         .card-description {
-            margin-bottom: 15px;
-            font-size: 14px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .tag {
+            background-color: #f0ebff;
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .tag:hover {
+            background-color: var(--primary-light);
+            color: white;
+            transform: translateY(-2px);
         }
 
         .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .card-tags {
-            display: flex;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--gray-200);
             flex-wrap: wrap;
-            gap: 5px;
-            margin: 10px 0;
-        }
-
-        .tag {
-            background-color: #e8f0fe;
-            color: var(--primary-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+            gap: 10px;
         }
 
         .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 13px;
             font-weight: 600;
         }
 
+        .badge i {
+            font-size: 12px;
+        }
+
         .badge-primary {
-            background-color: #e8f0fe;
+            background-color: #f0ebff;
             color: var(--primary-color);
         }
 
         .badge-warning {
-            background-color: #fef7e0;
+            background-color: #fff8e1;
             color: var(--warning-color);
         }
 
         .badge-success {
-            background-color: #d4edda;
+            background-color: #e8f5e9;
             color: var(--success-color);
         }
 
+        /* Search */
         .search-container {
             margin-bottom: 30px;
+            position: relative;
         }
 
         .search-form {
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
         .search-form input[type="search"] {
             flex-grow: 1;
+            border-radius: 30px;
+            padding-left: 45px;
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-form::before {
+            content: "\f002";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            z-index: 1;
         }
 
         .filter-container {
             display: flex;
             gap: 10px;
-            margin: 10px 0 20px;
+            margin: 15px 0 25px;
+            flex-wrap: wrap;
         }
 
         .filter-button {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            background-color: #e0e0e0;
-            color: #333;
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 14px;
+            background-color: var(--gray-200);
+            color: var(--gray-700);
             border: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
+            font-weight: 500;
         }
 
         .filter-button.active {
             background-color: var(--primary-color);
             color: white;
+            box-shadow: 0 3px 8px rgba(123, 104, 238, 0.3);
         }
 
         .filter-button:hover:not(.active) {
-            background-color: #d0d0d0;
+            background-color: var(--gray-300);
+            transform: translateY(-2px);
         }
 
+        /* Grid layout */
         .lorebook-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
         }
 
+        /* Code display */
         .code-display {
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             background-color: #f8f9fa;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 14px;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 15px;
             color: var(--primary-color);
             display: inline-block;
-            border: 1px dashed #d0d0d0;
+            border: 1px solid #e0e0e0;
+            font-weight: 600;
         }
 
+        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 30px;
+            margin-top: 40px;
+            gap: 5px;
         }
 
         .pagination-button {
-            padding: 5px 10px;
-            border: 1px solid #d0d0d0;
+            padding: 8px 15px;
+            border: 1px solid var(--gray-300);
             color: var(--primary-color);
             background-color: white;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
+            border-radius: 6px;
+            font-weight: 500;
         }
 
-        .pagination-button:first-child {
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-        }
-
-        .pagination-button:last-child {
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
+        .pagination-button:hover:not(.active) {
+            background-color: var(--gray-100);
+            transform: translateY(-2px);
         }
 
         .pagination-button.active {
@@ -429,10 +668,7 @@
             border-color: var(--primary-color);
         }
 
-        .pagination-button:hover:not(.active) {
-            background-color: #f0f0f0;
-        }
-
+        /* Toggle switch */
         .toggle-container {
             display: flex;
             align-items: center;
@@ -441,13 +677,14 @@
 
         .toggle-label {
             margin-right: 10px;
+            font-weight: 500;
         }
 
         .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 50px;
-            height: 24px;
+            width: 52px;
+            height: 26px;
         }
 
         .toggle-switch input {
@@ -463,21 +700,22 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: var(--gray-300);
             transition: .3s;
-            border-radius: 24px;
+            border-radius: 26px;
         }
 
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
+            height: 18px;
+            width: 18px;
             left: 4px;
             bottom: 4px;
             background-color: white;
             transition: .3s;
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         input:checked + .toggle-slider {
@@ -488,104 +726,100 @@
             transform: translateX(26px);
         }
 
-        .input-with-button {
-            display: flex;
-        }
-
-        .input-with-button input {
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-
-        .input-with-button button {
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-
-        .json-preview {
-            background-color: #f8f9fa;
-            border-radius: 6px;
-            padding: 12px;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 12px;
-            color: #3c4043;
-            overflow: auto;
-            max-height: 300px;
-            border: 1px solid #e0e0e0;
-        }
-
-        .info-box {
-            background-color: #f1f8ff;
-            border-left: 4px solid var(--primary-color);
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 0 4px 4px 0;
-        }
-
-        .info-box h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        .key-container {
-            margin-bottom: 15px;
-        }
-
-        .key-input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
-
-        .key-input {
-            flex-grow: 1;
-        }
-
-        .add-key-button {
-            padding: 5px 10px;
-            font-size: 14px;
-        }
-
-        .key-tag {
-            display: inline-flex;
-            align-items: center;
-            background-color: #e8f0fe;
-            color: var(--primary-color);
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin: 0 5px 5px 0;
-        }
-
-        .key-tag .remove-key {
-            margin-left: 5px;
-            cursor: pointer;
-            color: #666;
-            font-weight: bold;
-        }
-
-        .key-tag .remove-key:hover {
-            color: var(--error-color);
-        }
-
+        /* Help text */
         .help-text {
             font-size: 14px;
-            color: #666;
-            margin-top: 5px;
+            color: var(--gray-600);
+            margin-top: 8px;
+            font-style: italic;
         }
 
+        /* Creator styles */
+        .lorebook-creator {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .panel-container {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .panel-left {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .panel-right {
+            flex: 2;
+            min-width: 400px;
+        }
+
+        .creator-card {
+            background-color: white;
+            border-radius: var(--card-border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+        }
+
+        .creator-card:hover {
+            box-shadow: var(--box-shadow-hover);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 10px;
+        }
+
+        .section-header i {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .section-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        /* Entry list */
         .entry-list {
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
             overflow: hidden;
             margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .entry-item {
-            padding: 10px 15px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 15px;
+            border-bottom: 1px solid var(--gray-200);
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .entry-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background-color: var(--primary-color);
+            transition: var(--transition);
         }
 
         .entry-item:last-child {
@@ -593,12 +827,16 @@
         }
 
         .entry-item:hover {
-            background-color: #f5f5f5;
+            background-color: var(--gray-100);
+        }
+
+        .entry-item:hover::before {
+            width: 4px;
         }
 
         .entry-item.active {
-            background-color: #e8f0fe;
-            border-left: 3px solid var(--primary-color);
+            background-color: #f0ebff;
+            border-left: 4px solid var(--primary-color);
         }
 
         .entry-item-header {
@@ -609,41 +847,46 @@
 
         .entry-item-title {
             font-weight: 600;
+            color: var(--gray-800);
         }
 
         .entry-item-content {
-            font-size: 12px;
-            color: #666;
+            font-size: 13px;
+            color: var(--gray-600);
             margin-top: 5px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        /* Empty state */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #666;
+            color: var(--gray-600);
+            background-color: var(--gray-100);
+            border-radius: 8px;
         }
 
         .empty-state i {
             font-size: 48px;
-            color: #ccc;
+            color: var(--gray-400);
             margin-bottom: 15px;
             display: block;
         }
 
+        /* Loading spinner */
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 30px;
         }
 
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
+            border: 4px solid rgba(123, 104, 238, 0.1);
             border-radius: 50%;
             border-top: 4px solid var(--primary-color);
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
         }
@@ -653,12 +896,12 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Footer styling */
+        /* Footer */
         .footer {
-            background-color: var(--secondary-color);
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
             color: white;
-            padding: 20px 0;
-            margin-top: 40px;
+            padding: 30px 0;
+            margin-top: auto;
         }
 
         .footer-container {
@@ -672,117 +915,191 @@
 
         .footer-links {
             display: flex;
-            gap: 15px;
+            gap: 20px;
         }
 
         .footer-links a {
             color: white;
             text-decoration: none;
+            transition: var(--transition);
+            opacity: 0.8;
         }
 
         .footer-links a:hover {
-            text-decoration: underline;
+            opacity: 1;
+            transform: translateY(-2px);
         }
 
-        /* Creator-specific styles (from the pasted code) */
-        .lorebook-creator {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .panel-container {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 16px;
-        }
-
-        .panel-left {
-            flex: 1;
-            min-width: 280px;
-        }
-
-        .panel-right {
-            flex: 2;
-            min-width: 400px;
-        }
-
-        .creator-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-            color: #202124;
-        }
-
-        .section-header h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0;
-            padding: 0;
-            margin-left: 8px;
-            color: var(--primary-color);
-        }
-
-        .entry-card {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .entry-card:last-child {
-            border-bottom: none;
-        }
-
-        .entry-card:hover {
-            background-color: #f8f9fa;
-        }
-
-        .entry-card.selected {
-            background-color: #e8f0fe;
-            border-left: 3px solid var(--primary-color);
-        }
-
-        .creator-textarea {
-            width: 100%;
-            min-height: 120px;
-            font-family: inherit;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        /* Keyword tags */
+        .key-container {
             margin-bottom: 15px;
+        }
+
+        .key-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .key-input {
+            flex-grow: 1;
+        }
+
+        .add-key-button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 6px;
         }
 
         #keywordTags, #secondaryKeywordTags {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .panel-container {
-                flex-direction: column;
-            }
-            
-            .panel-left, .panel-right {
-                width: 100%;
-            }
-            
-            .lorebook-grid {
-                grid-template-columns: 1fr;
-            }
+        .key-tag {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f0ebff;
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 13px;
+            margin: 0 5px 5px 0;
+            font-weight: 500;
+            transition: var(--transition);
         }
 
-        /* Upload/file input styling */
+        .key-tag:hover {
+            background-color: var(--primary-light);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .key-tag .remove-key {
+            margin-left: 8px;
+            cursor: pointer;
+            color: var(--gray-600);
+            font-weight: bold;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .key-tag .remove-key:hover {
+            color: var(--error-color);
+            background-color: white;
+        }
+
+        /* JSON preview */
+        .json-preview {
+            background-color: #272822;
+            color: #f8f8f2;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            overflow: auto;
+            max-height: 300px;
+            line-height: 1.5;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modal */
+        .modal-background {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 550px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background-color: white;
+            border-radius: 16px 16px 0 0;
+            z-index: 5;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 22px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray-600);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: none;
+        }
+
+        .modal-close:hover {
+            background-color: var(--gray-100);
+            color: var(--error-color);
+            transform: none;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            background-color: var(--gray-50);
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* File Input */
         .file-input-container {
             position: relative;
             display: inline-block;
@@ -798,62 +1115,159 @@
             cursor: pointer;
         }
 
-        /* Modal styles */
-        .modal-background {
-            display: none;
-            position: fixed;
+        /* Info box */
+        .info-box {
+            background-color: #f0ebff;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box h3::before {
+            content: "\f05a";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 20px;
+        }
+
+        /* Command display for lorebooks */
+        .command-display {
+            font-family: 'Courier New', monospace;
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            display: inline-block;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+        }
+
+        .command-display::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            background: linear-gradient(90deg, rgba(123, 104, 238, 0.1), transparent);
+            animation: shimmer 2s infinite;
         }
 
-        .modal {
-            background-color: white;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
-        .modal-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            margin: 0;
-            font-size: 18px;
-            color: var(--primary-color);
-        }
-
-        .modal-close {
-            background: none;
+        /* Download button for lorebooks */
+        .download-button {
+            background-color: #6c63ff;
+            color: white;
             border: none;
-            font-size: 20px;
+            padding: 8px 15px;
+            border-radius: 30px;
             cursor: pointer;
-            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 5px rgba(108, 99, 255, 0.2);
         }
 
-        .modal-body {
-            padding: 20px;
+        .download-button:hover {
+            background-color: #5a46da;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(108, 99, 255, 0.3);
         }
 
-        .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .panel-container {
+                flex-direction: column;
+            }
+            
+            .panel-left, .panel-right {
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .card-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .lorebook-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 25px 20px;
+            }
+            
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header-nav {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .lorebook-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .footer-links {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+            
+            .filter-container {
+                justify-content: center;
+            }
+            
+            .modal {
+                width: 95%;
+            }
         }
     </style>
 </head>
@@ -861,7 +1275,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-container">
-            <h1>📚 Lorebook System - Google AI Proxy</h1>
+            <h1><i class="fas fa-book-open"></i> Sophia's Lorebook Library</h1>
             <nav class="header-nav">
                 <a href="#" class="active" id="nav-home">Home</a>
                 <a href="#" id="nav-creator">Creator</a>
@@ -879,7 +1293,7 @@
             <div class="search-container">
                 <div class="search-form">
                     <input type="search" id="lorebook-search" placeholder="Search by name, keywords, or description...">
-                    <button class="search-button" id="search-button"><i class="fa fa-search"></i> Search</button>
+                    <button class="search-button" id="search-button"><i class="fas fa-search"></i> Search</button>
                 </div>
                 
                 <div class="filter-container">
@@ -897,7 +1311,7 @@
                 <div class="card" data-category="fantasy popular">
                     <div class="card-header">
                         <h3 class="card-title">Middle Earth Handbook</h3>
-                        <span class="badge badge-primary">Fantasy</span>
+                        <span class="badge badge-primary"><i class="fas fa-dragon"></i> Fantasy</span>
                     </div>
                     <div class="card-body">
                         <p class="card-description">Comprehensive guide to Tolkien's world including places, characters, and events.</p>
@@ -908,15 +1322,22 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="code-display"><code>LORE:TLK421</code></div>
-                        <button class="outline-button use-lorebook-button" data-code="TLK421">Use This Lorebook</button>
+                        <div class="command-display">&lt;Lore:TLK421&gt;</div>
+                        <div>
+                            <button class="download-button download-lorebook-button" data-code="TLK421">
+                                <i class="fas fa-download"></i> Download JSON
+                            </button>
+                            <button class="outline-button use-lorebook-button" data-code="TLK421">
+                                <i class="fas fa-book"></i> Use This Lorebook
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="card" data-category="sci-fi new">
                     <div class="card-header">
                         <h3 class="card-title">Galactic Federation Database</h3>
-                        <span class="badge badge-primary">Sci-Fi</span>
+                        <span class="badge badge-primary"><i class="fas fa-rocket"></i> Sci-Fi</span>
                     </div>
                     <div class="card-body">
                         <p class="card-description">Details on alien species, space stations, and interstellar politics.</p>
@@ -927,15 +1348,22 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="code-display"><code>LORE:SPC789</code></div>
-                        <button class="outline-button use-lorebook-button" data-code="SPC789">Use This Lorebook</button>
+                        <div class="command-display">&lt;Lore:SPC789&gt;</div>
+                        <div>
+                            <button class="download-button download-lorebook-button" data-code="SPC789">
+                                <i class="fas fa-download"></i> Download JSON
+                            </button>
+                            <button class="outline-button use-lorebook-button" data-code="SPC789">
+                                <i class="fas fa-book"></i> Use This Lorebook
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="card" data-category="historical popular">
                     <div class="card-header">
                         <h3 class="card-title">Victorian Era Encyclopedia</h3>
-                        <span class="badge badge-primary">Historical</span>
+                        <span class="badge badge-primary"><i class="fas fa-landmark"></i> Historical</span>
                     </div>
                     <div class="card-body">
                         <p class="card-description">Cultural, social, and historical context of Victorian England.</p>
@@ -946,8 +1374,15 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="code-display"><code>LORE:VCT123</code></div>
-                        <button class="outline-button use-lorebook-button" data-code="VCT123">Use This Lorebook</button>
+                        <div class="command-display">&lt;Lore:VCT123&gt;</div>
+                        <div>
+                            <button class="download-button download-lorebook-button" data-code="VCT123">
+                                <i class="fas fa-download"></i> Download JSON
+                            </button>
+                            <button class="outline-button use-lorebook-button" data-code="VCT123">
+                                <i class="fas fa-book"></i> Use This Lorebook
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -968,7 +1403,7 @@
                 <!-- Creator Metadata -->
                 <div class="creator-card">
                     <div class="section-header">
-                        <i class="fa fa-book"></i>
+                        <i class="fas fa-book"></i>
                         <h3>Lorebook Information</h3>
                     </div>
                     
@@ -1000,35 +1435,35 @@
                     <div class="panel-left">
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fa fa-list"></i>
+                                <i class="fas fa-list"></i>
                                 <h3>Entries</h3>
                             </div>
                             
                             <div id="entry-list" class="entry-list">
                                 <!-- Entries will be added here -->
                                 <div class="empty-state">
-                                    <i class="fa fa-file-text-o"></i>
+                                    <i class="fas fa-file-alt"></i>
                                     <p>No entries yet. Create your first entry!</p>
                                 </div>
                             </div>
                             
-                            <button id="new-entry-button" class="success-button"><i class="fa fa-plus"></i> New Entry</button>
+                            <button id="new-entry-button" class="success-button"><i class="fas fa-plus"></i> New Entry</button>
                         </div>
                         
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fa fa-cogs"></i>
+                                <i class="fas fa-cogs"></i>
                                 <h3>Lorebook Actions</h3>
                             </div>
                             
                             <div class="button-group">
                                 <button id="save-lorebook-button" class="success-button">
-                                    <i class="fa fa-download"></i> Download JSON
+                                    <i class="fas fa-download"></i> Download JSON
                                 </button>
                                 
                                 <div class="file-input-container">
                                     <button class="secondary-button">
-                                        <i class="fa fa-upload"></i> Load JSON
+                                        <i class="fas fa-upload"></i> Load JSON
                                     </button>
                                     <input type="file" id="load-lorebook-file" class="file-input" accept=".json">
                                 </div>
@@ -1036,7 +1471,7 @@
                             
                             <div class="button-group">
                                 <button id="upload-to-proxy-button" class="primary-button">
-                                    <i class="fa fa-cloud-upload"></i> Upload to Proxy
+                                    <i class="fas fa-cloud-upload-alt"></i> Upload to Library
                                 </button>
                             </div>
                         </div>
@@ -1046,7 +1481,7 @@
                     <div class="panel-right">
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fa fa-edit"></i>
+                                <i class="fas fa-edit"></i>
                                 <h3>Entry Editor</h3>
                             </div>
                             
@@ -1061,7 +1496,7 @@
                                     <label for="keyword-input">Primary Keywords:</label>
                                     <div class="key-input-group">
                                         <input type="text" id="keyword-input" class="key-input" placeholder="Add keyword and press Enter">
-                                        <button id="add-keyword-button" class="add-key-button">Add</button>
+                                        <button id="add-keyword-button" class="add-key-button"><i class="fas fa-plus"></i> Add</button>
                                     </div>
                                     <div id="keywordTags"></div>
                                     <div class="help-text">Keywords that will trigger this entry</div>
@@ -1071,7 +1506,7 @@
                                     <label for="secondary-keyword-input">Secondary Keywords (Optional):</label>
                                     <div class="key-input-group">
                                         <input type="text" id="secondary-keyword-input" class="key-input" placeholder="Add secondary keyword">
-                                        <button id="add-secondary-keyword-button" class="add-key-button">Add</button>
+                                        <button id="add-secondary-keyword-button" class="add-key-button"><i class="fas fa-plus"></i> Add</button>
                                     </div>
                                     <div id="secondaryKeywordTags"></div>
                                     <div class="help-text">Additional keywords with lower priority</div>
@@ -1109,10 +1544,10 @@
                                 
                                 <div class="button-group">
                                     <button id="save-entry-button" class="success-button">
-                                        <i class="fa fa-save"></i> Save Entry
+                                        <i class="fas fa-save"></i> Save Entry
                                     </button>
                                     <button id="delete-entry-button" class="error-button">
-                                        <i class="fa fa-trash"></i> Delete Entry
+                                        <i class="fas fa-trash-alt"></i> Delete Entry
                                     </button>
                                 </div>
                             </div>
@@ -1120,11 +1555,11 @@
                         
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fa fa-eye"></i>
+                                <i class="fas fa-code"></i>
                                 <h3>JSON Preview</h3>
                             </div>
                             <div id="json-preview" class="json-preview">
-                                {
+{
   "entries": {},
   "meta": {
     "name": "My Lorebook",
@@ -1153,14 +1588,14 @@
                 <li><strong>Set basic information</strong> - Give your lorebook a name and description.</li>
                 <li><strong>Add entries</strong> - Each entry contains keywords that trigger it and content that gets injected.</li>
                 <li><strong>Configure settings</strong> - Set priorities, decide if entries should always be active, etc.</li>
-                <li><strong>Save your lorebook</strong> - Download it as a JSON file or upload it directly to the proxy.</li>
+                <li><strong>Save your lorebook</strong> - Download it as a JSON file or upload it directly to the library.</li>
             </ol>
             
             <h3>Using a Lorebook</h3>
             <ol>
-                <li><strong>Upload your lorebook</strong> - Use the "Upload to Proxy" button in the Creator, or browser for public lorebooks.</li>
-                <li><strong>Get your lorebook code</strong> - After uploading, you'll receive a unique code (e.g., <code>LORE:ABC123</code>).</li>
-                <li><strong>Use in conversations</strong> - Include the code anywhere in your message to the AI.</li>
+                <li><strong>Upload your lorebook</strong> - Use the "Upload to Library" button in the Creator, or browse for public lorebooks.</li>
+                <li><strong>Get your lorebook command</strong> - After uploading, you'll receive a unique command (e.g., <code>&lt;Lore:ABC123&gt;</code>).</li>
+                <li><strong>Use in conversations</strong> - Include the command in your prompt or summary section when chatting with JanitorAI.</li>
                 <li><strong>Activate entries</strong> - Use keywords from your lorebook in your messages to trigger the corresponding entries.</li>
             </ol>
             
@@ -1182,7 +1617,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <div>Lorebook System for Google AI Proxy</div>
+            <div>Sophia's Lorebook Library</div>
             <div class="footer-links">
                 <a href="#" id="footer-privacy">Privacy</a>
                 <a href="#" id="footer-terms">Terms</a>
@@ -1195,11 +1630,11 @@
     <div id="upload-modal" class="modal-background">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Upload Lorebook to Proxy</h3>
+                <h3 class="modal-title">Upload Lorebook to Library</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Upload your lorebook directly to the proxy server. You'll receive a unique code that you can use to activate your lorebook in conversations.</p>
+                <p>Upload your lorebook directly to the library. You'll receive a unique command that you can use to activate your lorebook in conversations.</p>
                 
                 <div id="upload-json-preview" class="json-preview" style="margin: 15px 0; max-height: 150px;"></div>
                 
@@ -1214,7 +1649,7 @@
             </div>
             <div class="modal-footer">
                 <button class="secondary-button modal-cancel-button">Cancel</button>
-                <button class="success-button modal-upload-button">Upload to Proxy</button>
+                <button class="success-button modal-upload-button">Upload to Library</button>
             </div>
         </div>
     </div>
@@ -1229,8 +1664,8 @@
             <div class="modal-body">
                 <p>The lorebook has been successfully activated for your next conversations.</p>
                 <div class="alert alert-success" style="margin-top: 15px;">
-                    <p>Your lorebook code is: <span id="used-lorebook-code" class="code-display"></span></p>
-                    <p>Use this code in your conversations with the AI to activate the lorebook.</p>
+                    <p>Your lorebook command is: <span id="used-lorebook-code" class="command-display"></span></p>
+                    <p>Insert this command in your prompt or summary when chatting with JanitorAI to activate the lorebook.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1239,12 +1674,11 @@
         </div>
     </div>
 
-    <!-- Font Awesome for icons -->
-<!-- Modal for Lorebook Details -->
+    <!-- Lorebook Details Modal -->
     <div id="lorebook-details-modal" class="modal-background">
         <div class="modal" style="max-width: 800px;">
             <div class="modal-header">
-                <h2 id="details-modal-title">Lorebook Details</h2>
+                <h3 id="details-modal-title" class="modal-title">Lorebook Details</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body" id="details-modal-body" style="max-height: 70vh; overflow-y: auto;">
@@ -1255,7 +1689,6 @@
             </div>
         </div>
     </div>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     
     <script>
         // DOM Elements
@@ -1365,24 +1798,59 @@
             }
         });
         
-        // Use Lorebook buttons (event delegation for dynamically added cards)
+        // Use and Download Lorebook buttons (event delegation for dynamically added cards)
         document.getElementById('lorebook-grid').addEventListener('click', function(event) {
             const useButton = event.target.closest('.use-lorebook-button');
+            const downloadButton = event.target.closest('.download-lorebook-button');
             const detailsButton = event.target.closest('.view-details-button');
 
             if (useButton) {
                 const code = useButton.getAttribute('data-code');
-                document.getElementById('used-lorebook-code').textContent = 'LORE:' + code;
+                document.getElementById('used-lorebook-code').textContent = `<Lore:${code}>`;
                 document.getElementById('used-lorebook-modal').style.display = 'flex';
                 
                 // Optional: Ping server to mark as used (if needed for stats, etc.)
                 // fetch('/api/use-lorebook/' + code, { method: 'GET' })
                 // .catch(error => console.error('Error pinging use-lorebook:', error));
+            } else if (downloadButton) {
+                const code = downloadButton.getAttribute('data-code');
+                downloadLorebook(code);
             } else if (detailsButton) {
                 const code = detailsButton.getAttribute('data-code');
                 showLorebookDetails(code);
             }
         });
+        
+        // Function to download lorebook JSON
+        async function downloadLorebook(code) {
+            try {
+                const response = await fetch(`/api/lorebook/${code}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.success && data.lorebook) {
+                    // Create and download the JSON file
+                    const lorebookJson = JSON.stringify(data.lorebook, null, 2);
+                    const blob = new Blob([lorebookJson], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `lorebook_${code}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('Could not download lorebook: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error downloading lorebook:', error);
+                alert('Error downloading lorebook. See console for more info.');
+            }
+        }
         
         // Function to load and display public lorebooks
         const lorebookGrid = document.getElementById('lorebook-grid');
@@ -1393,11 +1861,39 @@
             // Add categories or tags if available in lorebook.meta
             card.setAttribute('data-category', lorebook.meta?.category || 'general');
             card.setAttribute('data-code', lorebook.code); // Store code for easy access
-        
+            
+            // Determine category badge
+            let categoryBadge = '';
+            if (lorebook.meta?.category) {
+                let icon = 'fas fa-book';
+                let categoryName = lorebook.meta.category;
+                
+                if (lorebook.meta.category.toLowerCase().includes('fantasy')) {
+                    icon = 'fas fa-dragon';
+                    categoryName = 'Fantasy';
+                } else if (lorebook.meta.category.toLowerCase().includes('sci-fi') || lorebook.meta.category.toLowerCase().includes('science fiction')) {
+                    icon = 'fas fa-rocket';
+                    categoryName = 'Sci-Fi';
+                } else if (lorebook.meta.category.toLowerCase().includes('historical')) {
+                    icon = 'fas fa-landmark';
+                    categoryName = 'Historical';
+                } else if (lorebook.meta.category.toLowerCase().includes('horror')) {
+                    icon = 'fas fa-ghost';
+                    categoryName = 'Horror';
+                } else if (lorebook.meta.category.toLowerCase().includes('mystery')) {
+                    icon = 'fas fa-search';
+                    categoryName = 'Mystery';
+                }
+                
+                categoryBadge = `<span class="badge badge-primary"><i class="${icon}"></i> ${categoryName}</span>`;
+            } else {
+                categoryBadge = `<span class="badge badge-primary"><i class="fas fa-book"></i> General</span>`;
+            }
+            
             card.innerHTML = `
                 <div class="card-header">
                     <h3 class="card-title">${lorebook.name}</h3>
-                    <span class="badge badge-primary">Public</span>
+                    ${categoryBadge}
                 </div>
                 <div class="card-body">
                     <p class="card-description">${lorebook.description || 'No description available.'}</p>
@@ -1406,17 +1902,13 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <span class="code-display">Code: ${lorebook.code}</span>
-                    <div class="ratings" style="margin-left: auto; display: flex; align-items: center; gap: 5px;">
-                        <span class="upvotes" title="Upvotes"><i class="fa fa-thumbs-up"></i> ${lorebook.meta?.upvotes || 0}</span>
-                        <span class="downvotes" title="Downvotes"><i class="fa fa-thumbs-down"></i> ${lorebook.meta?.downvotes || 0}</span>
-                    </div>
-                    <div style="margin-left: 10px;">
-                        <button class="button outline-button view-details-button" data-code="${lorebook.code}" style="margin-right: 5px;">
-                            <i class="fa fa-eye"></i> View Details
+                    <div class="command-display">&lt;Lore:${lorebook.code}&gt;</div>
+                    <div>
+                        <button class="download-button download-lorebook-button" data-code="${lorebook.code}">
+                            <i class="fas fa-download"></i> Download JSON
                         </button>
-                        <button class="button outline-button use-lorebook-button" data-code="${lorebook.code}">
-                            <i class="fa fa-book"></i> Use Lorebook
+                        <button class="outline-button use-lorebook-button" data-code="${lorebook.code}">
+                            <i class="fas fa-book"></i> Use This Lorebook
                         </button>
                     </div>
                 </div>
@@ -1426,7 +1918,29 @@
 
         async function loadPublicLorebooks() {
             try {
-// Modal elements for details
+                const response = await fetch('/api/lorebooks/public');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                lorebookGrid.innerHTML = ''; // Clear existing static or old cards
+                
+                if (data.success && data.lorebooks && data.lorebooks.length > 0) {
+                    data.lorebooks.forEach(lb => {
+                        const card = createLorebookCard(lb);
+                        lorebookGrid.appendChild(card);
+                    });
+                } else {
+                    lorebookGrid.innerHTML = '<div class="alert alert-info">No public lorebooks available at the moment.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading public lorebooks:', error);
+                lorebookGrid.innerHTML = '<div class="alert alert-error">Could not load public lorebooks. Please try again later.</div>';
+            }
+        }
+        
+        // Modal elements for details
         const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
         const detailsModalTitle = document.getElementById('details-modal-title');
         const detailsModalBody = document.getElementById('details-modal-body');
@@ -1444,38 +1958,79 @@
                     detailsModalTitle.textContent = lb.meta?.name || `Lorebook ${lb.code || code}`; // Use lb.code as fallback
                     
                     let entriesHtml = `
-                        <div style="margin-bottom: 15px;">
+                        <div style="margin-bottom: 20px;">
                             <p><strong>Description:</strong> ${lb.meta?.description || 'N/A'}</p>
-                            <div class="ratings-modal" style="margin-top: 10px; display: flex; align-items: center; gap: 15px;">
+                            <p><strong>Command:</strong> <span class="command-display">&lt;Lore:${lb.code || code}&gt;</span></p>
+                            <div class="ratings-modal" style="margin-top: 15px; display: flex; align-items: center; gap: 15px;">
                                 <span><strong>Ratings:</strong></span>
                                 <button class="button outline-button rate-button" data-code="${lb.code || code}" data-rating="up" title="Upvote">
-                                    <i class="fa fa-thumbs-up"></i> <span id="modal-upvotes-${lb.code || code}">${lb.meta?.upvotes || 0}</span>
+                                    <i class="fas fa-thumbs-up"></i> <span id="modal-upvotes-${lb.code || code}">${lb.meta?.upvotes || 0}</span>
                                 </button>
                                 <button class="button outline-button rate-button" data-code="${lb.code || code}" data-rating="down" title="Downvote">
-                                    <i class="fa fa-thumbs-down"></i> <span id="modal-downvotes-${lb.code || code}">${lb.meta?.downvotes || 0}</span>
+                                    <i class="fas fa-thumbs-down"></i> <span id="modal-downvotes-${lb.code || code}">${lb.meta?.downvotes || 0}</span>
+                                </button>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <button class="download-button download-lorebook-button" data-code="${lb.code || code}">
+                                    <i class="fas fa-download"></i> Download JSON
                                 </button>
                             </div>
                         </div>
-                        <h4>Entries:</h4>
+                        <h4 style="margin-top: 30px; color: var(--primary-color); border-bottom: 1px solid var(--gray-200); padding-bottom: 10px;">Entries:</h4>
                     `;
                     
                     if (lb.entries && Object.keys(lb.entries).length > 0) {
                         entriesHtml += '<ul style="list-style-type: none; padding-left: 0;">';
                         for (const [entryId, entry] of Object.entries(lb.entries)) {
-                            entriesHtml += `<li style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">`;
+                            entriesHtml += `<li style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--gray-200); border-radius: 10px; background-color: #fafafa;">`;
                             // Assuming entry.name was added for UI in creator, if not, fallback to entryId or comment
                             let entryDisplayName = entry.name || entry.comment;
                             if (!entryDisplayName) { // Fallback if name and comment are missing
                                 const firstKey = entry.key && entry.key.length > 0 ? entry.key[0] : '';
                                 entryDisplayName = firstKey || `Entry ${entryId}`;
                             }
-                            entriesHtml += `<strong>${entryDisplayName}</strong> (${entry.constant ? 'Always Active' : 'Keyword-based'}) ${entry.disable ? '<span class="badge badge-warning">Disabled</span>' : ''}<br>`;
+                            entriesHtml += `<strong style="font-size: 18px; color: var(--primary-color);">${entryDisplayName}</strong> `;
+                            entriesHtml += `<span style="display: inline-block; margin-left: 10px;">`;
+                            if (entry.constant) {
+                                entriesHtml += `<span class="badge badge-primary"><i class="fas fa-check-circle"></i> Always Active</span> `;
+                            }
+                            if (entry.disable) {
+                                entriesHtml += `<span class="badge badge-warning"><i class="fas fa-ban"></i> Disabled</span>`;
+                            }
+                            entriesHtml += `</span><br>`;
                             if (!entry.constant && entry.key && entry.key.length > 0) {
-                                entriesHtml += `<em>Keywords:</em> ${entry.key.join(', ')}<br>`;
+                                entriesHtml += `<div style="margin-top: 10px;"><strong>Keywords:</strong> `;
+                                entriesHtml += entry.key.map(keyword => 
+                                    `<span class="tag">${keyword}</span>`
+                                ).join(' ');
+                                entriesHtml += `</div>`;
                             }
                             if (!entry.constant && entry.keysecondary && entry.keysecondary.length > 0) {
-                                entriesHtml += `<em>Secondary Keywords:</em> ${entry.keysecondary.join(', ')}<br>`;
-async function handleRating(code, ratingType) {
+                                entriesHtml += `<div style="margin-top: 10px;"><strong>Secondary Keywords:</strong> `;
+                                entriesHtml += entry.keysecondary.map(keyword => 
+                                    `<span class="tag" style="background-color: #f0f0f0; color: var(--gray-700);">${keyword}</span>`
+                                ).join(' ');
+                                entriesHtml += `</div>`;
+                            }
+                            entriesHtml += `<div style="white-space: pre-wrap; background-color: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--gray-300); font-family: 'Poppins', sans-serif;">${entry.content}</div>`;
+                            entriesHtml += `</li>`;
+                        }
+                        entriesHtml += '</ul>';
+                    } else {
+                        entriesHtml += '<div class="alert alert-info">This lorebook has no entries.</div>';
+                    }
+                    detailsModalBody.innerHTML = entriesHtml;
+                    lorebookDetailsModal.style.display = 'flex';
+                } else {
+                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error fetching lorebook details:', error);
+                alert('Error fetching lorebook details. See console for more info.');
+            }
+        }
+        
+        async function handleRating(code, ratingType) {
             try {
                 const response = await fetch(`/api/lorebook/${code}/rate`, {
                     method: 'POST',
@@ -1504,11 +2059,9 @@ async function handleRating(code, ratingType) {
                     if (cardElem) {
                         const cardUpvoteElem = cardElem.querySelector('.upvotes');
                         const cardDownvoteElem = cardElem.querySelector('.downvotes');
-                        if (cardUpvoteElem) cardUpvoteElem.innerHTML = `<i class="fa fa-thumbs-up"></i> ${data.upvotes}`;
-                        if (cardDownvoteElem) cardDownvoteElem.innerHTML = `<i class="fa fa-thumbs-down"></i> ${data.downvotes}`;
+                        if (cardUpvoteElem) cardUpvoteElem.innerHTML = `<i class="fas fa-thumbs-up"></i> ${data.upvotes}`;
+                        if (cardDownvoteElem) cardDownvoteElem.innerHTML = `<i class="fas fa-thumbs-down"></i> ${data.downvotes}`;
                     }
-                     // Potentially refresh the public lorebooks if sorting/filtering by rating is implemented later
-                    // loadPublicLorebooks(); 
                 } else {
                     alert('Failed to submit rating: ' + (data.message || 'Unknown error'));
                 }
@@ -1525,109 +2078,6 @@ async function handleRating(code, ratingType) {
                 const code = target.getAttribute('data-code');
                 const ratingType = target.getAttribute('data-rating');
                 handleRating(code, ratingType);
-            }
-        });
-                            }
-                            entriesHtml += `<div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 5px; border-radius: 3px; margin-top: 5px;">${entry.content}</div>`;
-                            entriesHtml += `</li>`;
-                        }
-                        entriesHtml += '</ul>';
-                    } else {
-                        entriesHtml += '<p>This lorebook has no entries.</p>';
-                    }
-                    detailsModalBody.innerHTML = entriesHtml;
-                    lorebookDetailsModal.style.display = 'flex';
-                } else {
-                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error fetching lorebook details:', error);
-                alert('Error fetching lorebook details. See console for more info.');
-            }
-        }
-
-        // Event delegation for "View Details" buttons on the lorebook grid
-        // This listener is already attached to lorebookGrid for "Use Lorebook" button,
-        // we can add the "View Details" logic to the same delegated event listener.
-        // The existing listener is at line 1354. I will modify it.
-                const response = await fetch('/api/lorebooks/public');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                
-                lorebookGrid.innerHTML = ''; // Clear existing static or old cards
-                
-                if (data.success && data.lorebooks && data.lorebooks.length > 0) {
-                    data.lorebooks.forEach(lb => {
-                        const card = createLorebookCard(lb);
-                        lorebookGrid.appendChild(card);
-                    });
-                } else {
-                    lorebookGrid.innerHTML = '<p class="alert alert-info">No public lorebooks available at the moment.</p>';
-                }
-            } catch (error) {
-                console.error('Error loading public lorebooks:', error);
-                lorebookGrid.innerHTML = '<p class="alert alert-error">Could not load public lorebooks. Please try again later.</p>';
-            }
-        }
-        
-        // Modal elements for details
-        const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
-        const detailsModalTitle = document.getElementById('details-modal-title');
-        const detailsModalBody = document.getElementById('details-modal-body');
-
-        async function showLorebookDetails(code) {
-            try {
-                const response = await fetch(`/api/lorebook/${code}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-
-                if (data.success && data.lorebook) {
-                    const lb = data.lorebook;
-                    detailsModalTitle.textContent = lb.meta?.name || `Lorebook ${lb.code || code}`; // Use lb.code as fallback
-                    
-                    let entriesHtml = '<p><strong>Description:</strong> ' + (lb.meta?.description || 'N/A') + '</p>';
-                    entriesHtml += '<h4>Entries:</h4>';
-                    
-                    if (lb.entries && Object.keys(lb.entries).length > 0) {
-                        entriesHtml += '<ul style="list-style-type: none; padding-left: 0;">';
-                        for (const [entryId, entry] of Object.entries(lb.entries)) {
-                            entriesHtml += `<li style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">`;
-                            // Assuming entry.name was added for UI in creator, if not, fallback to entryId
-                            entriesHtml += `<strong>${entry.name || entry.comment || `Entry ${entryId}`}</strong> (${entry.constant ? 'Always Active' : 'Keyword-based'}) ${entry.disable ? '<span class="badge badge-warning">Disabled</span>' : ''}<br>`;
-                            if (!entry.constant && entry.key && entry.key.length > 0) {
-                                entriesHtml += `<em>Keywords:</em> ${entry.key.join(', ')}<br>`;
-                            }
-                            if (!entry.constant && entry.keysecondary && entry.keysecondary.length > 0) {
-                                entriesHtml += `<em>Secondary Keywords:</em> ${entry.keysecondary.join(', ')}<br>`;
-                            }
-                            entriesHtml += `<div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 5px; border-radius: 3px; margin-top: 5px;">${entry.content}</div>`;
-                            entriesHtml += `</li>`;
-                        }
-                        entriesHtml += '</ul>';
-                    } else {
-                        entriesHtml += '<p>This lorebook has no entries.</p>';
-                    }
-                    detailsModalBody.innerHTML = entriesHtml;
-                    lorebookDetailsModal.style.display = 'flex';
-                } else {
-                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error fetching lorebook details:', error);
-                alert('Error fetching lorebook details. See console for more info.');
-            }
-        }
-
-        // Event delegation for "View Details" buttons on the lorebook grid
-        lorebookGrid.addEventListener('click', function(event) {
-            const target = event.target.closest('.view-details-button');
-            if (target) {
-                const code = target.getAttribute('data-code');
-                showLorebookDetails(code);
             }
         });
         
@@ -1786,7 +2236,7 @@ async function handleRating(code, ratingType) {
             if (Object.keys(lorebook.entries).length === 0) {
                 entryListContainer.innerHTML = `
                     <div class="empty-state">
-                        <i class="fa fa-file-text-o"></i>
+                        <i class="fas fa-file-alt"></i>
                         <p>No entries yet. Create your first entry!</p>
                     </div>
                 `;
@@ -1802,8 +2252,8 @@ async function handleRating(code, ratingType) {
                 entryItem.setAttribute('data-id', id);
                 
                 const badges = [];
-                if (entry.constant) badges.push(`<span class="badge badge-primary">Always</span>`);
-                if (entry.disable) badges.push(`<span class="badge badge-warning">Disabled</span>`);
+                if (entry.constant) badges.push(`<span class="badge badge-primary"><i class="fas fa-check-circle"></i> Always</span>`);
+                if (entry.disable) badges.push(`<span class="badge badge-warning"><i class="fas fa-ban"></i> Disabled</span>`);
                 
                 entryItem.innerHTML = `
                     <div class="entry-item-header">
@@ -2006,114 +2456,4 @@ async function handleRating(code, ratingType) {
             reader.readAsText(file);
             
             // Reset the file input
-            e.target.value = '';
-        });
-        
-        // Upload to Proxy button and modal
-        const uploadModal = document.getElementById('upload-modal');
-        const modalCloseButtons = document.querySelectorAll('.modal-close, .modal-cancel-button');
-        const modalUploadButton = document.querySelector('.modal-upload-button');
-        const modalPublicToggle = document.getElementById('modal-public-toggle');
-        
-        uploadToProxyButton.addEventListener('click', () => {
-            if (Object.keys(lorebook.entries).length === 0) {
-                alert('Your lorebook is empty. Please add at least one entry.');
-                return;
-            }
-            
-            // Sync the public toggle with the main form
-            modalPublicToggle.checked = publicToggle.checked;
-            
-            // Update the JSON preview in the modal
-            updateJsonPreview();
-            
-            // Show the modal
-            uploadModal.style.display = 'flex';
-        });
-        
-        modalCloseButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // General close for all modals that use this class
-                if (uploadModal) uploadModal.style.display = 'none';
-                
-                const usedLorebookModal = document.getElementById('used-lorebook-modal');
-                if (usedLorebookModal) usedLorebookModal.style.display = 'none';
-                
-                if (lorebookDetailsModal) lorebookDetailsModal.style.display = 'none';
-            });
-        });
-        
-        // Ensure the specific close button for used-lorebook-modal still works
-        const usedLorebookModalCloseButton = document.querySelector('#used-lorebook-modal .modal-close-button');
-        if (usedLorebookModalCloseButton) {
-            usedLorebookModalCloseButton.addEventListener('click', () => {
-                const usedLorebookModal = document.getElementById('used-lorebook-modal');
-                if (usedLorebookModal) usedLorebookModal.style.display = 'none';
-            });
-        }
-         // Ensure the specific close button for details-modal still works
-        const detailsModalCloseButton = document.querySelector('#lorebook-details-modal .modal-close-button');
-        if (detailsModalCloseButton) {
-            detailsModalCloseButton.addEventListener('click', () => {
-                if (lorebookDetailsModal) lorebookDetailsModal.style.display = 'none';
-            });
-        }
-
-        modalUploadButton.addEventListener('click', () => {
-            // Create a clean version for export
-            const exportLorebook = {
-                entries: {},
-                meta: {
-                    ...lorebook.meta,
-                    public: modalPublicToggle.checked
-                }
-            };
-            
-            for (const [id, entry] of Object.entries(lorebook.entries)) {
-                // Create a copy without the 'name' field (for UI only)
-                const exportEntry = {...entry};
-                if ('name' in exportEntry) {
-                    delete exportEntry.name;
-                }
-                exportLorebook.entries[id] = exportEntry;
-            }
-            
-            // In a real implementation, we would send a POST request to the server here
-            // For now, we'll simulate success with a random code
-            const mockCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-            
-            fetch('/api/lorebook', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(exportLorebook)
-            })
-            .then(response => response.json())
-            .then(data => {
-                uploadModal.style.display = 'none';
-                
-                // Show the success modal
-                document.getElementById('used-lorebook-code').textContent = 'LORE:' + mockCode;
-                document.getElementById('used-lorebook-modal').style.display = 'flex';
-                
-                // If it was made public, we'd want to refresh the list on the home page
-                if (modalPublicToggle.checked) {
-                    loadPublicLorebooks(); // Refresh the public lorebooks list
-                }
-            })
-            .catch(error => {
-                alert(`Error uploading lorebook: ${error.message}`);
-            });
-        });
-        
-        // Initialize the UI
-        updateEntryList();
-        updateJsonPreview();
-        
-        // Initial load
-        showPage('home-page'); // Show home page by default
-        loadPublicLorebooks(); // Load public lorebooks on initial page load
-    </script>
-</body>
-</html>
+            e.target
