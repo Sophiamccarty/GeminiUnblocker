@@ -9,7 +9,7 @@ const cors = require('cors');
 const http = require('http');
 const https = require('https');
 const { PassThrough } = require('stream');
-const session = require('express-session'); // Hinzugefügt für Sessions
+// const session = require('express-session'); // Entfernt
 
 const app = express();
 app.use(cors());
@@ -21,13 +21,13 @@ if (!ADMIN_PASSWORD) {
     console.warn("\x1b[33m[WARN] Admin_Password ist nicht in den Umgebungsvariablen gesetzt. Admin-Funktionen sind deaktiviert.\x1b[0m");
 }
 
-// Session Middleware konfigurieren
-app.use(session({
-    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'), // Geheimer Schlüssel für Sessions
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === 'production', httpOnly: true, maxAge: 24 * 60 * 60 * 1000 } // 1 Tag Gültigkeit
-}));
+// Session Middleware konfigurieren // Entfernt
+// app.use(session({
+//     secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: { secure: process.env.NODE_ENV === 'production', httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }
+// }));
 
 // Express für statische Dateien konfigurieren
 app.use(express.static(path.join(__dirname, 'public')));
@@ -70,10 +70,25 @@ app.use((req, res, next) => {
 });
 
 // --- Admin Authentifizierung ---
+const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || crypto.randomBytes(64).toString('hex'); // Für sicherere Tokens, hier nicht voll genutzt
+
 const isAdminAuthenticated = (req, res, next) => {
-    if (req.session && req.session.isAdmin && ADMIN_PASSWORD) {
-        return next();
+    if (!ADMIN_PASSWORD) { // Wenn Admin-Funktion deaktiviert ist, keinen Zugriff erlauben
+        return res.status(503).json({ success: false, message: 'Admin functionality is disabled.' });
     }
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7, authHeader.length);
+        // Einfache Token-Überprüfung: In einer echten App wäre dies ein JWT oder ein Vergleich mit einem serverseitig gespeicherten Token.
+        // Hier verwenden wir einen Hash des Admin-Passworts als "Token" für Demozwecke.
+        // Dies ist NICHT für die Produktion empfohlen, da das Passwort selbst nie als Token verwendet werden sollte.
+        // Ein besserer Ansatz wäre, einen zufälligen Token zu generieren und serverseitig zu speichern oder JWT zu verwenden.
+        const expectedToken = crypto.createHash('sha256').update(ADMIN_PASSWORD + ADMIN_TOKEN_SECRET).digest('hex');
+        if (token === expectedToken) {
+            return next();
+        }
+    }
+    logMessage('* Admin-Authentifizierung fehlgeschlagen: Ungültiger oder fehlender Token.', "warn");
     res.status(401).json({ success: false, message: 'Unauthorized: Admin access required.' });
 };
 
@@ -83,29 +98,19 @@ app.post('/api/admin/login', (req, res) => {
         return res.status(503).json({ success: false, message: 'Admin functionality is disabled.' });
     }
     if (password === ADMIN_PASSWORD) {
-        req.session.isAdmin = true;
-        logMessage('* Admin login successful.', "success");
-        res.json({ success: true, message: 'Admin login successful.' });
+        // Generiere einen einfachen "Token". In einer echten App wäre dies ein JWT oder ein sicherer, zufälliger Token.
+        // Hier verwenden wir einen Hash des Admin-Passworts als "Token" für Demozwecke.
+        const token = crypto.createHash('sha256').update(ADMIN_PASSWORD + ADMIN_TOKEN_SECRET).digest('hex');
+        logMessage('* Admin login successful. Token generated.', "success");
+        res.json({ success: true, message: 'Admin login successful.', token: token });
     } else {
         logMessage('* Admin login failed: Incorrect password.', "warn");
         res.status(401).json({ success: false, message: 'Incorrect password.' });
     }
 });
 
-app.post('/api/admin/logout', (req, res) => {
-    if (req.session && req.session.isAdmin) {
-        req.session.destroy(err => {
-            if (err) {
-                logMessage('* Error during admin logout: ' + err.message, "error");
-                return res.status(500).json({ success: false, message: 'Could not log out.' });
-            }
-            logMessage('* Admin logged out successfully.', "info");
-            res.json({ success: true, message: 'Logged out successfully.' });
-        });
-    } else {
-        res.status(400).json({ success: false, message: 'Not logged in.' });
-    }
-});
+// Der Logout-Endpunkt wird clientseitig durch Löschen des Tokens gehandhabt.
+// app.post('/api/admin/logout', ...); // Entfernt
 
 
 // --- Lorebook-Verwaltungssystem ---
