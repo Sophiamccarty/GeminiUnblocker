@@ -490,12 +490,12 @@
 
         .command-list dt {
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-            background-color: var(--light-color);
+            background-color: var(--primary-color); /* Geändert für bessere Sichtbarkeit */
             padding: 5px 10px;
             border-radius: var(--border-radius);
             font-size: 14px;
-            color: var(--accent-color);
-            border: 1px solid var(--medium-gray);
+            color: white; /* Geändert für bessere Sichtbarkeit */
+            border: 1px solid var(--primary-dark); /* Geändert für bessere Sichtbarkeit */
             margin-top: 15px;
             margin-bottom: 5px;
             display: block; /* Ensure dt takes full width */
@@ -1613,56 +1613,50 @@
                     <div class="collapsible-content">
                         <p style="margin-top:15px; margin-bottom:15px;">You can use the following commands directly in your prompt field in JanitorAI (or other compatible applications) to control the proxy's behavior for the current request:</p>
                         <dl class="command-list" id="server-command-list-dl">
-                            <dt><JAILBREAK=on></dt>
-                            <dd>Activates the jailbreak content for /AiStudio, /NonJailbreak and /OpenRouter requests. Overrides the default non-jailbreak behavior of these routes.</dd>
+                            <dt>&lt;JAILBREAK=on&gt;</dt>
+                            Activates the jailbreak content for /AiStudio, /NonJailbreak and /OpenRouter requests. Overrides the default non-jailbreak behavior of these routes.
 
-                            <dt><PREFILL-OFF></dt>
-                            <dd>Disables the prefill text for this request.</dd>
+                            <dt>&lt;PREFILL-OFF&gt;</dt>
+                            Disables the prefill text for this request.
 
-                            <dt><CUSTOMPREFILL>your text here</CUSTOMPREFILL></dt>
-                            <dd>Uses your custom prefill text instead of the default prefill.</dd>
+                            <dt>&lt;CUSTOMPREFILL&gt;your text here&lt;/CUSTOMPREFILL&gt;</dt>
+                            Uses your custom prefill text instead of the default prefill.
 
-                            <dt><OOCINJECTION-OFF></dt>
-                            <dd>Disables the standard OOC (Out Of Character) instructions that are normally added to your prompt.</dd>
+                            <dt>&lt;OOCINJECTION-OFF&gt;</dt>
+                            Disables the standard OOC (Out Of Character) instructions that are normally added to your prompt.
 
-                            <dt><CUSTOMOOC>your OOC text here</CUSTOMOOC></dt>
-                            <dd>Adds your custom OOC instruction to the AI, in addition to any standard OOC.</dd>
+                            <dt>&lt;CUSTOMOOC&gt;your OOC text here&lt;/CUSTOMOOC&gt;</dt>
+                            Adds your custom OOC instruction to the AI, in addition to any standard OOC.
 
-                            <dt><FORCEMARKDOWN></dt>
-                            <dd>Makes the proxy check and correct the markdown formatting from Google AI responses. Useful if the AI forgets to use asterisks for actions, etc.</dd>
+                            <dt>&lt;FORCEMARKDOWN&gt;</dt>
+                            Makes the proxy check and correct the markdown formatting from Google AI responses. Useful if the AI forgets to use asterisks for actions, etc.
 
-                            <dt><FORCETHINKING></dt>
-                            <dd>Forces the AI to output its thinking process before the actual response. This also uses a special prefill designed to encourage step-by-step thinking.</dd>
+                            <dt>&lt;FORCETHINKING&gt;</dt>
+                            Forces the AI to output its thinking process before the actual response. This also uses a special prefill designed to encourage step-by-step thinking.
 
-                            <dt><AUTOPLOT></dt>
-                            <dd>Adds a plot twist instruction to the AI to make the story more interesting and unpredictable.</dd>
+                            <dt>&lt;AUTOPLOT&gt;</dt>
+                            Adds a plot twist instruction to the AI to make the story more interesting and unpredictable.
 
-                            <dt><AUTOPLOT-CHANCE=1:XX></dt>
-                            <dd>Sets the chance for AutoPlot to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:15.</dd>
+                            <dt>&lt;AUTOPLOT-CHANCE=1:XX&gt;</dt>
+                            Sets the chance for AutoPlot to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:15.
 
-                            <dt><CRAZYMODE></dt>
-                            <dd>Instructs the AI to add unpredictable and chaotic elements to the story.</dd>
+                            <dt>&lt;CRAZYMODE&gt;</dt>
+                            Instructs the AI to add unpredictable and chaotic elements to the story.
 
-                            <dt><MEDIEVALMODE></dt>
-                            <dd>Sets all content in a medieval setting with period-accurate customs, language, and technology.</dd>
+                            <dt>&lt;MEDIEVALMODE&gt;</dt>
+                            Sets all content in a medieval setting with period-accurate customs, language, and technology.
 
-                            <dt><BETTERSPICEMODE></dt>
-                            <dd>Adds random spicy events and enhances the description of intimate scenes.</dd>
+                            <dt>&lt;BETTERSPICEMODE&gt;</dt>
+                            Adds random spicy events and enhances the description of intimate scenes.
 
-                            <dt><BETTERSPICE-CHANCE=1:XX></dt>
-                            <dd>Sets the chance for Better Spice Mode to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:20.</dd>
+                            <dt>&lt;BETTERSPICE-CHANCE=1:XX&gt;</dt>
+                            Sets the chance for Better Spice Mode to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:20.
 
-                            <dt><BYPASS=LEVEL></dt>
-                            <dd>Enables content bypassing. LEVEL can be:
-                                <ul>
-                                    <li><code>SYSTEM</code>: Applies strong bypass only to system messages (e.g., jailbreak text).</li>
-                                    <li><code>LOW</code>: Applies light word manipulation (e.g., "s ex").</li>
-                                    <li><code>MEDIUM</code>: Applies medium bypass (e.g., "s.ex").</li>
-                                    <li><code>STRONG</code>: Applies strong bypass (e.g., "s̵e̵x̵").</li>
-                                </ul>
-                            </dd>
-                            <dt><LORE:CODE></dt>
-                            <dd>Activates a specific Lorebook for the current request. Replace CODE with the actual Lorebook code (e.g., <LORE:ABC123XYZ>). This command can be placed anywhere in your prompt.</dd>
+                            <dt>&lt;BYPASS=LEVEL&gt;</dt>
+                            <p>Enables content bypassing.
+                            
+                            <dt>&lt;LORE:CODE&gt;</dt>
+                            Activates a specific Lorebook for the current request. Replace CODE with the actual Lorebook code (e.g., &lt;LORE:ABC123XYZ&gt;). This command can be placed anywhere in your prompt.
                         </dl>
                     </div>
                 </div>
@@ -3237,8 +3231,10 @@
                         return;
                     }
 
-                    const commandText = dt.textContent.trim();
-                    if (commandText) {
+                    let commandText = dt.textContent.trim();
+                    // Explizit HTML-Entitäten für spitze Klammern dekodieren
+                    const decodedCommandText = commandText.replace(/</g, '<').replace(/>/g, '>');
+                    if (decodedCommandText) {
                         const copyButton = document.createElement('button');
                         copyButton.innerHTML = '<i class="fa fa-copy"></i>'; // Nur Icon für Kompaktheit
                         copyButton.className = 'button outline-button individual-copy-button';
@@ -3268,9 +3264,9 @@
 
                         // Den Text des dt-Elements in ein Span wrappen, um den Button daneben zu platzieren
                         const commandSpan = document.createElement('span');
-                        commandSpan.textContent = commandText;
+                        commandSpan.textContent = decodedCommandText; // Befehl in Backticks für Code-Darstellung, textContent verwenden
                         
-                        dt.textContent = ''; // Leere ursprünglichen Text
+                        dt.innerHTML = ''; // Leere ursprünglichen Text, innerHTML verwenden, um das Span-Element später hinzuzufügen
                         dt.appendChild(commandSpan);
                         dt.appendChild(copyButton);
                         
