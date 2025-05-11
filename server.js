@@ -2237,7 +2237,7 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
         if (msg.content) {
           const content = msg.content;
           // Debugging-Information
-          logMessage(`* Prüfe ${msg.role}-Nachricht auf Lorebook-Code: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`, "info");
+          //logMessage(`* Prüfe ${msg.role}-Nachricht auf Lorebook-Code: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`, "info");
           
           const extractedCode = lorebookManager.extractLorebookCode(content);
           if (extractedCode) {
@@ -2276,7 +2276,7 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
     let clientBody = { ...req.body };
     const isStreamingRequested = clientBody.stream === true;
 
-    let modelName = req.body.model || "gemini-1.5-pro-latest";
+    let modelName = req.body.model || "gemini-2.5-pro-exp-03-25";
 
     // Log request details
     logMessage(`* Model: ${modelName}`);
