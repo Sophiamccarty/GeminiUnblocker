@@ -287,6 +287,25 @@ class LorebookManager {
     // Logik zur Anwendung des Lorebooks
     return this.injectLorebookContent(messages, lorebook.entries);
   }
+
+  // Hole alle öffentlichen Lorebooks
+  getPublicLorebooks() {
+    const publicLorebooks = [];
+    for (const code in this.lorebooks) {
+      const lorebook = this.lorebooks[code];
+      // Überprüfe, ob lorebook.meta existiert und lorebook.meta.public true ist
+      if (lorebook && lorebook.meta && lorebook.meta.public === true) {
+        publicLorebooks.push({
+          code: code,
+          name: lorebook.meta.name || 'Unbenanntes Lorebook',
+          description: lorebook.meta.description || 'Keine Beschreibung.',
+          // Weitere Meta-Daten könnten hier hinzugefügt werden, falls nötig
+        });
+      }
+    }
+    logMessage(`* [DEBUG] getPublicLorebooks: ${publicLorebooks.length} öffentliche Lorebooks gefunden.`, "debug");
+    return publicLorebooks;
+  }
   
   // Prüfe, ob ein Lorebook-Code in der Nachricht enthalten ist
   extractLorebookCode(message) {
@@ -1509,6 +1528,23 @@ app.post('/api/lorebook', express.json({ limit: '10mb' }), (req, res) => {
   } catch (err) {
     logMessage(`* API-Fehler beim Hochladen des Lorebooks: ${err.message}`, "error");
     return res.status(500).json({
+      success: false,
+      message: `Serverfehler: ${err.message}`
+    });
+  }
+});
+
+// API zum Abrufen aller öffentlichen Lorebooks
+app.get('/api/lorebooks/public', (req, res) => {
+  try {
+    const publicLorebooks = lorebookManager.getPublicLorebooks();
+    res.status(200).json({
+      success: true,
+      lorebooks: publicLorebooks
+    });
+  } catch (err) {
+    logMessage(`* API-Fehler beim Abrufen öffentlicher Lorebooks: ${err.message}`, "error");
+    res.status(500).json({
       success: false,
       message: `Serverfehler: ${err.message}`
     });
