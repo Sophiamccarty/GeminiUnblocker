@@ -1475,31 +1475,31 @@ function cleanResponseText(text, prefill_text = "") {
   // Remove everything up to and including "response" if it appears at the beginning of the text
   // This targets the first paragraph specifically.
   // We split by paragraph, process the first, then rejoin.
-  const paragraphs = cleanedText.split('\n\n', 1);
-  if (paragraphs.length > 0) {
-    let current_first_paragraph = paragraphs[0];
-    let cleaned_fp = current_first_paragraph;
+  const paragraphParts = cleanedText.split('\n\n');
+  if (paragraphParts.length > 0) {
+    let first_paragraph_to_clean = paragraphParts[0];
+    let cleaned_fp = first_paragraph_to_clean;
 
     // Neue Bereinigung für den ersten Paragraphen:
     // 1. Versuche, '[...]' am Anfang zu entfernen (non-greedy)
-    const match_bracket_block = /^\s*\[.*?\]\s*/.exec(current_first_paragraph);
+    const match_bracket_block = /^\s*\[.*?\]\s*/.exec(first_paragraph_to_clean);
     if (match_bracket_block) {
-      cleaned_fp = current_first_paragraph.substring(match_bracket_block[0].length);
+      cleaned_fp = first_paragraph_to_clean.substring(match_bracket_block[0].length);
     } else {
       // 2. Wenn 1 nicht zutraf, versuche, alles bis zum ersten ']' (inklusive) zu entfernen (non-greedy).
-      const match_until_bracket = /^\s*[^\]]*?\]\s*/.exec(current_first_paragraph);
+      const match_until_bracket = /^\s*[^\]]*?\]\s*/.exec(first_paragraph_to_clean);
       if (match_until_bracket) {
-        cleaned_fp = current_first_paragraph.substring(match_until_bracket[0].length);
+        cleaned_fp = first_paragraph_to_clean.substring(match_until_bracket[0].length);
       }
     }
     
     // Bestehende Bereinigung für "response" danach auf den bereits gekürzten Paragraphen anwenden
-    const first_paragraph_cleaned = cleaned_fp.replace(/^\s*.*?response\s*/is, '');
+    const first_paragraph_finalized = cleaned_fp.replace(/^\s*.*?response\s*/is, '');
     
-    if (paragraphs.length > 1) {
-      cleanedText = first_paragraph_cleaned + '\n\n' + paragraphs[1];
+    if (paragraphParts.length > 1) {
+      cleanedText = first_paragraph_finalized + '\n\n' + paragraphParts.slice(1).join('\n\n');
     } else {
-      cleanedText = first_paragraph_cleaned;
+      cleanedText = first_paragraph_finalized;
     }
   }
   
