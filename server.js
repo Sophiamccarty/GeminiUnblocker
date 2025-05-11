@@ -370,6 +370,7 @@ class LorebookManager {
           code: code,
           name: lorebook.meta.name || 'Unbenanntes Lorebook',
           description: lorebook.meta.description || 'Keine Beschreibung.',
+          tags: lorebook.meta.tags || [], // Tags hinzufügen
           // Weitere Meta-Daten könnten hier hinzugefügt werden, falls nötig
         });
       }
