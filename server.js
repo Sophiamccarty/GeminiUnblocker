@@ -95,13 +95,16 @@ class LorebookManager {
   // Erstelle ein neues Lorebook und gib den eindeutigen Code zurück
   createLorebook(jsonContent) {
     try {
+      logMessage(`* [DEBUG] createLorebook: Empfangene jsonContent: ${JSON.stringify(jsonContent)?.substring(0, 200)}`, "debug");
       const data = this.validateAndProcessLorebook(jsonContent);
       if (!data) {
+        logMessage(`* [DEBUG] createLorebook: Validierung fehlgeschlagen oder keine gültigen Einträge für jsonContent: ${JSON.stringify(jsonContent)?.substring(0, 200)}`, "warn");
         return null;
       }
       
       // Generiere einen eindeutigen, kurzen Code
       const code = this.generateUniqueCode();
+      logMessage(`* [DEBUG] createLorebook: Generierter Code: ${code}`, "debug");
       
       // Speichere das Lorebook
       this.lorebooks[code] = {
@@ -110,8 +113,15 @@ class LorebookManager {
         lastUsed: Date.now()
       };
       
+      logMessage(`* [DEBUG] createLorebook: Versuche Lorebook zu speichern mit Code: ${code}, Daten: ${JSON.stringify(this.lorebooks[code])?.substring(0, 200)}`, "debug");
       // Speichere auf Festplatte
       this.saveLorebook(code);
+      const filePath = path.join(LOREBOOK_DIR, `${code}.json`);
+      if (fs.existsSync(filePath)) {
+        logMessage(`* [DEBUG] createLorebook: Datei ${filePath} erfolgreich erstellt.`, "debug");
+      } else {
+        logMessage(`* [DEBUG] createLorebook: FEHLER - Datei ${filePath} wurde NICHT erstellt nach saveLorebook.`, "error");
+      }
       
       logMessage(`* Neues Lorebook mit Code '${code}' erstellt`, "success");
       return code;
@@ -193,14 +203,21 @@ class LorebookManager {
   // Speichere ein Lorebook auf die Festplatte
   saveLorebook(code) {
     try {
+      logMessage(`* [DEBUG] saveLorebook: Speichere Lorebook mit Code: ${code}`, "debug");
       const lorebook = this.lorebooks[code];
-      if (!lorebook) return false;
+      if (!lorebook) {
+        logMessage(`* [DEBUG] saveLorebook: Kein Lorebook im Speicher gefunden für Code: ${code}`, "warn");
+        return false;
+      }
       
       const filePath = path.join(LOREBOOK_DIR, `${code}.json`);
       fs.writeFileSync(filePath, JSON.stringify(lorebook, null, 2), 'utf8');
+      logMessage(`* [DEBUG] saveLorebook: Lorebook ${code} erfolgreich in ${filePath} geschrieben.`, "debug");
       return true;
     } catch (err) {
+      const filePath = path.join(LOREBOOK_DIR, `${code}.json`); // Erneut definieren für den Fehlerfall
       logMessage(`* Fehler beim Speichern des Lorebooks ${code}: ${err.message}`, "error");
+      logMessage(`* [DEBUG] saveLorebook: Exception beim Speichern von ${code} in ${filePath}: ${err.stack}`, "error");
       return false;
     }
   }
