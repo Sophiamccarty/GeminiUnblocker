@@ -359,6 +359,7 @@
             display: flex;
             align-items: center;
             gap: 15px; /* Abstand zwischen Ratings und Button-Gruppe */
+            flex-shrink: 0; /* Verhindert, dass diese Gruppe schrumpft */
         }
 
         .card-tags {
@@ -468,8 +469,12 @@
             border-radius: var(--border-radius);
             font-size: 13px; /* Etwas kleiner */
             color: var(--accent-color); /* Akzentfarbe für Code */
-            display: inline-block;
+            /* display: inline-block; */ /* Im Flex-Kontext nicht unbedingt nötig, Flex-Item verhält sich blockartig */
             border: 1px solid var(--medium-gray);
+            flex-shrink: 1; /* Erlaubt diesem Element zu schrumpfen, wenn nicht genug Platz ist */
+            min-width: 0; /* Wichtig in Kombination mit flex-shrink, um echtes Schrumpfen zu ermöglichen */
+            overflow-wrap: break-word; /* Bricht lange Wörter/Codes um */
+            word-break: break-all; /* Alternativ, für aggressiveren Umbruch */
         }
 
         .pagination {
@@ -1397,8 +1402,16 @@
             <h2>Admin - All Lorebooks</h2>
             <div class="search-container">
                 <input type="search" id="admin-lorebook-search" placeholder="Search all lorebooks..." style="width: 100%; margin-bottom: 15px;">
-            </div> <!-- Closing search-container here -->
-        <!-- Proxy Info Page -->
+            </div> <!-- Closing search-container -->
+                    <div id="admin-lorebook-list">
+                <!-- Lorebooks will be listed here -->
+                <div class="empty-state">
+                    <p>No lorebooks found or an error occurred.</p>
+                </div>
+            </div>
+        </div> <!-- Closing admin-page -->
+
+        <!-- Proxy Info Page (MOVED HERE) -->
         <div id="proxy-info-page" class="main-content" style="display: none;">
             <h2>Proxy Server Information</h2>
             <p>This page provides details on how to use the proxy server with different AI model providers.</p>
@@ -1446,15 +1459,8 @@
                 </ul>
                 <p class="help-text">Ensure your OpenRouter API key is correctly set up in the proxy's environment variables.</p>
             </div>
-        </div>
-            <div id="admin-lorebook-list">
-                <!-- Lorebooks will be listed here -->
-                <div class="empty-state">
-                    <p>No lorebooks found or an error occurred.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+        </div> <!-- Closing proxy-info-page -->
+    </div> <!-- Closing container -->
     
     <!-- Footer -->
     <footer class="footer">
