@@ -2179,6 +2179,7 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
     retryCount: 0,
     maxRetries: 2 // Will try up to 3 times total (initial + 2 retries)
   };
+  let combinedOOC = ""; // Initialisiere combinedOOC hier
 
   try {
     let apiKey = null;
@@ -2386,8 +2387,8 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
         const originalContent = clientBody.messages[lastUserMsgIndex].content;
         
         // OOC-Anweisungen zur Nachricht hinzufügen (mit originalem Content)
-        if (!oocInjectionDisabled && typeof originalContent === 'string') {
-          let combinedOOC = OOC_INSTRUCTION_2;
+        if (!oocInjectionDisabled) { // typeof originalContent === 'string' hier entfernt, da es auch für Arrays gelten soll
+          combinedOOC = OOC_INSTRUCTION_2; // Zuweisung, nicht Neudeklaration
 
           // Add AutoPlot instructions based on chance
           if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
@@ -2406,7 +2407,14 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
 
           // Add Better Spice instructions if enabled
           if (hasBetterSpiceMode) {
-            const spiceDetected = detectSpicyContent(originalContent);
+            let contentForSpiceCheck = "";
+            if (Array.isArray(originalContent)) {
+                const textPart = originalContent.find(part => part.type === 'text');
+                contentForSpiceCheck = textPart ? textPart.text : "";
+            } else if (typeof originalContent === 'string') {
+                contentForSpiceCheck = originalContent;
+            }
+            const spiceDetected = detectSpicyContent(contentForSpiceCheck);
             const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
 
             if (spiceDetected) {
@@ -2424,10 +2432,52 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
 
           combinedOOC += OOC_INSTRUCTION_1;
 
+} else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachricht (lastUserMsgIndex < 0), aber ForceThinking und OOC aktiv
+            // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
+            // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist.
+            combinedOOC = OOC_INSTRUCTION_2;
+            if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
+                combinedOOC += AUTOPLOT_OOC;
+                logMessage("* AutoPlot Trigger (no user message context)", "warning");
+            }
+            if (hasCrazyMode) {
+                combinedOOC += CRAZYMODE_OOC;
+            }
+            if (hasMedievalMode) {
+                combinedOOC += MEDIEVAL_OOC;
+            }
+            if (hasBetterSpiceMode) {
+                // Kein originalContent hier, also nur zufälliger Trigger für BetterSpice
+                const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
+                if (spiceTriggered) {
+                    combinedOOC += getRandomSpiceInstruction();
+                    logMessage("* Random Spice Trigger (no user message context)", "warning");
+                }
+            }
+            if (customOOC) {
+                combinedOOC += `\n[OOC: ${customOOC}]`;
+            }
+            combinedOOC += OOC_INSTRUCTION_1;
           // OOC nur anhängen, wenn Force Thinking nicht aktiv ist
           if (!hasForceThinking) {
-            if (typeof originalContent === 'string' && !originalContent.includes(OOC_INSTRUCTION_1) && !originalContent.includes(OOC_INSTRUCTION_2)) {
-              clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
+            let shouldAddOOC = true;
+            if (typeof originalContent === 'string') {
+                shouldAddOOC = !originalContent.includes(OOC_INSTRUCTION_1) && !originalContent.includes(OOC_INSTRUCTION_2);
+            } else if (Array.isArray(originalContent)) {
+                shouldAddOOC = !originalContent.some(part => part.type === 'text' && (part.text.includes(OOC_INSTRUCTION_1) || part.text.includes(OOC_INSTRUCTION_2)));
+            }
+
+            if (shouldAddOOC) {
+                if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
+                     // Ensure originalContent is an array before trying to push
+                    if (Array.isArray(originalContent)) {
+                        clientBody.messages[lastUserMsgIndex].content = [...originalContent, { type: 'text', text: combinedOOC }];
+                    } else { // If originalContent was a string, convert to array
+                        clientBody.messages[lastUserMsgIndex].content = [{type: 'text', text: originalContent}, { type: 'text', text: combinedOOC }];
+                    }
+                } else { // originalContent was a string
+                    clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
+                }
             }
           }
         }
@@ -3029,6 +3079,12 @@ else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachri
       openRouterApiBody.top_k = MODEL_DEFAULTS.topK;
       // logMessage(`* OpenRouter: Verwende Standard top_k: ${MODEL_DEFAULTS.topK}`, "info");
     }
+
+    // Erzwinge Google Vertex als einzigen Provider
+    openRouterApiBody.provider = {
+      only: ["Google Vertex"]
+    };
+    //logMessage(`* OpenRouter: Provider auf "Google Vertex" beschränkt.`, "info");
 
     // Entferne JanitorAI-spezifische Parameter, die OpenRouter nicht direkt verwendet oder die wir anders handhaben
     delete openRouterApiBody.api_key;
