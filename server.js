@@ -3080,11 +3080,11 @@ else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachri
       // logMessage(`* OpenRouter: Verwende Standard top_k: ${MODEL_DEFAULTS.topK}`, "info");
     }
 
-    // Erzwinge Google Vertex als einzigen Provider
+    // Ignoriere Google AI Studio als Provider
     openRouterApiBody.provider = {
-      only: ["Google Vertex"]
+      ignore: ["Google AI Studio"]
     };
-    //logMessage(`* OpenRouter: Provider auf "Google Vertex" beschränkt.`, "info");
+    //logMessage(`* OpenRouter: Provider "Google AI Studio" wird ignoriert.`, "info");
 
     // Entferne JanitorAI-spezifische Parameter, die OpenRouter nicht direkt verwendet oder die wir anders handhaben
     delete openRouterApiBody.api_key;
