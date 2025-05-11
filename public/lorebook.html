@@ -498,6 +498,8 @@
             border: 1px solid var(--medium-gray);
             margin-top: 15px;
             margin-bottom: 5px;
+            display: block; /* Ensure dt takes full width */
+            word-break: break-all; /* Break long commands */
             display: inline-block;
         }
 
@@ -1129,6 +1131,72 @@
             margin-left: 15px; /* Abstand zum Text */
         }
     </style>
+
+    <style>
+        .collapsible-menu {
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            background-color: #fff; /* Hintergrund für das Menü */
+        }
+
+        .collapsible-header {
+            background-color: var(--light-color);
+            color: var(--primary-dark);
+            padding: 12px 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: var(--border-radius) var(--border-radius) 0 0; /* Oben abgerundet */
+        }
+
+        .collapsible-header:hover {
+            background-color: var(--medium-gray);
+        }
+
+        .collapsible-header i {
+            transition: transform 0.3s ease;
+        }
+
+        .collapsible-header.active i {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            padding: 0px 18px; /* Padding oben/unten wird durch innere Elemente gesteuert */
+            display: none;
+            overflow: hidden;
+            border-top: 1px solid var(--medium-gray);
+            border-radius: 0 0 var(--border-radius) var(--border-radius); /* Unten abgerundet */
+        }
+        
+        .collapsible-content dl dd {
+            margin-left: 10px; /* Einzug für Beschreibungen */
+            margin-bottom: 12px; /* Abstand zwischen den Einträgen */
+            font-size: 14px;
+        }
+
+        .info-box.server-commands-container { /* Spezifische Klasse für schmaleres Layout */
+            max-width: 800px; /* Maximale Breite für diesen Info-Box-Typ */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .copy-all-commands-button {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        .copy-all-commands-button:hover {
+            background-color: #79A8B5; /* Dunklere Variante von --secondary-color */
+        }
+
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -1537,62 +1605,71 @@
                 <p class="help-text">Ensure your OpenRouter API key is correctly set up in the proxy's environment variables.</p>
             </div>
 
-            <div class="info-box">
-                <h3><i class="fa fa-terminal"></i> Server Commands</h3>
-                <p>You can use the following commands directly in your prompt field in JanitorAI (or other compatible applications) to control the proxy's behavior for the current request:</p>
-                <dl class="command-list">
-                    <dt><JAILBREAK=on></dt>
-                    <dd>Activates the jailbreak content for /AiStudio, /NonJailbreak and /OpenRouter requests. Overrides the default non-jailbreak behavior of these routes.</dd>
+            <div class="info-box server-commands-container">
+                <div class="collapsible-menu server-commands-menu">
+                    <button class="collapsible-header">
+                        <h3><i class="fa fa-terminal"></i> Server Commands</h3> <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div class="collapsible-content">
+                        <p style="margin-top:15px; margin-bottom:15px;">You can use the following commands directly in your prompt field in JanitorAI (or other compatible applications) to control the proxy's behavior for the current request:</p>
+                        <button class="button copy-all-commands-button" style="margin-bottom: 15px;">
+                            <i class="fa fa-clipboard"></i> Copy All Commands
+                        </button>
+                        <dl class="command-list" id="server-command-list-dl">
+                            <dt><JAILBREAK=on></dt>
+                            <dd>Activates the jailbreak content for /AiStudio, /NonJailbreak and /OpenRouter requests. Overrides the default non-jailbreak behavior of these routes.</dd>
 
-                    <dt><PREFILL-OFF></dt>
-                    <dd>Disables the prefill text for this request.</dd>
+                            <dt><PREFILL-OFF></dt>
+                            <dd>Disables the prefill text for this request.</dd>
 
-                    <dt><CUSTOMPREFILL>your text here</CUSTOMPREFILL></dt>
-                    <dd>Uses your custom prefill text instead of the default prefill.</dd>
+                            <dt><CUSTOMPREFILL>your text here</CUSTOMPREFILL></dt>
+                            <dd>Uses your custom prefill text instead of the default prefill.</dd>
 
-                    <dt><OOCINJECTION-OFF></dt>
-                    <dd>Disables the standard OOC (Out Of Character) instructions that are normally added to your prompt.</dd>
+                            <dt><OOCINJECTION-OFF></dt>
+                            <dd>Disables the standard OOC (Out Of Character) instructions that are normally added to your prompt.</dd>
 
-                    <dt><CUSTOMOOC>your OOC text here</CUSTOMOOC></dt>
-                    <dd>Adds your custom OOC instruction to the AI, in addition to any standard OOC.</dd>
+                            <dt><CUSTOMOOC>your OOC text here</CUSTOMOOC></dt>
+                            <dd>Adds your custom OOC instruction to the AI, in addition to any standard OOC.</dd>
 
-                    <dt><FORCEMARKDOWN></dt>
-                    <dd>Makes the proxy check and correct the markdown formatting from Google AI responses. Useful if the AI forgets to use asterisks for actions, etc.</dd>
+                            <dt><FORCEMARKDOWN></dt>
+                            <dd>Makes the proxy check and correct the markdown formatting from Google AI responses. Useful if the AI forgets to use asterisks for actions, etc.</dd>
 
-                    <dt><FORCETHINKING></dt>
-                    <dd>Forces the AI to output its thinking process before the actual response. This also uses a special prefill designed to encourage step-by-step thinking.</dd>
+                            <dt><FORCETHINKING></dt>
+                            <dd>Forces the AI to output its thinking process before the actual response. This also uses a special prefill designed to encourage step-by-step thinking.</dd>
 
-                    <dt><AUTOPLOT></dt>
-                    <dd>Adds a plot twist instruction to the AI to make the story more interesting and unpredictable.</dd>
+                            <dt><AUTOPLOT></dt>
+                            <dd>Adds a plot twist instruction to the AI to make the story more interesting and unpredictable.</dd>
 
-                    <dt><AUTOPLOT-CHANCE=1:XX></dt>
-                    <dd>Sets the chance for AutoPlot to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:15.</dd>
+                            <dt><AUTOPLOT-CHANCE=1:XX></dt>
+                            <dd>Sets the chance for AutoPlot to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:15.</dd>
 
-                    <dt><CRAZYMODE></dt>
-                    <dd>Instructs the AI to add unpredictable and chaotic elements to the story.</dd>
+                            <dt><CRAZYMODE></dt>
+                            <dd>Instructs the AI to add unpredictable and chaotic elements to the story.</dd>
 
-                    <dt><MEDIEVALMODE></dt>
-                    <dd>Sets all content in a medieval setting with period-accurate customs, language, and technology.</dd>
+                            <dt><MEDIEVALMODE></dt>
+                            <dd>Sets all content in a medieval setting with period-accurate customs, language, and technology.</dd>
 
-                    <dt><BETTERSPICEMODE></dt>
-                    <dd>Adds random spicy events and enhances the description of intimate scenes.</dd>
+                            <dt><BETTERSPICEMODE></dt>
+                            <dd>Adds random spicy events and enhances the description of intimate scenes.</dd>
 
-                    <dt><BETTERSPICE-CHANCE=1:XX></dt>
-                    <dd>Sets the chance for Better Spice Mode to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:20.</dd>
+                            <dt><BETTERSPICE-CHANCE=1:XX></dt>
+                            <dd>Sets the chance for Better Spice Mode to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:20.</dd>
 
-                    <dt><BYPASS=LEVEL></dt>
-                    <dd>Enables content bypassing. LEVEL can be:
-                        <ul>
-                            <li><code>SYSTEM</code>: Applies strong bypass only to system messages (e.g., jailbreak text).</li>
-                            <li><code>LOW</code>: Applies light word manipulation (e.g., "s ex").</li>
-                            <li><code>MEDIUM</code>: Applies medium bypass (e.g., "s.ex").</li>
-                            <li><code>STRONG</code>: Applies strong bypass (e.g., "s̵e̵x̵").</li>
-                        </ul>
-                    </dd>
-                    <dt><LORE:CODE></dt>
-                    <dd>Activates a specific Lorebook for the current request. Replace CODE with the actual Lorebook code (e.g., <LORE:ABC123XYZ>). This command can be placed anywhere in your prompt.</dd>
-                </dl>
-                <p class="help-text">These commands are processed by the proxy before sending the request to the AI model. They are case-insensitive.</p>
+                            <dt><BYPASS=LEVEL></dt>
+                            <dd>Enables content bypassing. LEVEL can be:
+                                <ul>
+                                    <li><code>SYSTEM</code>: Applies strong bypass only to system messages (e.g., jailbreak text).</li>
+                                    <li><code>LOW</code>: Applies light word manipulation (e.g., "s ex").</li>
+                                    <li><code>MEDIUM</code>: Applies medium bypass (e.g., "s.ex").</li>
+                                    <li><code>STRONG</code>: Applies strong bypass (e.g., "s̵e̵x̵").</li>
+                                </ul>
+                            </dd>
+                            <dt><LORE:CODE></dt>
+                            <dd>Activates a specific Lorebook for the current request. Replace CODE with the actual Lorebook code (e.g., <LORE:ABC123XYZ>). This command can be placed anywhere in your prompt.</dd>
+                        </dl>
+                    </div>
+                </div>
+                <p class="help-text" style="margin-top: 10px;">These commands are processed by the proxy before sending the request to the AI model. They are case-insensitive.</p>
             </div>
 
         </div> <!-- Closing proxy-info-page -->
@@ -3150,6 +3227,42 @@
             }).catch(err => {
                 console.error('Failed to copy: ', err);
                 alert('Failed to copy text. Please try manually.');
+            });
+        }
+
+        // Collapsible menu functionality
+        const collapsibles = document.querySelectorAll('.collapsible-header');
+        collapsibles.forEach(collapsible => {
+            collapsible.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                if (content.style.display === "block") {
+                    content.style.display = "none";
+                } else {
+                    content.style.display = "block";
+                }
+            });
+        });
+
+        // Copy all server commands
+        const copyAllCommandsButton = document.querySelector('.copy-all-commands-button');
+        if (copyAllCommandsButton) {
+            copyAllCommandsButton.addEventListener('click', () => {
+                const commandListDL = document.getElementById('server-command-list-dl');
+                if (commandListDL) {
+                    const commands = [];
+                    const dtElements = commandListDL.querySelectorAll('dt');
+                    dtElements.forEach(dt => {
+                        commands.push(dt.textContent);
+                    });
+                    const allCommandsText = commands.join('\n');
+                    navigator.clipboard.writeText(allCommandsText).then(() => {
+                        alert('All server commands copied to clipboard!');
+                    }).catch(err => {
+                        console.error('Failed to copy all commands: ', err);
+                        alert('Failed to copy commands. Please try manually.');
+                    });
+                }
             });
         }
 
