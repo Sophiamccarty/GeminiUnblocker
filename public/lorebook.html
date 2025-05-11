@@ -1350,25 +1350,73 @@
             }
         });
         
-        // Use Lorebook buttons
-        const useLorebookButtons = document.querySelectorAll('.use-lorebook-button');
-        useLorebookButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const code = button.getAttribute('data-code');
+        // Use Lorebook buttons (event delegation for dynamically added cards)
+        document.getElementById('lorebook-grid').addEventListener('click', function(event) {
+            const target = event.target.closest('.use-lorebook-button');
+            if (target) {
+                const code = target.getAttribute('data-code');
                 document.getElementById('used-lorebook-code').textContent = 'LORE:' + code;
                 document.getElementById('used-lorebook-modal').style.display = 'flex';
                 
-                // In a real implementation, we would send a request to the server here
-                // to activate the lorebook for this user's session
-                fetch('/api/use-lorebook/' + code, {
-                    method: 'GET'
-                }).then(response => {
-                    // Handle response as needed
-                }).catch(error => {
-                    console.error('Error activating lorebook:', error);
-                });
-            });
+                // Optional: Ping server to mark as used (if needed for stats, etc.)
+                // fetch('/api/use-lorebook/' + code, { method: 'GET' })
+                // .catch(error => console.error('Error pinging use-lorebook:', error));
+            }
         });
+        
+        // Function to load and display public lorebooks
+        const lorebookGrid = document.getElementById('lorebook-grid');
+        
+        function createLorebookCard(lorebook) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            // Add categories or tags if available in lorebook.meta
+            card.setAttribute('data-category', lorebook.meta?.category || 'general');
+        
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 class="card-title">${lorebook.name}</h3>
+                    <span class="badge badge-primary">Public</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">${lorebook.description || 'No description available.'}</p>
+                    <div class="card-tags">
+                        ${(lorebook.meta?.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="code-display">Code: ${lorebook.code}</span>
+                    <button class="button outline-button use-lorebook-button" data-code="${lorebook.code}">
+                        <i class="fa fa-book"></i> Use Lorebook
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        async function loadPublicLorebooks() {
+            try {
+                const response = await fetch('/api/lorebooks/public');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                lorebookGrid.innerHTML = ''; // Clear existing static or old cards
+                
+                if (data.success && data.lorebooks && data.lorebooks.length > 0) {
+                    data.lorebooks.forEach(lb => {
+                        const card = createLorebookCard(lb);
+                        lorebookGrid.appendChild(card);
+                    });
+                } else {
+                    lorebookGrid.innerHTML = '<p class="alert alert-info">No public lorebooks available at the moment.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading public lorebooks:', error);
+                lorebookGrid.innerHTML = '<p class="alert alert-error">Could not load public lorebooks. Please try again later.</p>';
+            }
+        }
         
         // Creator functionality
         let lorebook = {
@@ -1821,7 +1869,7 @@
                 
                 // If it was made public, we'd want to refresh the list on the home page
                 if (modalPublicToggle.checked) {
-                    // In a real implementation, we would refresh the lorebook list
+                    loadPublicLorebooks(); // Refresh the public lorebooks list
                 }
             })
             .catch(error => {
@@ -1832,6 +1880,10 @@
         // Initialize the UI
         updateEntryList();
         updateJsonPreview();
+        
+        // Initial load
+        showPage('home-page'); // Show home page by default
+        loadPublicLorebooks(); // Load public lorebooks on initial page load
     </script>
 </body>
 </html>
