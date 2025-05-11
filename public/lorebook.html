@@ -488,6 +488,30 @@
             vertical-align: middle;
         }
 
+        .command-list dt {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            background-color: var(--light-color);
+            padding: 5px 10px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            color: var(--accent-color);
+            border: 1px solid var(--medium-gray);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .command-list dd {
+            margin-left: 20px;
+            margin-bottom: 10px;
+            padding-left: 15px;
+            border-left: 3px solid var(--medium-gray);
+        }
+        .command-list dd ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+
         .pagination {
             display: flex;
             justify-content: center;
@@ -1512,6 +1536,65 @@
                 </ul>
                 <p class="help-text">Ensure your OpenRouter API key is correctly set up in the proxy's environment variables.</p>
             </div>
+
+            <div class="info-box">
+                <h3><i class="fa fa-terminal"></i> Server Commands</h3>
+                <p>You can use the following commands directly in your prompt field in JanitorAI (or other compatible applications) to control the proxy's behavior for the current request:</p>
+                <dl class="command-list">
+                    <dt><JAILBREAK=on></dt>
+                    <dd>Activates the jailbreak content for /AiStudio, /NonJailbreak and /OpenRouter requests. Overrides the default non-jailbreak behavior of these routes.</dd>
+
+                    <dt><PREFILL-OFF></dt>
+                    <dd>Disables the prefill text for this request.</dd>
+
+                    <dt><CUSTOMPREFILL>your text here</CUSTOMPREFILL></dt>
+                    <dd>Uses your custom prefill text instead of the default prefill.</dd>
+
+                    <dt><OOCINJECTION-OFF></dt>
+                    <dd>Disables the standard OOC (Out Of Character) instructions that are normally added to your prompt.</dd>
+
+                    <dt><CUSTOMOOC>your OOC text here</CUSTOMOOC></dt>
+                    <dd>Adds your custom OOC instruction to the AI, in addition to any standard OOC.</dd>
+
+                    <dt><FORCEMARKDOWN></dt>
+                    <dd>Makes the proxy check and correct the markdown formatting from Google AI responses. Useful if the AI forgets to use asterisks for actions, etc.</dd>
+
+                    <dt><FORCETHINKING></dt>
+                    <dd>Forces the AI to output its thinking process before the actual response. This also uses a special prefill designed to encourage step-by-step thinking.</dd>
+
+                    <dt><AUTOPLOT></dt>
+                    <dd>Adds a plot twist instruction to the AI to make the story more interesting and unpredictable.</dd>
+
+                    <dt><AUTOPLOT-CHANCE=1:XX></dt>
+                    <dd>Sets the chance for AutoPlot to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:15.</dd>
+
+                    <dt><CRAZYMODE></dt>
+                    <dd>Instructs the AI to add unpredictable and chaotic elements to the story.</dd>
+
+                    <dt><MEDIEVALMODE></dt>
+                    <dd>Sets all content in a medieval setting with period-accurate customs, language, and technology.</dd>
+
+                    <dt><BETTERSPICEMODE></dt>
+                    <dd>Adds random spicy events and enhances the description of intimate scenes.</dd>
+
+                    <dt><BETTERSPICE-CHANCE=1:XX></dt>
+                    <dd>Sets the chance for Better Spice Mode to trigger (e.g., 1:10 for a 1 in 10 chance). Default is 1:20.</dd>
+
+                    <dt><BYPASS=LEVEL></dt>
+                    <dd>Enables content bypassing. LEVEL can be:
+                        <ul>
+                            <li><code>SYSTEM</code>: Applies strong bypass only to system messages (e.g., jailbreak text).</li>
+                            <li><code>LOW</code>: Applies light word manipulation (e.g., "s ex").</li>
+                            <li><code>MEDIUM</code>: Applies medium bypass (e.g., "s.ex").</li>
+                            <li><code>STRONG</code>: Applies strong bypass (e.g., "s̵e̵x̵").</li>
+                        </ul>
+                    </dd>
+                    <dt><LORE:CODE></dt>
+                    <dd>Activates a specific Lorebook for the current request. Replace CODE with the actual Lorebook code (e.g., <LORE:ABC123XYZ>). This command can be placed anywhere in your prompt.</dd>
+                </dl>
+                <p class="help-text">These commands are processed by the proxy before sending the request to the AI model. They are case-insensitive.</p>
+            </div>
+
         </div> <!-- Closing proxy-info-page -->
     </div> <!-- Closing container -->
     
