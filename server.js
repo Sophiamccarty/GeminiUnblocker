@@ -176,8 +176,9 @@ class LorebookManager {
         entries: data.entries, // Enthält nur die validierten Einträge
         meta: {
             ...(jsonContent.meta || {}), // Übernehme das komplette Meta-Objekt vom Request-Body
-            upvotes: 0, // Initialisiere Bewertungen
-            downvotes: 0
+            upvotes: 0,
+            downvotes: 0,
+            useCount: 0 // Initialisiere useCount
         },
         createdAt: Date.now(),
         lastUsed: Date.now()
@@ -374,6 +375,10 @@ class LorebookManager {
       }
     }
     // logMessage(`* [DEBUG] getPublicLorebooks: ${publicLorebooks.length} öffentliche Lorebooks gefunden.`, "debug");
+    
+    // Sortiere nach useCount absteigend
+    publicLorebooks.sort((a, b) => (b.meta?.useCount || 0) - (a.meta?.useCount || 0));
+    
     return publicLorebooks;
   }
 
@@ -1981,6 +1986,30 @@ app.post('/api/lorebook', express.json({ limit: '10mb' }), (req, res) => {
       message: `Serverfehler: ${err.message}`
     });
   }
+});
+app.post('/api/lorebook/:code/use', (req, res) => {
+    try {
+        const code = req.params.code.toUpperCase();
+        const lorebook = lorebookManager.getLorebook(code); // getLorebook aktualisiert auch lastUsed
+
+        if (lorebook) {
+            lorebook.meta = lorebook.meta || {};
+            lorebook.meta.useCount = (lorebook.meta.useCount || 0) + 1;
+            if (lorebookManager.saveLorebook(code)) {
+                logMessage(`* Lorebook '${code}' useCount erhöht auf ${lorebook.meta.useCount}`, "info");
+                res.json({ success: true, message: 'Lorebook use count updated.', useCount: lorebook.meta.useCount });
+            } else {
+                logMessage(`* Fehler beim Speichern von Lorebook '${code}' nach Erhöhung des useCount.`, "error");
+                res.status(500).json({ success: false, message: 'Fehler beim Speichern des Lorebooks nach Aktualisierung des Zählers.' });
+            }
+        } else {
+            logMessage(`* API Warnung in /api/lorebook/:code/use (POST): Lorebook ${code} nicht gefunden.`, "warn");
+            res.status(404).json({ success: false, message: 'Lorebook nicht gefunden.' });
+        }
+    } catch (error) {
+        logMessage(`* API Fehler in /api/lorebook/:code/use (POST): ${error.message}`, "error");
+        res.status(500).json({ success: false, message: 'Interner Serverfehler.' });
+    }
 });
 
 // API zum Abrufen aller öffentlichen Lorebooks
