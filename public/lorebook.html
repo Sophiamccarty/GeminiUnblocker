@@ -3,283 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sophia's Lorebook Library</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <title>Lorebook System - Google AI Proxy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #7B68EE;
-            --primary-light: #9B89F6;
-            --primary-dark: #5A46DA;
-            --secondary-color: #6C63FF;
-            --accent-color: #FF6B6B;
-            --success-color: #4CAF50;
-            --error-color: #F44336;
-            --warning-color: #FF9800;
-            --light-color: #F8F9FA;
-            --dark-color: #343A40;
-            --gray-100: #F8F9FA;
-            --gray-200: #E9ECEF;
-            --gray-300: #DEE2E6;
-            --gray-400: #CED4DA;
-            --gray-500: #ADB5BD;
-            --gray-600: #6C757D;
-            --gray-700: #495057;
-            --gray-800: #343A40;
-            --gray-900: #212529;
-            --border-radius: 12px;
-            --card-border-radius: 16px;
-            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-            --box-shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-            --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --primary-color: #5E81AC; /* Bläuliches Grau */
+            --primary-dark: #4C6A8D;
+            --secondary-color: #88C0D0; /* Helles Blaugrün */
+            --accent-color: #BF616A; /* Sanftes Rot */
+            --success-color: #A3BE8C; /* Sanftes Grün */
+            --error-color: #BF616A; /* Sanftes Rot (gleich wie Akzent für Konsistenz) */
+            --warning-color: #EBCB8B; /* Sanftes Gelb */
+            --light-color: #ECEFF4; /* Sehr helles Grau */
+            --medium-gray: #D8DEE9;
+            --dark-gray: #4C566A;
+            --text-color: #2E3440; /* Dunkles Grau für Text */
+            --background-color: #F8F9FA; /* Heller Hintergrund */
+            --border-radius: 6px;
+            --box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            --font-main: 'Roboto', sans-serif;
+            --font-headings: 'Montserrat', sans-serif;
+            --primary-color-rgb: 94, 129, 172; /* Entspricht #5E81AC */
+            --dark-gray-rgb: 76, 86, 106; /* Entspricht #4C566A */
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
-            color: var(--gray-800);
-            background-color: #f9f7ff;
+            font-family: var(--font-main);
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--background-color);
             margin: 0;
             padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1300px; /* Etwas breiter für modernes Layout */
             margin: 0 auto;
-            padding: 20px;
-            width: 100%;
+            padding: 25px;
         }
 
-        /* Header */
         .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background-color: var(--primary-color);
             color: white;
-            padding: 25px 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 10%, transparent 70%);
-            z-index: 1;
-            animation: pulse 15s infinite linear;
-        }
-
-        @keyframes pulse {
-            0% { transform: translate(0, 0) scale(1); opacity: 0.7; }
-            50% { transform: translate(5%, 5%) scale(1.05); opacity: 0.9; }
-            100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 35px; /* Etwas mehr Abstand */
+            padding: 15px 0; /* Angepasstes Padding */
         }
 
         .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
+            max-width: 1300px; /* Passend zum .container */
             margin: 0 auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 2;
+            padding: 0 25px; /* Passend zum .container */
         }
 
         .header h1 {
             margin: 0;
-            font-size: 28px;
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            text-shadow: var(--text-shadow);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .header h1 i {
-            font-size: 32px;
+            font-family: var(--font-headings);
+            font-size: 26px; /* Etwas größer */
+            font-weight: 600;
         }
 
         .header-nav {
             display: flex;
-            gap: 20px;
+            gap: 20px; /* Etwas mehr Abstand zwischen Links */
         }
 
         .header-nav a {
-            color: white;
+            color: var(--light-color); /* Hellere Farbe für besseren Kontrast auf dunklem Header */
             text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 30px;
+            padding: 8px 15px; /* Größeres Padding */
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
             font-weight: 500;
-            transition: var(--transition);
-            font-size: 16px;
-            position: relative;
-        }
-
-        .header-nav a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 3px;
-            background-color: white;
-            transition: var(--transition);
-            border-radius: 3px;
-        }
-
-        .header-nav a:hover::after, .header-nav a.active::after {
-            width: 70%;
         }
 
         .header-nav a:hover, .header-nav a.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: var(--primary-dark); /* Dunklerer Hintergrund beim Hover/Aktiv */
+            color: white; /* Weißer Text für aktiven Link */
         }
 
-        /* Main Content */
         .main-content {
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
-            padding: 40px;
-            margin-bottom: 40px;
-            transition: var(--transition);
-        }
-
-        .main-content:hover {
-            box-shadow: var(--box-shadow-hover);
+            padding: 35px; /* Etwas mehr Padding */
+            margin-bottom: 35px; /* Etwas mehr Abstand */
         }
 
         h2 {
-            color: var(--primary-color);
+            font-family: var(--font-headings);
+            color: var(--primary-dark); /* Dunklere Primärfarbe für bessere Lesbarkeit */
             margin-top: 0;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--gray-200);
-            padding-bottom: 15px;
-            font-size: 28px;
-            position: relative;
-            display: inline-block;
+            margin-bottom: 25px; /* Mehr Abstand nach der Überschrift */
+            border-bottom: 2px solid var(--medium-gray); /* Subtilere Trennlinie */
+            padding-bottom: 15px; /* Mehr Padding unter der Überschrift */
+            font-size: 22px; /* Angepasste Größe */
+            font-weight: 600;
         }
 
-        h2::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 60%;
-            height: 2px;
-            background-color: var(--primary-color);
-        }
-
-        /* Tabs */
         .tab-container {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .tabs {
             display: flex;
-            border-bottom: 1px solid var(--gray-300);
-            margin-bottom: 20px;
+            border-bottom: 2px solid var(--medium-gray); /* Etwas stärkere Linie */
         }
 
         .tab {
-            padding: 12px 24px;
+            padding: 12px 22px; /* Mehr Padding */
             cursor: pointer;
-            border: 1px solid transparent;
-            border-bottom: none;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            transition: var(--transition);
+            border: none; /* Keine Ränder standardmäßig */
+            border-bottom: 2px solid transparent; /* Platzhalter für aktiven Zustand */
+            margin-bottom: -2px; /* Überlappt die untere Border des Containers */
+            transition: all 0.2s ease-in-out;
             font-weight: 500;
-            position: relative;
-            z-index: 1;
+            color: var(--dark-gray);
         }
 
         .tab.active {
-            background-color: white;
-            border-color: var(--gray-300);
-            border-bottom-color: white;
-            margin-bottom: -1px;
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
             color: var(--primary-color);
-            box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: var(--primary-color);
         }
 
         .tab:hover:not(.active) {
-            background-color: var(--gray-100);
-            color: var(--primary-color);
+            background-color: var(--light-color); /* Heller Hintergrund beim Hover */
+            color: var(--primary-dark);
         }
 
         .tab-content {
             display: none;
-            padding: 25px;
-            border: 1px solid var(--gray-300);
+            padding: 25px; /* Mehr Padding */
+            border: 1px solid var(--medium-gray);
             border-top: none;
-            border-radius: 0 0 8px 8px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            border-radius: 0 0 var(--border-radius) var(--border-radius); /* Abrundung nur unten */
+            background-color: white; /* Sicherstellen, dass der Hintergrund weiß ist */
         }
 
         .tab-content.active {
             display: block;
         }
 
-        /* Forms */
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: var(--gray-700);
-            font-size: 16px;
+            margin-bottom: 10px; /* Mehr Abstand */
+            font-weight: 500; /* Etwas leichter */
+            color: var(--dark-gray); /* Dunkleres Grau für Label-Text */
+            font-size: 15px;
         }
 
         input[type="text"],
         input[type="search"],
         textarea {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--gray-300);
-            border-radius: 8px;
-            font-size: 16px;
-            transition: var(--transition);
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--gray-100);
+            padding: 12px 15px; /* Mehr Padding */
+            border: 1px solid var(--medium-gray); /* Subtilerer Rand */
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-sizing: border-box; /* Wichtig für konsistente Größen */
+            background-color: #fff; /* Sicherstellen, dass der Hintergrund weiß ist */
         }
 
         input[type="text"]:focus,
@@ -287,53 +181,49 @@
         textarea:focus {
             border-color: var(--primary-color);
             outline: none;
-            box-shadow: 0 0 0 4px rgba(123, 104, 238, 0.2);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 94, 129, 172), 0.25); /* RGB-Wert für primary-color muss hier ggf. angepasst werden */
         }
 
         textarea {
-            min-height: 150px;
-            font-family: 'Poppins', monospace;
-            resize: vertical;
+            min-height: 120px; /* Etwas weniger Höhe */
+            font-family: var(--font-main); /* Gleiche Schriftart wie Rest */
+            resize: vertical; /* Nur vertikales Resizing erlauben */
         }
 
-        /* Buttons */
         button, .button {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
+            padding: 10px 18px; /* Angepasstes Padding */
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
-            transition: var(--transition);
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-decoration: none; /* Für .button als Link */
         }
 
         button:hover, .button:hover {
             background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px); /* Leichter Hover-Effekt */
         }
-
+        
         button:active, .button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(0px); /* Klick-Effekt */
         }
 
         button i, .button i {
-            font-size: 18px;
+            margin-right: 8px;
+            font-size: 1.1em; /* Icons etwas größer */
         }
 
         .button-group {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+            gap: 12px; /* Etwas mehr Abstand */
+            margin-top: 25px; /* Etwas mehr Abstand */
         }
 
         .success-button {
@@ -341,7 +231,7 @@
         }
 
         .success-button:hover {
-            background-color: #3d8b40;
+            background-color: #8FB07B; /* Dunklere Variante von --success-color */
         }
 
         .error-button {
@@ -349,317 +239,245 @@
         }
 
         .error-button:hover {
-            background-color: #d32f2f;
+            background-color: #AC5259; /* Dunklere Variante von --error-color */
         }
 
         .secondary-button {
             background-color: var(--secondary-color);
+            color: var(--text-color); /* Besserer Kontrast für helles Blaugrün */
         }
 
         .secondary-button:hover {
-            background-color: #5753cc;
+            background-color: #79A8B5; /* Dunklere Variante von --secondary-color */
+            color: var(--text-color);
         }
 
         .outline-button {
             background-color: transparent;
             color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            font-weight: 500;
+            border: 1.5px solid var(--primary-color); /* Etwas dickerer Rand */
         }
 
         .outline-button:hover {
-            background-color: rgba(123, 104, 238, 0.1);
+            background-color: rgba(var(--primary-color-rgb), 0.1); /* Leichter Hintergrund beim Hover */
             color: var(--primary-dark);
             border-color: var(--primary-dark);
         }
 
-        /* Alerts */
         .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border-left: 5px solid;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .alert::before {
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            font-size: 20px;
+            padding: 18px 22px; /* Mehr Padding */
+            margin-bottom: 25px; /* Mehr Abstand */
+            border-radius: var(--border-radius);
+            border-width: 1px;
+            border-style: solid;
+            font-size: 15px;
         }
 
         .alert-success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
+            background-color: #EBF5E9; /* Helleres Grün */
+            color: #3A6839; /* Dunkleres Grün für Text */
             border-color: var(--success-color);
         }
 
-        .alert-success::before {
-            content: "\f00c";
-            color: var(--success-color);
-        }
-
         .alert-error {
-            background-color: #ffebee;
-            color: #c62828;
+            background-color: #FBEAEB; /* Helleres Rot */
+            color: #7D3C42; /* Dunkleres Rot für Text */
             border-color: var(--error-color);
         }
 
-        .alert-error::before {
-            content: "\f00d";
-            color: var(--error-color);
-        }
-
         .alert-warning {
-            background-color: #fff8e1;
-            color: #ef6c00;
+            background-color: #FEF8E7; /* Helleres Gelb */
+            color: #8A6D3B; /* Dunkleres Gelb für Text */
             border-color: var(--warning-color);
         }
 
-        .alert-warning::before {
-            content: "\f071";
-            color: var(--warning-color);
-        }
-
         .alert-info {
-            background-color: #e3f2fd;
-            color: #0277bd;
-            border-color: #2196F3;
+            background-color: #E8F3F6; /* Helleres Blau */
+            color: #3E6D7A; /* Dunkleres Blau für Text */
+            border-color: var(--secondary-color);
         }
 
-        .alert-info::before {
-            content: "\f05a";
-            color: #2196F3;
-        }
-
-        /* Cards */
         .card {
             background-color: white;
-            border-radius: var(--card-border-radius);
-            border: 1px solid var(--gray-200);
-            padding: 25px;
-            margin-bottom: 25px;
-            transition: var(--transition);
-            overflow: hidden;
-            position: relative;
-            box-shadow: var(--box-shadow);
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
-            transition: var(--transition);
-            opacity: 0.7;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--medium-gray); /* Subtilerer Rand */
+            padding: 25px; /* Mehr Padding */
+            margin-bottom: 25px; /* Mehr Abstand */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: var(--box-shadow); /* Standard-Schatten */
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--box-shadow-hover);
-        }
-
-        .card:hover::before {
-            width: 7px;
+            transform: translateY(-3px); /* Etwas stärkerer Hover-Effekt */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Angepasster Hover-Schatten */
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--gray-200);
-            padding-bottom: 15px;
+            align-items: flex-start; /* Bessere Ausrichtung für längere Titel */
+            margin-bottom: 18px; /* Mehr Abstand */
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--light-color);
         }
 
         .card-title {
-            font-size: 20px;
+            font-family: var(--font-headings);
+            font-size: 20px; /* Größerer Titel */
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--primary-dark); /* Dunklere Primärfarbe */
             margin: 0;
         }
 
         .card-body {
-            color: var(--gray-700);
+            color: var(--text-color); /* Konsistente Textfarbe */
+            font-size: 15px;
         }
 
         .card-description {
-            margin-bottom: 20px;
-            font-size: 15px;
+            margin-bottom: 18px; /* Mehr Abstand */
+            font-size: 15px; /* Etwas größer */
             line-height: 1.6;
-        }
-
-        .card-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 15px 0;
-        }
-
-        .tag {
-            background-color: #f0ebff;
-            color: var(--primary-color);
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .tag:hover {
-            background-color: var(--primary-light);
-            color: white;
-            transform: translateY(-2px);
         }
 
         .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
+            margin-top: 20px; /* Mehr Abstand */
             padding-top: 15px;
-            border-top: 1px solid var(--gray-200);
+            border-top: 1px solid var(--light-color);
+            font-size: 14px;
+            color: var(--dark-gray); /* Dunkleres Grau */
+        }
+
+        .card-tags {
+            display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px; /* Mehr Abstand zwischen Tags */
+            margin: 15px 0; /* Mehr vertikaler Abstand */
+        }
+
+        .tag {
+            background-color: var(--light-color); /* Heller Hintergrund */
+            color: var(--primary-dark); /* Dunklere Primärfarbe für Text */
+            padding: 5px 10px; /* Mehr Padding */
+            border-radius: var(--border-radius);
+            font-size: 13px; /* Etwas größer */
+            font-weight: 500;
         }
 
         .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 12px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .badge i {
+            display: inline-block;
+            padding: 4px 10px; /* Mehr Padding */
+            border-radius: var(--border-radius); /* Konsistente Rundung */
             font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase; /* Für besseren Badge-Look */
+            letter-spacing: 0.5px;
         }
 
         .badge-primary {
-            background-color: #f0ebff;
-            color: var(--primary-color);
+            background-color: var(--primary-color); /* Primärfarbe als Hintergrund */
+            color: white; /* Weißer Text */
         }
 
         .badge-warning {
-            background-color: #fff8e1;
-            color: var(--warning-color);
+            background-color: var(--warning-color);
+            color: var(--text-color); /* Dunkler Text auf hellem Gelb */
         }
 
         .badge-success {
-            background-color: #e8f5e9;
-            color: var(--success-color);
+            background-color: var(--success-color);
+            color: white;
         }
 
-        /* Search */
         .search-container {
-            margin-bottom: 30px;
-            position: relative;
+            margin-bottom: 35px; /* Mehr Abstand */
+            background-color: #fff;
+            padding: 25px; /* Mehr Padding */
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
 
         .search-form {
             display: flex;
-            gap: 15px;
+            gap: 12px; /* Mehr Abstand */
         }
 
         .search-form input[type="search"] {
             flex-grow: 1;
-            border-radius: 30px;
-            padding-left: 45px;
-            background-color: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            /* Stile werden von globalen input-Styles geerbt */
+        }
+        .search-form button.search-button { /* Spezifischer Selektor */
+             padding: 10px 18px; /* Konsistent mit anderen Buttons */
         }
 
-        .search-form::before {
-            content: "\f002";
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-500);
-            z-index: 1;
-        }
 
         .filter-container {
             display: flex;
+            flex-wrap: wrap; /* Umbruch bei vielen Filtern */
             gap: 10px;
-            margin: 15px 0 25px;
-            flex-wrap: wrap;
+            margin: 20px 0 0; /* Nur oberer Margin */
         }
 
         .filter-button {
-            padding: 6px 15px;
-            border-radius: 30px;
-            font-size: 14px;
-            background-color: var(--gray-200);
-            color: var(--gray-700);
-            border: none;
+            padding: 8px 15px; /* Mehr Padding */
+            border-radius: var(--border-radius); /* Konsistente Rundung */
+            font-size: 13px;
+            background-color: var(--light-color);
+            color: var(--dark-gray);
+            border: 1px solid transparent; /* Platzhalter für aktiven Rand */
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s ease-in-out;
             font-weight: 500;
         }
 
         .filter-button.active {
             background-color: var(--primary-color);
             color: white;
-            box-shadow: 0 3px 8px rgba(123, 104, 238, 0.3);
-        }
-
-        .filter-button:hover:not(.active) {
-            background-color: var(--gray-300);
-            transform: translateY(-2px);
-        }
-
-        /* Grid layout */
-        .lorebook-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
-        }
-
-        /* Code display */
-        .code-display {
-            font-family: 'Courier New', monospace;
-            background-color: #f8f9fa;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-size: 15px;
-            color: var(--primary-color);
-            display: inline-block;
-            border: 1px solid #e0e0e0;
+            border-color: var(--primary-dark);
             font-weight: 600;
         }
 
-        /* Pagination */
+        .filter-button:hover:not(.active) {
+            background-color: var(--medium-gray);
+            color: var(--text-color);
+        }
+
+        .lorebook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .code-display {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Bessere Monospace-Schriftarten */
+            background-color: var(--light-color);
+            padding: 6px 10px; /* Angepasstes Padding */
+            border-radius: var(--border-radius);
+            font-size: 13px; /* Etwas kleiner */
+            color: var(--accent-color); /* Akzentfarbe für Code */
+            display: inline-block;
+            border: 1px solid var(--medium-gray);
+        }
+
         .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 40px;
-            gap: 5px;
+            margin-top: 35px; /* Mehr Abstand */
+            gap: 5px; /* Abstand zwischen Buttons */
         }
 
         .pagination-button {
-            padding: 8px 15px;
-            border: 1px solid var(--gray-300);
+            padding: 8px 14px; /* Mehr Padding */
+            border: 1px solid var(--medium-gray);
             color: var(--primary-color);
             background-color: white;
             cursor: pointer;
-            transition: var(--transition);
-            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            border-radius: var(--border-radius); /* Individuelle Rundung für jeden Button */
             font-weight: 500;
-        }
-
-        .pagination-button:hover:not(.active) {
-            background-color: var(--gray-100);
-            transform: translateY(-2px);
         }
 
         .pagination-button.active {
@@ -668,23 +486,28 @@
             border-color: var(--primary-color);
         }
 
-        /* Toggle switch */
+        .pagination-button:hover:not(.active) {
+            background-color: var(--light-color);
+            border-color: var(--primary-color);
+        }
+
         .toggle-container {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 22px; /* Mehr Abstand */
         }
 
         .toggle-label {
-            margin-right: 10px;
-            font-weight: 500;
+            margin-right: 12px; /* Mehr Abstand */
+            font-size: 15px;
+            color: var(--dark-gray);
         }
 
         .toggle-switch {
             position: relative;
             display: inline-block;
-            width: 52px;
-            height: 26px;
+            width: 48px; /* Etwas kleiner */
+            height: 26px; /* Etwas höher für besseres Klicken */
         }
 
         .toggle-switch input {
@@ -700,126 +523,143 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: var(--gray-300);
-            transition: .3s;
-            border-radius: 26px;
+            background-color: var(--medium-gray); /* Helleres Grau für inaktiven Zustand */
+            transition: .3s ease-in-out;
+            border-radius: 26px; /* Vollständig abgerundet */
         }
 
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
+            height: 20px; /* Größerer Kreis */
+            width: 20px;  /* Größerer Kreis */
+            left: 3px;   /* Angepasste Position */
+            bottom: 3px; /* Angepasste Position */
             background-color: white;
-            transition: .3s;
+            transition: .3s ease-in-out;
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         input:checked + .toggle-slider {
-            background-color: var(--primary-color);
+            background-color: var(--success-color); /* Erfolgsfarbe für aktivierten Toggle */
         }
 
         input:checked + .toggle-slider:before {
-            transform: translateX(26px);
+            transform: translateX(22px); /* Angepasste Translation */
         }
 
-        /* Help text */
-        .help-text {
+        .input-with-button {
+            display: flex;
+        }
+
+        .input-with-button input {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none; /* Verhindert doppelte Ränder */
+        }
+
+        .input-with-button button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .json-preview {
+            background-color: var(--light-color); /* Hellerer Hintergrund */
+            border-radius: var(--border-radius);
+            padding: 15px; /* Mehr Padding */
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 13px; /* Etwas größer */
+            color: var(--text-color);
+            overflow: auto;
+            max-height: 350px; /* Etwas mehr Höhe */
+            border: 1px solid var(--medium-gray);
+            line-height: 1.5;
+        }
+
+        .info-box {
+            background-color: var(--light-color); /* Hellerer Hintergrund */
+            border-left: 5px solid var(--secondary-color); /* Akzentfarbe für Rand */
+            padding: 20px; /* Mehr Padding */
+            margin: 25px 0; /* Mehr Abstand */
+            border-radius: var(--border-radius); /* Einheitliche Rundung */
+        }
+
+        .info-box h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--primary-dark); /* Dunklere Primärfarbe */
+            font-family: var(--font-headings);
+            font-size: 18px;
+        }
+        .info-box p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .key-container {
+            margin-bottom: 20px; /* Mehr Abstand */
+        }
+
+        .key-input-group {
+            display: flex;
+            gap: 8px; /* Weniger Abstand für kompaktere Gruppe */
+            margin-bottom: 8px;
+        }
+
+        .key-input { /* Erbt von globalen input-Styles */
+            flex-grow: 1;
+        }
+
+        .add-key-button { /* Erbt von globalen Button-Styles */
+            padding: 8px 12px; /* Kleinerer Button */
             font-size: 14px;
-            color: var(--gray-600);
-            margin-top: 8px;
-            font-style: italic;
         }
 
-        /* Creator styles */
-        .lorebook-creator {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .panel-container {
-            display: flex;
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-
-        .panel-left {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .panel-right {
-            flex: 2;
-            min-width: 400px;
-        }
-
-        .creator-card {
-            background-color: white;
-            border-radius: var(--card-border-radius);
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
-            border: 1px solid var(--gray-200);
-        }
-
-        .creator-card:hover {
-            box-shadow: var(--box-shadow-hover);
-        }
-
-        .section-header {
-            display: flex;
+        .key-tag {
+            display: inline-flex;
             align-items: center;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--gray-200);
-            padding-bottom: 10px;
+            background-color: var(--secondary-color); /* Sekundärfarbe für Tags */
+            color: var(--text-color); /* Dunkler Text für Kontrast */
+            padding: 6px 12px; /* Angepasstes Padding */
+            border-radius: 15px; /* Stärkere Rundung für Tag-Look */
+            font-size: 13px;
+            margin: 0 6px 6px 0; /* Angepasster Margin */
+            font-weight: 500;
         }
 
-        .section-header i {
-            font-size: 20px;
-            margin-right: 10px;
+        .key-tag .remove-key {
+            margin-left: 8px; /* Mehr Abstand zum Text */
+            cursor: pointer;
+            color: var(--dark-gray);
+            font-weight: bold;
+            transition: color 0.2s ease-in-out;
         }
 
-        .section-header h3 {
-            font-size: 20px;
-            font-weight: 600;
-            margin: 0;
-            color: var(--primary-color);
+        .key-tag .remove-key:hover {
+            color: var(--error-color);
         }
 
-        /* Entry list */
+        .help-text {
+            font-size: 13px; /* Etwas kleiner */
+            color: var(--dark-gray); /* Dunkleres Grau */
+            margin-top: 8px; /* Mehr Abstand */
+            display: block; /* Sicherstellen, dass es Platz einnimmt */
+        }
+
         .entry-list {
-            border: 1px solid var(--gray-300);
-            border-radius: 8px;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
             overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px; /* Mehr Abstand */
             background-color: white;
-            max-height: 400px;
-            overflow-y: auto;
         }
 
         .entry-item {
-            padding: 15px;
-            border-bottom: 1px solid var(--gray-200);
+            padding: 12px 18px; /* Mehr Padding */
+            border-bottom: 1px solid var(--light-color); /* Hellere Trennlinie */
             cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .entry-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 0;
-            background-color: var(--primary-color);
-            transition: var(--transition);
+            transition: background-color 0.2s ease-in-out;
         }
 
         .entry-item:last-child {
@@ -827,68 +667,69 @@
         }
 
         .entry-item:hover {
-            background-color: var(--gray-100);
-        }
-
-        .entry-item:hover::before {
-            width: 4px;
+            background-color: var(--light-color); /* Heller Hintergrund beim Hover */
         }
 
         .entry-item.active {
-            background-color: #f0ebff;
-            border-left: 4px solid var(--primary-color);
+            background-color: rgba(var(--primary-color-rgb), 0.15); /* Leichter Primärfarben-Hintergrund */
+            border-left: 4px solid var(--primary-color); /* Stärkerer linker Rand */
+            padding-left: 14px; /* Ausgleich für den Rand */
         }
 
         .entry-item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 5px;
         }
 
         .entry-item-title {
             font-weight: 600;
-            color: var(--gray-800);
+            color: var(--primary-dark);
+            font-size: 15px;
         }
 
         .entry-item-content {
-            font-size: 13px;
-            color: var(--gray-600);
-            margin-top: 5px;
+            font-size: 13px; /* Etwas kleiner */
+            color: var(--dark-gray);
+            margin-top: 3px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 90%; /* Verhindert Überlappung mit Badges */
         }
 
-        /* Empty state */
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
-            color: var(--gray-600);
-            background-color: var(--gray-100);
-            border-radius: 8px;
+            padding: 50px 25px; /* Mehr Padding */
+            color: var(--dark-gray); /* Dunkleres Grau */
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
         }
 
         .empty-state i {
-            font-size: 48px;
-            color: var(--gray-400);
-            margin-bottom: 15px;
+            font-size: 52px; /* Größeres Icon */
+            color: var(--medium-gray); /* Subtilere Farbe */
+            margin-bottom: 20px; /* Mehr Abstand */
             display: block;
         }
+        .empty-state p {
+            font-size: 16px;
+        }
 
-        /* Loading spinner */
         .loading {
             text-align: center;
-            padding: 30px;
+            padding: 25px; /* Mehr Padding */
         }
 
         .spinner {
-            border: 4px solid rgba(123, 104, 238, 0.1);
+            border: 5px solid rgba(var(--dark-gray-rgb, 76, 86, 106), 0.15); /* RGB für dark-gray anpassen */
             border-radius: 50%;
-            border-top: 4px solid var(--primary-color);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            border-top: 5px solid var(--primary-color);
+            width: 36px; /* Größerer Spinner */
+            height: 36px; /* Größerer Spinner */
+            animation: spin 0.8s linear infinite; /* Schnellere Animation */
+            margin: 0 auto 18px; /* Mehr Abstand */
         }
 
         @keyframes spin {
@@ -896,216 +737,195 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Footer */
+        /* Footer styling */
         .footer {
-            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
-            color: white;
-            padding: 30px 0;
-            margin-top: auto;
+            background-color: var(--dark-gray); /* Dunkleres Grau für Footer */
+            color: var(--light-color); /* Heller Text */
+            padding: 25px 0; /* Mehr Padding */
+            margin-top: 50px; /* Mehr Abstand */
+            font-size: 14px;
         }
 
         .footer-container {
-            max-width: 1200px;
+            max-width: 1300px; /* Passend zum .container */
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 25px; /* Passend zum .container */
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap; /* Umbruch bei Bedarf */
+            gap: 15px;
         }
 
         .footer-links {
             display: flex;
-            gap: 20px;
+            gap: 20px; /* Mehr Abstand */
         }
 
         .footer-links a {
-            color: white;
+            color: var(--light-color);
             text-decoration: none;
-            transition: var(--transition);
-            opacity: 0.8;
+            transition: color 0.2s ease-in-out;
         }
 
         .footer-links a:hover {
-            opacity: 1;
-            transform: translateY(-2px);
+            color: var(--secondary-color); /* Akzentfarbe beim Hover */
+            text-decoration: underline;
         }
 
-        /* Keyword tags */
-        .key-container {
-            margin-bottom: 15px;
+        /* Creator-specific styles */
+        .lorebook-creator {
+            max-width: 1100px; /* Etwas breiter */
+            margin: 0 auto;
         }
 
-        .key-input-group {
+        .panel-container {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 25px; /* Mehr Abstand */
+            margin-bottom: 20px; /* Mehr Abstand */
         }
 
-        .key-input {
-            flex-grow: 1;
+        .panel-left {
+            flex: 1;
+            min-width: 300px; /* Etwas breiter */
         }
 
-        .add-key-button {
-            padding: 8px 12px;
-            font-size: 14px;
-            border-radius: 6px;
+        .panel-right {
+            flex: 2.5; /* Mehr Platz für den Editor */
+            min-width: 450px; /* Etwas breiter */
+        }
+
+        .creator-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px; /* Mehr Padding */
+            margin-bottom: 20px; /* Mehr Abstand */
+            box-shadow: var(--box-shadow);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* Mehr Abstand */
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-color);
+        }
+
+        .section-header i {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+
+        .section-header h3 {
+            font-family: var(--font-headings);
+            font-size: 19px; /* Etwas größer */
+            font-weight: 600;
+            margin: 0;
+            padding: 0;
+            margin-left: 12px; /* Mehr Abstand zum Icon */
+            color: var(--primary-dark);
+        }
+
+        /* .entry-card wird durch .entry-item ersetzt und dessen Stile werden verwendet.
+           Falls .entry-card noch separat benötigt wird, hier anpassen.
+           Ich gehe davon aus, dass .entry-item die Funktionalität übernimmt. */
+        /* .entry-card { ... } */
+        /* .entry-card.selected { ... } */
+
+
+        .creator-textarea { /* Erbt von globalen textarea-Styles */
+            width: 100%;
+            min-height: 150px; /* Mehr Höhe für Creator */
+            margin-bottom: 18px; /* Mehr Abstand */
         }
 
         #keywordTags, #secondaryKeywordTags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
+            gap: 8px; /* Mehr Abstand */
+            margin-bottom: 15px; /* Mehr Abstand */
         }
 
-        .key-tag {
-            display: inline-flex;
-            align-items: center;
-            background-color: #f0ebff;
-            color: var(--primary-color);
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 13px;
-            margin: 0 5px 5px 0;
-            font-weight: 500;
-            transition: var(--transition);
+        /* Responsive adjustments */
+        @media (max-width: 992px) { /* Breiterer Breakpoint für Panel-Umbruch */
+            .panel-container {
+                flex-direction: column;
+            }
+            
+            .panel-left, .panel-right {
+                width: 100%;
+                min-width: unset; /* Min-width aufheben für kleinere Bildschirme */
+            }
+        }
+        @media (max-width: 768px) {
+            .lorebook-grid {
+                grid-template-columns: 1fr; /* Einspaltig auf kleineren Geräten */
+            }
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+                padding: 10px 20px; /* Weniger Padding im Header auf Mobile */
+            }
+            .header h1 {
+                font-size: 20px; /* Kleinere Schrift im Header */
+            }
+            .header-nav {
+                gap: 8px; /* Weniger Abstand in Navi */
+                justify-content: center;
+                width: 100%;
+                flex-wrap: wrap; /* Umbruch für Nav-Links */
+            }
+            .header-nav a {
+                padding: 7px 9px; /* Kleineres Padding für Nav-Links */
+                font-size: 13px; /* Kleinere Schrift für Nav-Links */
+            }
+            .footer-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            .container {
+                padding: 15px; /* Weniger Padding im Hauptcontainer */
+            }
+            .main-content, .creator-card, .search-container {
+                padding: 20px; /* Weniger Padding in Content-Blöcken */
+            }
+            h2 {
+                font-size: 20px;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .card-title {
+                font-size: 18px;
+            }
+            .button, button {
+                padding: 9px 15px;
+                font-size: 14px;
+            }
+            .modal {
+                max-width: calc(100% - 30px); /* Modal fast volle Breite mit kleinem Rand */
+                max-height: calc(100vh - 30px);
+            }
+            .modal-header, .modal-body, .modal-footer {
+                padding: 15px 20px;
+            }
+            .modal-title {
+                font-size: 18px;
+            }
         }
 
-        .key-tag:hover {
-            background-color: var(--primary-light);
-            color: white;
-            transform: translateY(-2px);
-        }
 
-        .key-tag .remove-key {
-            margin-left: 8px;
-            cursor: pointer;
-            color: var(--gray-600);
-            font-weight: bold;
-            width: 18px;
-            height: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
-        }
-
-        .key-tag .remove-key:hover {
-            color: var(--error-color);
-            background-color: white;
-        }
-
-        /* JSON preview */
-        .json-preview {
-            background-color: #272822;
-            color: #f8f8f2;
-            border-radius: 8px;
-            padding: 15px;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
-            overflow: auto;
-            max-height: 300px;
-            line-height: 1.5;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Modal */
-        .modal-background {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal {
-            background-color: white;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 550px;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal-header {
-            padding: 20px 25px;
-            border-bottom: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            background-color: white;
-            border-radius: 16px 16px 0 0;
-            z-index: 5;
-        }
-
-        .modal-title {
-            margin: 0;
-            font-size: 22px;
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--gray-600);
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: var(--transition);
-            box-shadow: none;
-        }
-
-        .modal-close:hover {
-            background-color: var(--gray-100);
-            color: var(--error-color);
-            transform: none;
-        }
-
-        .modal-body {
-            padding: 25px;
-        }
-
-        .modal-footer {
-            padding: 20px 25px;
-            border-top: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            background-color: var(--gray-50);
-            border-radius: 0 0 16px 16px;
-        }
-
-        /* File Input */
+        /* Upload/file input styling */
         .file-input-container {
             position: relative;
             display: inline-block;
+            /* Der Button darunter wird gestylt */
         }
 
-        .file-input {
+        .file-input { /* Das eigentliche Input-Feld ist unsichtbar */
             position: absolute;
             left: 0;
             top: 0;
@@ -1115,159 +935,95 @@
             cursor: pointer;
         }
 
-        /* Info box */
-        .info-box {
-            background-color: #f0ebff;
-            border-left: 5px solid var(--primary-color);
-            padding: 20px;
-            margin: 25px 0;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .info-box h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-box h3::before {
-            content: "\f05a";
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            font-size: 20px;
-        }
-
-        /* Command display for lorebooks */
-        .command-display {
-            font-family: 'Courier New', monospace;
-            background-color: #272822;
-            color: #f8f8f2;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 16px;
-            display: inline-block;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-            font-weight: 600;
-        }
-
-        .command-display::before {
-            content: '';
-            position: absolute;
+        /* Modal styles */
+        .modal-background {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, rgba(123, 104, 238, 0.1), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        /* Download button for lorebooks */
-        .download-button {
-            background-color: #6c63ff;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: var(--transition);
-            display: inline-flex;
+            background-color: rgba(var(--dark-gray-rgb), 0.75); /* Dunklerer Hintergrund mit RGB Variable */
+            z-index: 1050; /* Höherer z-index für Modals */
+            justify-content: center;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 3px 5px rgba(108, 99, 255, 0.2);
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto; /* Scrollen für den Hintergrund, falls Modal zu groß */
         }
 
-        .download-button:hover {
-            background-color: #5a46da;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(108, 99, 255, 0.3);
+        .modal {
+            background-color: white;
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 600px; /* Etwas breiter für mehr Inhalt */
+            max-height: calc(100vh - 40px); /* Höhe begrenzt durch Viewport mit Padding */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Angepasster Schatten */
+            display: flex;
+            flex-direction: column;
+            margin: auto; /* Zentriert das Modal, wenn der Hintergrund scrollt */
         }
 
-        /* Responsive styles */
-        @media (max-width: 992px) {
-            .panel-container {
-                flex-direction: column;
-            }
-            
-            .panel-left, .panel-right {
-                width: 100%;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .card-footer {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .lorebook-grid {
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            }
+        .modal-header {
+            padding: 20px 25px; /* Konsistentes Padding */
+            border-bottom: 1px solid var(--medium-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0; /* Verhindert Schrumpfen des Headers */
         }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 25px 20px;
-            }
-            
-            .header-container {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .header-nav {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .lorebook-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .search-form {
-                flex-direction: column;
-            }
-            
-            .footer-container {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            
-            .footer-links {
-                justify-content: center;
-            }
+
+        .modal-title {
+            margin: 0;
+            font-family: var(--font-headings);
+            font-size: 20px;
+            color: var(--primary-dark);
+            font-weight: 600;
         }
-        
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            h2 {
-                font-size: 24px;
-            }
-            
-            .filter-container {
-                justify-content: center;
-            }
-            
-            .modal {
-                width: 95%;
-            }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px; /* Größer für bessere Klickbarkeit */
+            cursor: pointer;
+            color: var(--dark-gray);
+            transition: color 0.2s ease-in-out, transform 0.2s ease;
+            padding: 0; /* Kein extra Padding, da Größe über font-size */
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: var(--accent-color);
+            transform: rotate(90deg); /* Leichte Drehung beim Hover */
+        }
+
+        .modal-body {
+            padding: 25px;
+            flex-grow: 1;
+            overflow-y: auto; /* Scrollen innerhalb des Modal-Bodys */
+            font-size: 15px;
+            line-height: 1.65; /* Etwas mehr Zeilenhöhe */
+        }
+         .modal-body p {
+            margin-top: 0;
+            margin-bottom: 18px; /* Mehr Abstand */
+        }
+        .modal-body .help-text {
+            font-size: 13px;
+            margin-top: -12px;
+            margin-bottom: 18px;
+        }
+
+
+        .modal-footer {
+            padding: 20px 25px; /* Konsistentes Padding */
+            border-top: 1px solid var(--medium-gray);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background-color: var(--background-color); /* Passend zum Body-Hintergrund */
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            flex-shrink: 0; /* Verhindert Schrumpfen des Footers */
         }
     </style>
 </head>
@@ -1275,7 +1031,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-container">
-            <h1><i class="fas fa-book-open"></i> Sophia's Lorebook Library</h1>
+            <h1>📚 Lorebook System - Google AI Proxy</h1>
             <nav class="header-nav">
                 <a href="#" class="active" id="nav-home">Home</a>
                 <a href="#" id="nav-creator">Creator</a>
@@ -1293,7 +1049,7 @@
             <div class="search-container">
                 <div class="search-form">
                     <input type="search" id="lorebook-search" placeholder="Search by name, keywords, or description...">
-                    <button class="search-button" id="search-button"><i class="fas fa-search"></i> Search</button>
+                    <button class="search-button" id="search-button"><i class="fa fa-search"></i> Search</button>
                 </div>
                 
                 <div class="filter-container">
@@ -1311,7 +1067,7 @@
                 <div class="card" data-category="fantasy popular">
                     <div class="card-header">
                         <h3 class="card-title">Middle Earth Handbook</h3>
-                        <span class="badge badge-primary"><i class="fas fa-dragon"></i> Fantasy</span>
+                        <span class="badge badge-primary">Fantasy</span>
                     </div>
                     <div class="card-body">
                         <p class="card-description">Comprehensive guide to Tolkien's world including places, characters, and events.</p>
@@ -1322,22 +1078,15 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="command-display">&lt;Lore:TLK421&gt;</div>
-                        <div>
-                            <button class="download-button download-lorebook-button" data-code="TLK421">
-                                <i class="fas fa-download"></i> Download JSON
-                            </button>
-                            <button class="outline-button use-lorebook-button" data-code="TLK421">
-                                <i class="fas fa-book"></i> Use This Lorebook
-                            </button>
-                        </div>
+                        <div class="code-display"><code>LORE:TLK421</code></div>
+                        <button class="outline-button use-lorebook-button" data-code="TLK421">Use This Lorebook</button>
                     </div>
                 </div>
                 
                 <div class="card" data-category="sci-fi new">
                     <div class="card-header">
                         <h3 class="card-title">Galactic Federation Database</h3>
-                        <span class="badge badge-primary"><i class="fas fa-rocket"></i> Sci-Fi</span>
+                        <span class="badge badge-primary">Sci-Fi</span>
                     </div>
                     <div class="card-body">
                         <p class="card-description">Details on alien species, space stations, and interstellar politics.</p>
@@ -1348,22 +1097,15 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="command-display">&lt;Lore:SPC789&gt;</div>
-                        <div>
-                            <button class="download-button download-lorebook-button" data-code="SPC789">
-                                <i class="fas fa-download"></i> Download JSON
-                            </button>
-                            <button class="outline-button use-lorebook-button" data-code="SPC789">
-                                <i class="fas fa-book"></i> Use This Lorebook
-                            </button>
-                        </div>
+                        <div class="code-display"><code>LORE:SPC789</code></div>
+                        <button class="outline-button use-lorebook-button" data-code="SPC789">Use This Lorebook</button>
                     </div>
                 </div>
                 
                 <div class="card" data-category="historical popular">
                     <div class="card-header">
                         <h3 class="card-title">Victorian Era Encyclopedia</h3>
-                        <span class="badge badge-primary"><i class="fas fa-landmark"></i> Historical</span>
+                        <span class="badge badge-primary">Historical</span>
                     </div>
                     <div class="card-body">
                         <p class="card-description">Cultural, social, and historical context of Victorian England.</p>
@@ -1374,15 +1116,8 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <div class="command-display">&lt;Lore:VCT123&gt;</div>
-                        <div>
-                            <button class="download-button download-lorebook-button" data-code="VCT123">
-                                <i class="fas fa-download"></i> Download JSON
-                            </button>
-                            <button class="outline-button use-lorebook-button" data-code="VCT123">
-                                <i class="fas fa-book"></i> Use This Lorebook
-                            </button>
-                        </div>
+                        <div class="code-display"><code>LORE:VCT123</code></div>
+                        <button class="outline-button use-lorebook-button" data-code="VCT123">Use This Lorebook</button>
                     </div>
                 </div>
             </div>
@@ -1403,7 +1138,7 @@
                 <!-- Creator Metadata -->
                 <div class="creator-card">
                     <div class="section-header">
-                        <i class="fas fa-book"></i>
+                        <i class="fa fa-book"></i>
                         <h3>Lorebook Information</h3>
                     </div>
                     
@@ -1417,6 +1152,16 @@
                         <label for="lorebook-description">Description:</label>
                         <textarea id="lorebook-description" placeholder="Describe your lorebook"></textarea>
                         <div class="help-text">What is your lorebook about? This helps others discover it.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lorebook-tags-input">Tags (Optional):</label>
+                        <div class="key-input-group">
+                            <input type="text" id="lorebook-tags-input" class="key-input" placeholder="Add tag and press Enter">
+                            <button id="add-lorebook-tag-button" class="add-key-button">Add</button>
+                        </div>
+                        <div id="lorebookTagsContainer" class="card-tags" style="margin-top: 10px;"></div>
+                        <div class="help-text">Keywords that categorize your lorebook (e.g., Fantasy, Sci-Fi, Character).</div>
                     </div>
                     
                     <div class="toggle-container">
@@ -1435,35 +1180,35 @@
                     <div class="panel-left">
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fas fa-list"></i>
+                                <i class="fa fa-list"></i>
                                 <h3>Entries</h3>
                             </div>
                             
                             <div id="entry-list" class="entry-list">
                                 <!-- Entries will be added here -->
                                 <div class="empty-state">
-                                    <i class="fas fa-file-alt"></i>
+                                    <i class="fa fa-file-text-o"></i>
                                     <p>No entries yet. Create your first entry!</p>
                                 </div>
                             </div>
                             
-                            <button id="new-entry-button" class="success-button"><i class="fas fa-plus"></i> New Entry</button>
+                            <button id="new-entry-button" class="success-button"><i class="fa fa-plus"></i> New Entry</button>
                         </div>
                         
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fas fa-cogs"></i>
+                                <i class="fa fa-cogs"></i>
                                 <h3>Lorebook Actions</h3>
                             </div>
                             
                             <div class="button-group">
                                 <button id="save-lorebook-button" class="success-button">
-                                    <i class="fas fa-download"></i> Download JSON
+                                    <i class="fa fa-download"></i> Download JSON
                                 </button>
                                 
                                 <div class="file-input-container">
                                     <button class="secondary-button">
-                                        <i class="fas fa-upload"></i> Load JSON
+                                        <i class="fa fa-upload"></i> Load JSON
                                     </button>
                                     <input type="file" id="load-lorebook-file" class="file-input" accept=".json">
                                 </div>
@@ -1471,7 +1216,7 @@
                             
                             <div class="button-group">
                                 <button id="upload-to-proxy-button" class="primary-button">
-                                    <i class="fas fa-cloud-upload-alt"></i> Upload to Library
+                                    <i class="fa fa-cloud-upload"></i> Upload to Proxy
                                 </button>
                             </div>
                         </div>
@@ -1481,7 +1226,7 @@
                     <div class="panel-right">
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fas fa-edit"></i>
+                                <i class="fa fa-edit"></i>
                                 <h3>Entry Editor</h3>
                             </div>
                             
@@ -1496,7 +1241,7 @@
                                     <label for="keyword-input">Primary Keywords:</label>
                                     <div class="key-input-group">
                                         <input type="text" id="keyword-input" class="key-input" placeholder="Add keyword and press Enter">
-                                        <button id="add-keyword-button" class="add-key-button"><i class="fas fa-plus"></i> Add</button>
+                                        <button id="add-keyword-button" class="add-key-button">Add</button>
                                     </div>
                                     <div id="keywordTags"></div>
                                     <div class="help-text">Keywords that will trigger this entry</div>
@@ -1506,7 +1251,7 @@
                                     <label for="secondary-keyword-input">Secondary Keywords (Optional):</label>
                                     <div class="key-input-group">
                                         <input type="text" id="secondary-keyword-input" class="key-input" placeholder="Add secondary keyword">
-                                        <button id="add-secondary-keyword-button" class="add-key-button"><i class="fas fa-plus"></i> Add</button>
+                                        <button id="add-secondary-keyword-button" class="add-key-button">Add</button>
                                     </div>
                                     <div id="secondaryKeywordTags"></div>
                                     <div class="help-text">Additional keywords with lower priority</div>
@@ -1544,10 +1289,10 @@
                                 
                                 <div class="button-group">
                                     <button id="save-entry-button" class="success-button">
-                                        <i class="fas fa-save"></i> Save Entry
+                                        <i class="fa fa-save"></i> Save Entry
                                     </button>
                                     <button id="delete-entry-button" class="error-button">
-                                        <i class="fas fa-trash-alt"></i> Delete Entry
+                                        <i class="fa fa-trash"></i> Delete Entry
                                     </button>
                                 </div>
                             </div>
@@ -1555,11 +1300,11 @@
                         
                         <div class="creator-card">
                             <div class="section-header">
-                                <i class="fas fa-code"></i>
+                                <i class="fa fa-eye"></i>
                                 <h3>JSON Preview</h3>
                             </div>
                             <div id="json-preview" class="json-preview">
-{
+                                {
   "entries": {},
   "meta": {
     "name": "My Lorebook",
@@ -1588,14 +1333,14 @@
                 <li><strong>Set basic information</strong> - Give your lorebook a name and description.</li>
                 <li><strong>Add entries</strong> - Each entry contains keywords that trigger it and content that gets injected.</li>
                 <li><strong>Configure settings</strong> - Set priorities, decide if entries should always be active, etc.</li>
-                <li><strong>Save your lorebook</strong> - Download it as a JSON file or upload it directly to the library.</li>
+                <li><strong>Save your lorebook</strong> - Download it as a JSON file or upload it directly to the proxy.</li>
             </ol>
             
             <h3>Using a Lorebook</h3>
             <ol>
-                <li><strong>Upload your lorebook</strong> - Use the "Upload to Library" button in the Creator, or browse for public lorebooks.</li>
-                <li><strong>Get your lorebook command</strong> - After uploading, you'll receive a unique command (e.g., <code>&lt;Lore:ABC123&gt;</code>).</li>
-                <li><strong>Use in conversations</strong> - Include the command in your prompt or summary section when chatting with JanitorAI.</li>
+                <li><strong>Upload your lorebook</strong> - Use the "Upload to Proxy" button in the Creator, or browser for public lorebooks.</li>
+                <li><strong>Get your lorebook code</strong> - After uploading, you'll receive a unique code (e.g., <code>LORE:ABC123</code>).</li>
+                <li><strong>Use in conversations</strong> - Include the code anywhere in your message to the AI.</li>
                 <li><strong>Activate entries</strong> - Use keywords from your lorebook in your messages to trigger the corresponding entries.</li>
             </ol>
             
@@ -1612,29 +1357,65 @@
             <p>You can choose to make your lorebook public, allowing others to discover and use it. Public lorebooks are listed on the home page.</p>
             <p><strong>Important:</strong> Once a lorebook is made public, it cannot be deleted using just the code. If you need to remove a public lorebook, please contact: <strong>sophiamccarty_official</strong> on Discord.</p>
         </div>
+
+        <!-- Admin Page -->
+        <div id="admin-page" class="main-content" style="display: none;">
+            <h2>Admin - All Lorebooks</h2>
+            <div class="search-container">
+                <input type="search" id="admin-lorebook-search" placeholder="Search all lorebooks..." style="width: 100%; margin-bottom: 15px;">
+            </div>
+            <div id="admin-lorebook-list">
+                <!-- Lorebooks will be listed here -->
+                <div class="empty-state">
+                    <p>No lorebooks found or an error occurred.</p>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <div>Sophia's Lorebook Library</div>
+            <div>Lorebook System for Google AI Proxy</div>
             <div class="footer-links">
                 <a href="#" id="footer-privacy">Privacy</a>
                 <a href="#" id="footer-terms">Terms</a>
                 <a href="#" id="footer-contact">Contact</a>
+                <a href="#" id="admin-login-link" style="opacity: 0.1; font-size: 10px;">Admin</a>
             </div>
         </div>
     </footer>
     
+    <!-- Admin Password Modal -->
+    <div id="admin-password-modal" class="modal-background">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Admin Login</h3>
+                <button class="modal-close admin-password-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="admin-password-input">Password:</label>
+                    <input type="password" id="admin-password-input" placeholder="Enter admin password">
+                </div>
+                <div id="admin-login-error" class="alert alert-error" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-button admin-password-modal-close">Cancel</button>
+                <button id="admin-login-submit" class="success-button">Login</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Upload JSON Modal -->
     <div id="upload-modal" class="modal-background">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Upload Lorebook to Library</h3>
+                <h3 class="modal-title">Upload Lorebook to Proxy</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Upload your lorebook directly to the library. You'll receive a unique command that you can use to activate your lorebook in conversations.</p>
+                <p>Upload your lorebook directly to the proxy server. You'll receive a unique code that you can use to activate your lorebook in conversations.</p>
                 
                 <div id="upload-json-preview" class="json-preview" style="margin: 15px 0; max-height: 150px;"></div>
                 
@@ -1649,7 +1430,7 @@
             </div>
             <div class="modal-footer">
                 <button class="secondary-button modal-cancel-button">Cancel</button>
-                <button class="success-button modal-upload-button">Upload to Library</button>
+                <button class="success-button modal-upload-button">Upload to Proxy</button>
             </div>
         </div>
     </div>
@@ -1664,8 +1445,8 @@
             <div class="modal-body">
                 <p>The lorebook has been successfully activated for your next conversations.</p>
                 <div class="alert alert-success" style="margin-top: 15px;">
-                    <p>Your lorebook command is: <span id="used-lorebook-code" class="command-display"></span></p>
-                    <p>Insert this command in your prompt or summary when chatting with JanitorAI to activate the lorebook.</p>
+                    <p>Your lorebook code is: <span id="used-lorebook-code" class="code-display"></span></p>
+                    <p>To use it, include this command in your prompt or summary (e.g., in JanitorAI or other platforms).</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1674,11 +1455,12 @@
         </div>
     </div>
 
-    <!-- Lorebook Details Modal -->
+    <!-- Font Awesome for icons -->
+<!-- Modal for Lorebook Details -->
     <div id="lorebook-details-modal" class="modal-background">
         <div class="modal" style="max-width: 800px;">
             <div class="modal-header">
-                <h3 id="details-modal-title" class="modal-title">Lorebook Details</h3>
+                <h2 id="details-modal-title">Lorebook Details</h2>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body" id="details-modal-body" style="max-height: 70vh; overflow-y: auto;">
@@ -1689,6 +1471,7 @@
             </div>
         </div>
     </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     
     <script>
         // DOM Elements
@@ -1699,6 +1482,18 @@
         const navHome = document.getElementById('nav-home');
         const navCreator = document.getElementById('nav-creator');
         const navHelp = document.getElementById('nav-help');
+
+        // Admin Page Elements
+        const adminPage = document.getElementById('admin-page');
+        const adminLoginLink = document.getElementById('admin-login-link');
+        const adminPasswordModal = document.getElementById('admin-password-modal');
+        const adminPasswordInput = document.getElementById('admin-password-input');
+        const adminLoginSubmit = document.getElementById('admin-login-submit');
+        const adminPasswordModalCloseButtons = document.querySelectorAll('.admin-password-modal-close');
+        const adminLoginError = document.getElementById('admin-login-error');
+        const adminLorebookList = document.getElementById('admin-lorebook-list');
+        const adminLorebookSearch = document.getElementById('admin-lorebook-search');
+        let isAdminLoggedIn = false; // Track admin login state
         
         // Navigation
         function showPage(pageId) {
@@ -1738,6 +1533,82 @@
         navHelp.addEventListener('click', (e) => {
             e.preventDefault();
             showPage('help-page');
+        });
+
+        // Admin Login Logic
+        adminLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            adminPasswordModal.style.display = 'flex';
+            adminPasswordInput.value = '';
+            adminLoginError.style.display = 'none';
+            adminPasswordInput.focus();
+        });
+
+        adminPasswordModalCloseButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                adminPasswordModal.style.display = 'none';
+            });
+        });
+
+        adminLoginSubmit.addEventListener('click', async () => {
+            const password = adminPasswordInput.value;
+            if (!password) {
+                adminLoginError.textContent = 'Password cannot be empty.';
+                adminLoginError.style.display = 'block';
+                return;
+            }
+            adminLoginError.style.display = 'none';
+
+            // !!! WICHTIG: Dies ist nur eine clientseitige Simulation !!!
+            // In einer echten Anwendung MUSS die Passwortüberprüfung serverseitig erfolgen!
+            // const response = await fetch('/api/admin/login', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ password })
+            // });
+            // if (response.ok) {
+            //     isAdminLoggedIn = true;
+            //     adminPasswordModal.style.display = 'none';
+            //     showPage('admin-page'); // Zeige Admin-Seite
+            //     loadAdminLorebooks(); // Lade Lorebooks für Admin
+            // } else {
+            //     const errorData = await response.json().catch(() => ({ message: 'Login failed. Please try again.'}));
+            //     adminLoginError.textContent = errorData.message;
+            //     adminLoginError.style.display = 'block';
+            //     isAdminLoggedIn = false;
+            // }
+
+            // Temporäre clientseitige "Simulation" für Entwicklungszwecke:
+            // Ersetzen Sie "SUPER_SECRET_PASSWORD" durch das tatsächliche Passwort, das Sie in Render setzen würden.
+            // Dies ist NICHT sicher für eine Produktionsumgebung.
+            const MOCK_ADMIN_PASSWORD = "Admin_Password_Placeholder"; // Platzhalter!
+            if (password === MOCK_ADMIN_PASSWORD) {
+                isAdminLoggedIn = true;
+                adminPasswordModal.style.display = 'none';
+                navAdmin.classList.add('active'); // Nav-Link hervorheben (muss noch erstellt werden)
+                showPage('admin-page');
+                loadAdminLorebooks();
+                 // Add 'Admin' to navigation if not already there
+                if (!document.getElementById('nav-admin')) {
+                    const adminNavLink = document.createElement('a');
+                    adminNavLink.href = '#';
+                    adminNavLink.id = 'nav-admin';
+                    adminNavLink.textContent = 'Admin';
+                    adminNavLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (isAdminLoggedIn) {
+                            showPage('admin-page');
+                        } else {
+                            adminLoginLink.click(); // Zeige Login Modal wenn nicht eingeloggt
+                        }
+                    });
+                    navHelp.parentNode.appendChild(adminNavLink); // Fügt es nach dem Hilfe-Link ein
+                }
+            } else {
+                adminLoginError.textContent = 'Incorrect password.';
+                adminLoginError.style.display = 'block';
+                isAdminLoggedIn = false;
+            }
         });
         
         // Filter buttons
@@ -1798,59 +1669,24 @@
             }
         });
         
-        // Use and Download Lorebook buttons (event delegation for dynamically added cards)
+        // Use Lorebook buttons (event delegation for dynamically added cards)
         document.getElementById('lorebook-grid').addEventListener('click', function(event) {
             const useButton = event.target.closest('.use-lorebook-button');
-            const downloadButton = event.target.closest('.download-lorebook-button');
             const detailsButton = event.target.closest('.view-details-button');
 
             if (useButton) {
                 const code = useButton.getAttribute('data-code');
-                document.getElementById('used-lorebook-code').textContent = `<Lore:${code}>`;
+                document.getElementById('used-lorebook-code').innerHTML = `<LORE:${code}>`; // Zeigt <LORE:CODE> an
                 document.getElementById('used-lorebook-modal').style.display = 'flex';
                 
                 // Optional: Ping server to mark as used (if needed for stats, etc.)
                 // fetch('/api/use-lorebook/' + code, { method: 'GET' })
                 // .catch(error => console.error('Error pinging use-lorebook:', error));
-            } else if (downloadButton) {
-                const code = downloadButton.getAttribute('data-code');
-                downloadLorebook(code);
             } else if (detailsButton) {
                 const code = detailsButton.getAttribute('data-code');
                 showLorebookDetails(code);
             }
         });
-        
-        // Function to download lorebook JSON
-        async function downloadLorebook(code) {
-            try {
-                const response = await fetch(`/api/lorebook/${code}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                
-                if (data.success && data.lorebook) {
-                    // Create and download the JSON file
-                    const lorebookJson = JSON.stringify(data.lorebook, null, 2);
-                    const blob = new Blob([lorebookJson], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `lorebook_${code}.json`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                } else {
-                    alert('Could not download lorebook: ' + (data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error downloading lorebook:', error);
-                alert('Error downloading lorebook. See console for more info.');
-            }
-        }
         
         // Function to load and display public lorebooks
         const lorebookGrid = document.getElementById('lorebook-grid');
@@ -1861,39 +1697,11 @@
             // Add categories or tags if available in lorebook.meta
             card.setAttribute('data-category', lorebook.meta?.category || 'general');
             card.setAttribute('data-code', lorebook.code); // Store code for easy access
-            
-            // Determine category badge
-            let categoryBadge = '';
-            if (lorebook.meta?.category) {
-                let icon = 'fas fa-book';
-                let categoryName = lorebook.meta.category;
-                
-                if (lorebook.meta.category.toLowerCase().includes('fantasy')) {
-                    icon = 'fas fa-dragon';
-                    categoryName = 'Fantasy';
-                } else if (lorebook.meta.category.toLowerCase().includes('sci-fi') || lorebook.meta.category.toLowerCase().includes('science fiction')) {
-                    icon = 'fas fa-rocket';
-                    categoryName = 'Sci-Fi';
-                } else if (lorebook.meta.category.toLowerCase().includes('historical')) {
-                    icon = 'fas fa-landmark';
-                    categoryName = 'Historical';
-                } else if (lorebook.meta.category.toLowerCase().includes('horror')) {
-                    icon = 'fas fa-ghost';
-                    categoryName = 'Horror';
-                } else if (lorebook.meta.category.toLowerCase().includes('mystery')) {
-                    icon = 'fas fa-search';
-                    categoryName = 'Mystery';
-                }
-                
-                categoryBadge = `<span class="badge badge-primary"><i class="${icon}"></i> ${categoryName}</span>`;
-            } else {
-                categoryBadge = `<span class="badge badge-primary"><i class="fas fa-book"></i> General</span>`;
-            }
-            
+        
             card.innerHTML = `
                 <div class="card-header">
                     <h3 class="card-title">${lorebook.name}</h3>
-                    ${categoryBadge}
+                    <span class="badge badge-primary">Public</span>
                 </div>
                 <div class="card-body">
                     <p class="card-description">${lorebook.description || 'No description available.'}</p>
@@ -1902,13 +1710,17 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <div class="command-display">&lt;Lore:${lorebook.code}&gt;</div>
-                    <div>
-                        <button class="download-button download-lorebook-button" data-code="${lorebook.code}">
-                            <i class="fas fa-download"></i> Download JSON
+                    <span class="code-display">Code: ${lorebook.code}</span>
+                    <div class="ratings" style="margin-left: auto; display: flex; align-items: center; gap: 5px;">
+                        <span class="upvotes" title="Upvotes"><i class="fa fa-thumbs-up"></i> ${lorebook.meta?.upvotes || 0}</span>
+                        <span class="downvotes" title="Downvotes"><i class="fa fa-thumbs-down"></i> ${lorebook.meta?.downvotes || 0}</span>
+                    </div>
+                    <div style="margin-left: 10px;">
+                        <button class="button outline-button view-details-button" data-code="${lorebook.code}" style="margin-right: 5px;">
+                            <i class="fa fa-eye"></i> View Details
                         </button>
-                        <button class="outline-button use-lorebook-button" data-code="${lorebook.code}">
-                            <i class="fas fa-book"></i> Use This Lorebook
+                        <button class="button outline-button use-lorebook-button" data-code="${lorebook.code}">
+                            <i class="fa fa-book"></i> Use Lorebook
                         </button>
                     </div>
                 </div>
@@ -1918,29 +1730,7 @@
 
         async function loadPublicLorebooks() {
             try {
-                const response = await fetch('/api/lorebooks/public');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                
-                lorebookGrid.innerHTML = ''; // Clear existing static or old cards
-                
-                if (data.success && data.lorebooks && data.lorebooks.length > 0) {
-                    data.lorebooks.forEach(lb => {
-                        const card = createLorebookCard(lb);
-                        lorebookGrid.appendChild(card);
-                    });
-                } else {
-                    lorebookGrid.innerHTML = '<div class="alert alert-info">No public lorebooks available at the moment.</div>';
-                }
-            } catch (error) {
-                console.error('Error loading public lorebooks:', error);
-                lorebookGrid.innerHTML = '<div class="alert alert-error">Could not load public lorebooks. Please try again later.</div>';
-            }
-        }
-        
-        // Modal elements for details
+// Modal elements for details
         const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
         const detailsModalTitle = document.getElementById('details-modal-title');
         const detailsModalBody = document.getElementById('details-modal-body');
@@ -1958,79 +1748,38 @@
                     detailsModalTitle.textContent = lb.meta?.name || `Lorebook ${lb.code || code}`; // Use lb.code as fallback
                     
                     let entriesHtml = `
-                        <div style="margin-bottom: 20px;">
+                        <div style="margin-bottom: 15px;">
                             <p><strong>Description:</strong> ${lb.meta?.description || 'N/A'}</p>
-                            <p><strong>Command:</strong> <span class="command-display">&lt;Lore:${lb.code || code}&gt;</span></p>
-                            <div class="ratings-modal" style="margin-top: 15px; display: flex; align-items: center; gap: 15px;">
+                            <div class="ratings-modal" style="margin-top: 10px; display: flex; align-items: center; gap: 15px;">
                                 <span><strong>Ratings:</strong></span>
                                 <button class="button outline-button rate-button" data-code="${lb.code || code}" data-rating="up" title="Upvote">
-                                    <i class="fas fa-thumbs-up"></i> <span id="modal-upvotes-${lb.code || code}">${lb.meta?.upvotes || 0}</span>
+                                    <i class="fa fa-thumbs-up"></i> <span id="modal-upvotes-${lb.code || code}">${lb.meta?.upvotes || 0}</span>
                                 </button>
                                 <button class="button outline-button rate-button" data-code="${lb.code || code}" data-rating="down" title="Downvote">
-                                    <i class="fas fa-thumbs-down"></i> <span id="modal-downvotes-${lb.code || code}">${lb.meta?.downvotes || 0}</span>
-                                </button>
-                            </div>
-                            <div style="margin-top: 15px;">
-                                <button class="download-button download-lorebook-button" data-code="${lb.code || code}">
-                                    <i class="fas fa-download"></i> Download JSON
+                                    <i class="fa fa-thumbs-down"></i> <span id="modal-downvotes-${lb.code || code}">${lb.meta?.downvotes || 0}</span>
                                 </button>
                             </div>
                         </div>
-                        <h4 style="margin-top: 30px; color: var(--primary-color); border-bottom: 1px solid var(--gray-200); padding-bottom: 10px;">Entries:</h4>
+                        <h4>Entries:</h4>
                     `;
                     
                     if (lb.entries && Object.keys(lb.entries).length > 0) {
                         entriesHtml += '<ul style="list-style-type: none; padding-left: 0;">';
                         for (const [entryId, entry] of Object.entries(lb.entries)) {
-                            entriesHtml += `<li style="margin-bottom: 20px; padding: 15px; border: 1px solid var(--gray-200); border-radius: 10px; background-color: #fafafa;">`;
+                            entriesHtml += `<li style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">`;
                             // Assuming entry.name was added for UI in creator, if not, fallback to entryId or comment
                             let entryDisplayName = entry.name || entry.comment;
                             if (!entryDisplayName) { // Fallback if name and comment are missing
                                 const firstKey = entry.key && entry.key.length > 0 ? entry.key[0] : '';
                                 entryDisplayName = firstKey || `Entry ${entryId}`;
                             }
-                            entriesHtml += `<strong style="font-size: 18px; color: var(--primary-color);">${entryDisplayName}</strong> `;
-                            entriesHtml += `<span style="display: inline-block; margin-left: 10px;">`;
-                            if (entry.constant) {
-                                entriesHtml += `<span class="badge badge-primary"><i class="fas fa-check-circle"></i> Always Active</span> `;
-                            }
-                            if (entry.disable) {
-                                entriesHtml += `<span class="badge badge-warning"><i class="fas fa-ban"></i> Disabled</span>`;
-                            }
-                            entriesHtml += `</span><br>`;
+                            entriesHtml += `<strong>${entryDisplayName}</strong> (${entry.constant ? 'Always Active' : 'Keyword-based'}) ${entry.disable ? '<span class="badge badge-warning">Disabled</span>' : ''}<br>`;
                             if (!entry.constant && entry.key && entry.key.length > 0) {
-                                entriesHtml += `<div style="margin-top: 10px;"><strong>Keywords:</strong> `;
-                                entriesHtml += entry.key.map(keyword => 
-                                    `<span class="tag">${keyword}</span>`
-                                ).join(' ');
-                                entriesHtml += `</div>`;
+                                entriesHtml += `<em>Keywords:</em> ${entry.key.join(', ')}<br>`;
                             }
                             if (!entry.constant && entry.keysecondary && entry.keysecondary.length > 0) {
-                                entriesHtml += `<div style="margin-top: 10px;"><strong>Secondary Keywords:</strong> `;
-                                entriesHtml += entry.keysecondary.map(keyword => 
-                                    `<span class="tag" style="background-color: #f0f0f0; color: var(--gray-700);">${keyword}</span>`
-                                ).join(' ');
-                                entriesHtml += `</div>`;
-                            }
-                            entriesHtml += `<div style="white-space: pre-wrap; background-color: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--gray-300); font-family: 'Poppins', sans-serif;">${entry.content}</div>`;
-                            entriesHtml += `</li>`;
-                        }
-                        entriesHtml += '</ul>';
-                    } else {
-                        entriesHtml += '<div class="alert alert-info">This lorebook has no entries.</div>';
-                    }
-                    detailsModalBody.innerHTML = entriesHtml;
-                    lorebookDetailsModal.style.display = 'flex';
-                } else {
-                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error fetching lorebook details:', error);
-                alert('Error fetching lorebook details. See console for more info.');
-            }
-        }
-        
-        async function handleRating(code, ratingType) {
+                                entriesHtml += `<em>Secondary Keywords:</em> ${entry.keysecondary.join(', ')}<br>`;
+async function handleRating(code, ratingType) {
             try {
                 const response = await fetch(`/api/lorebook/${code}/rate`, {
                     method: 'POST',
@@ -2059,9 +1808,11 @@
                     if (cardElem) {
                         const cardUpvoteElem = cardElem.querySelector('.upvotes');
                         const cardDownvoteElem = cardElem.querySelector('.downvotes');
-                        if (cardUpvoteElem) cardUpvoteElem.innerHTML = `<i class="fas fa-thumbs-up"></i> ${data.upvotes}`;
-                        if (cardDownvoteElem) cardDownvoteElem.innerHTML = `<i class="fas fa-thumbs-down"></i> ${data.downvotes}`;
+                        if (cardUpvoteElem) cardUpvoteElem.innerHTML = `<i class="fa fa-thumbs-up"></i> ${data.upvotes}`;
+                        if (cardDownvoteElem) cardDownvoteElem.innerHTML = `<i class="fa fa-thumbs-down"></i> ${data.downvotes}`;
                     }
+                     // Potentially refresh the public lorebooks if sorting/filtering by rating is implemented later
+                    // loadPublicLorebooks(); 
                 } else {
                     alert('Failed to submit rating: ' + (data.message || 'Unknown error'));
                 }
@@ -2080,18 +1831,249 @@
                 handleRating(code, ratingType);
             }
         });
+                             }
+                            entriesHtml += `<div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 5px; border-radius: 3px; margin-top: 5px;">${entry.content}</div>`;
+                            entriesHtml += `</li>`;
+                        }
+                        entriesHtml += '</ul>';
+                    } else {
+                        entriesHtml += '<p>This lorebook has no entries.</p>';
+                    }
+                    detailsModalBody.innerHTML = entriesHtml;
+                    lorebookDetailsModal.style.display = 'flex';
+                } else {
+                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+// Admin page functionality
+        function createAdminLorebookItem(lorebook) {
+            const item = document.createElement('div');
+            item.className = 'card'; // Reuse card style for consistency
+            item.style.marginBottom = '15px';
+            item.innerHTML = `
+                <div class="card-header">
+                    <h4 class="card-title" style="font-size: 18px;">${lorebook.name || 'Unnamed Lorebook'} (Code: ${lorebook.code})</h4>
+                    <div>
+                        <button class="button error-button delete-admin-lorebook-button" data-code="${lorebook.code}" style="padding: 6px 10px; font-size: 13px;">
+                            <i class="fa fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" style="padding-top: 10px; padding-bottom: 10px;">
+                    <p style="font-size: 14px; margin-bottom: 8px;"><strong>Description:</strong> ${lorebook.description || 'N/A'}</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;"><strong>Public:</strong> ${lorebook.meta?.public ? 'Yes' : 'No'}</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;"><strong>Entries:</strong> ${Object.keys(lorebook.entries || {}).length}</p>
+                    <p style="font-size: 14px; margin-bottom: 0;"><strong>Tags:</strong> ${(lorebook.meta?.tags || []).join(', ') || 'N/A'}</p>
+                </div>
+            `;
+            item.querySelector('.delete-admin-lorebook-button').addEventListener('click', async () => {
+                if (confirm(`Are you sure you want to delete the lorebook "${lorebook.name || lorebook.code}"? This action cannot be undone.`)) {
+                    // !!! WICHTIG: Serverseitige Löschlogik erforderlich !!!
+                    // const response = await fetch(`/api/admin/lorebook/${lorebook.code}`, { method: 'DELETE' });
+                    // if (response.ok) {
+                    //     alert('Lorebook deleted successfully.');
+                    //     loadAdminLorebooks(); // Refresh list
+                    // } else {
+                    //     alert('Failed to delete lorebook.');
+                    // }
+                    alert(`Simulated deletion of lorebook: ${lorebook.code}. Implement server-side deletion.`);
+                    // Temporär: Entferne Element aus der Liste für Demo
+                    item.remove();
+                    const listIsEmpty = adminLorebookList.querySelector('.card') === null;
+                    if (listIsEmpty && !adminLorebookList.querySelector('.empty-state')) {
+                         adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found or all have been deleted.</p></div>';
+                    }
+                }
+            });
+            return item;
+        }
+
+        async function loadAdminLorebooks() {
+            if (!isAdminLoggedIn) return;
+            adminLorebookList.innerHTML = '<div class="spinner"></div><p>Loading lorebooks...</p>';
+
+            // !!! WICHTIG: Serverseitiger Endpunkt zum Abrufen ALLER Lorebooks erforderlich !!!
+            // try {
+            //     const response = await fetch('/api/admin/lorebooks'); // Hypothetischer Endpunkt
+            //     if (!response.ok) throw new Error('Failed to fetch lorebooks');
+            //     const data = await response.json();
+            //     if (data.success && data.lorebooks) {
+            //         adminLorebookList.innerHTML = '';
+            //         if (data.lorebooks.length === 0) {
+            //             adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found.</p></div>';
+            //             return;
+            //         }
+            //         data.lorebooks.forEach(lb => {
+            //             adminLorebookList.appendChild(createAdminLorebookItem(lb));
+            //         });
+            //     } else {
+            //         adminLorebookList.innerHTML = '<div class="empty-state"><p>Could not load lorebooks: ' + (data.message || 'Unknown error') + '</p></div>';
+            //     }
+            // } catch (error) {
+            //     console.error('Error loading admin lorebooks:', error);
+            //     adminLorebookList.innerHTML = '<div class="empty-state"><p>Error loading lorebooks. Check console.</p></div>';
+            // }
+
+            // Temporäre Mock-Daten für Entwicklungszwecke:
+            setTimeout(() => { // Simuliere Netzwerkverzögerung
+                const mockLorebooks = [
+                    { code: 'XYZ123', name: 'Admin Test Lorebook 1', description: 'A test book.', meta: { public: true, tags: ['test', 'admin'] }, entries: { e1: {} } },
+                    { code: 'ABC789', name: 'Another Admin Book', description: 'With more details.', meta: { public: false, tags: ['private', 'important'] }, entries: { e1:{}, e2:{} } },
+                    { code: 'TLK421', name: 'Middle Earth Handbook (from public)', description: 'Comprehensive guide...', meta: { public: true, tags: ['Fantasy', 'Tolkien'] }, entries: {} },
+                ];
+                adminLorebookList.innerHTML = '';
+                 if (mockLorebooks.length === 0) {
+                        adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found.</p></div>';
+                        return;
+                    }
+                mockLorebooks.forEach(lb => {
+                    // Erstelle eine vollständige Lorebook-Struktur für createAdminLorebookItem
+                    const fullLb = {
+                        code: lb.code,
+                        name: lb.name, // Name für Anzeige
+                        description: lb.description, // Beschreibung für Anzeige
+                        meta: lb.meta, // Meta-Objekt mit public und tags
+                        entries: lb.entries // Einträge-Objekt
+                    };
+                    adminLorebookList.appendChild(createAdminLorebookItem(fullLb));
+                });
+                filterAdminLorebooks(); // Filter nach dem Laden anwenden
+            }, 500);
+        }
+
+        function filterAdminLorebooks() {
+            if (!adminPage.style.display || adminPage.style.display === 'none') return;
+            const searchTerm = adminLorebookSearch.value.toLowerCase();
+            const items = adminLorebookList.querySelectorAll('.card');
+            let visibleCount = 0;
+            items.forEach(item => {
+                const title = item.querySelector('.card-title').textContent.toLowerCase();
+                const code = item.querySelector('.delete-admin-lorebook-button').getAttribute('data-code').toLowerCase();
+                const description = item.querySelector('p:nth-of-type(1)').textContent.toLowerCase(); // Description
+                const tagsText = item.querySelector('p:nth-of-type(4)').textContent.toLowerCase(); // Tags
+
+                if (title.includes(searchTerm) || code.includes(searchTerm) || description.includes(searchTerm) || tagsText.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+             const emptyState = adminLorebookList.querySelector('.empty-state');
+            if (visibleCount === 0 && !searchTerm && items.length > 0) { // Wenn keine Suchanfrage und trotzdem nichts sichtbar (z.B. alles gelöscht)
+                 if(emptyState) emptyState.innerHTML = '<p>No lorebooks match your search, or all have been deleted.</p>';
+            } else if (visibleCount === 0 && searchTerm) {
+                 if(emptyState) emptyState.innerHTML = '<p>No lorebooks match your search.</p>';
+                 else if (items.length > 0) adminLorebookList.innerHTML += '<div class="empty-state"><p>No lorebooks match your search.</p></div>'; // Hinzufügen, falls noch kein Empty State da ist
+            } else {
+                if(emptyState) emptyState.remove(); // Entferne Empty State wenn Ergebnisse da sind
+            }
+        }
+        adminLorebookSearch.addEventListener('input', filterAdminLorebooks);
+                console.error('Error fetching lorebook details:', error);
+                alert('Error fetching lorebook details. See console for more info.');
+            }
+        }
+
+        // Event delegation for "View Details" buttons on the lorebook grid
+        // This listener is already attached to lorebookGrid for "Use Lorebook" button,
+        // we can add the "View Details" logic to the same delegated event listener.
+        // The existing listener is at line 1354. I will modify it.
+                const response = await fetch('/api/lorebooks/public');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                lorebookGrid.innerHTML = ''; // Clear existing static or old cards
+                
+                if (data.success && data.lorebooks && data.lorebooks.length > 0) {
+                    data.lorebooks.forEach(lb => {
+                        const card = createLorebookCard(lb);
+                        lorebookGrid.appendChild(card);
+                    });
+                } else {
+                    lorebookGrid.innerHTML = '<p class="alert alert-info">No public lorebooks available at the moment.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading public lorebooks:', error);
+                lorebookGrid.innerHTML = '<p class="alert alert-error">Could not load public lorebooks. Please try again later.</p>';
+            }
+        }
+        
+        // Modal elements for details
+        const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
+        const detailsModalTitle = document.getElementById('details-modal-title');
+        const detailsModalBody = document.getElementById('details-modal-body');
+
+        async function showLorebookDetails(code) {
+            try {
+                const response = await fetch(`/api/lorebook/${code}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.lorebook) {
+                    const lb = data.lorebook;
+                    detailsModalTitle.textContent = lb.meta?.name || `Lorebook ${lb.code || code}`; // Use lb.code as fallback
+                    
+                    let entriesHtml = '<p><strong>Description:</strong> ' + (lb.meta?.description || 'N/A') + '</p>';
+                    entriesHtml += '<h4>Entries:</h4>';
+                    
+                    if (lb.entries && Object.keys(lb.entries).length > 0) {
+                        entriesHtml += '<ul style="list-style-type: none; padding-left: 0;">';
+                        for (const [entryId, entry] of Object.entries(lb.entries)) {
+                            entriesHtml += `<li style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">`;
+                            // Assuming entry.name was added for UI in creator, if not, fallback to entryId
+                            entriesHtml += `<strong>${entry.name || entry.comment || `Entry ${entryId}`}</strong> (${entry.constant ? 'Always Active' : 'Keyword-based'}) ${entry.disable ? '<span class="badge badge-warning">Disabled</span>' : ''}<br>`;
+                            if (!entry.constant && entry.key && entry.key.length > 0) {
+                                entriesHtml += `<em>Keywords:</em> ${entry.key.join(', ')}<br>`;
+                            }
+                            if (!entry.constant && entry.keysecondary && entry.keysecondary.length > 0) {
+                                entriesHtml += `<em>Secondary Keywords:</em> ${entry.keysecondary.join(', ')}<br>`;
+                            }
+                            entriesHtml += `<div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 5px; border-radius: 3px; margin-top: 5px;">${entry.content}</div>`;
+                            entriesHtml += `</li>`;
+                        }
+                        entriesHtml += '</ul>';
+                    } else {
+                        entriesHtml += '<p>This lorebook has no entries.</p>';
+                    }
+                    detailsModalBody.innerHTML = entriesHtml;
+                    lorebookDetailsModal.style.display = 'flex';
+                } else {
+                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error fetching lorebook details:', error);
+                alert('Error fetching lorebook details. See console for more info.');
+            }
+        }
+
+        // Event delegation for "View Details" buttons on the lorebook grid
+        lorebookGrid.addEventListener('click', function(event) {
+            const target = event.target.closest('.view-details-button');
+            if (target) {
+                const code = target.getAttribute('data-code');
+                showLorebookDetails(code);
+            }
+        });
         
         // Creator functionality
         let lorebook = {
             entries: {},
             meta: {
                 name: "My Lorebook",
-                description: ""
+                description: "",
+                tags: [],
+                admin: {} // Platzhalter für mögliche zukünftige Admin-spezifische Metadaten
             }
         };
         let currentEntryId = null;
         let keywordsList = [];
         let secondaryKeywordsList = [];
+        let lorebookTagsList = []; // Hinzugefügt
         
         // Form elements
         const lorebookNameInput = document.getElementById('lorebook-name');
@@ -2101,6 +2083,9 @@
         const entryNameInput = document.getElementById('entry-name');
         const keywordInput = document.getElementById('keyword-input');
         const secondaryKeywordInput = document.getElementById('secondary-keyword-input');
+        const lorebookTagsInput = document.getElementById('lorebook-tags-input');
+        const addLorebookTagButton = document.getElementById('add-lorebook-tag-button');
+        const lorebookTagsContainer = document.getElementById('lorebookTagsContainer');
         const entryContentInput = document.getElementById('entry-content');
         const alwaysActiveToggle = document.getElementById('always-active-toggle');
         const disabledToggle = document.getElementById('disabled-toggle');
@@ -2185,6 +2170,48 @@
                 addKeyword(secondaryKeywordInput, secondaryKeywordsList, secondaryKeywordTagsContainer);
             }
         });
+
+        // Lorebook Tag management
+        function updateLorebookTagDisplay() {
+            lorebookTagsContainer.innerHTML = '';
+            lorebookTagsList.forEach(tagText => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag'; // Wiederverwendung der .tag Klasse für das Aussehen
+                tagElement.textContent = tagText;
+                const removeButton = document.createElement('span');
+                removeButton.className = 'remove-key'; // Wiederverwendung für das Aussehen des Schließen-Buttons
+                removeButton.innerHTML = '&times;';
+                removeButton.style.marginLeft = '8px'; // Etwas mehr Abstand
+                removeButton.style.cursor = 'pointer';
+                removeButton.onclick = () => removeLorebookTag(tagText);
+                tagElement.appendChild(removeButton);
+                lorebookTagsContainer.appendChild(tagElement);
+            });
+            lorebook.meta.tags = [...lorebookTagsList]; // Synchronisiere mit dem lorebook Objekt
+            updateJsonPreview();
+        }
+
+        function addLorebookTag() {
+            const tagText = lorebookTagsInput.value.trim();
+            if (tagText && !lorebookTagsList.includes(tagText)) {
+                lorebookTagsList.push(tagText);
+                lorebookTagsInput.value = '';
+                updateLorebookTagDisplay();
+            }
+        }
+
+        function removeLorebookTag(tagText) {
+            lorebookTagsList = lorebookTagsList.filter(t => t !== tagText);
+            updateLorebookTagDisplay();
+        }
+
+        addLorebookTagButton.addEventListener('click', addLorebookTag);
+        lorebookTagsInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Verhindert Formular-Submit, falls vorhanden
+                addLorebookTag();
+            }
+        });
         
         // Entry management
         function resetEntryForm() {
@@ -2236,7 +2263,7 @@
             if (Object.keys(lorebook.entries).length === 0) {
                 entryListContainer.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-file-alt"></i>
+                        <i class="fa fa-file-text-o"></i>
                         <p>No entries yet. Create your first entry!</p>
                     </div>
                 `;
@@ -2252,8 +2279,8 @@
                 entryItem.setAttribute('data-id', id);
                 
                 const badges = [];
-                if (entry.constant) badges.push(`<span class="badge badge-primary"><i class="fas fa-check-circle"></i> Always</span>`);
-                if (entry.disable) badges.push(`<span class="badge badge-warning"><i class="fas fa-ban"></i> Disabled</span>`);
+                if (entry.constant) badges.push(`<span class="badge badge-primary">Always</span>`);
+                if (entry.disable) badges.push(`<span class="badge badge-warning">Disabled</span>`);
                 
                 entryItem.innerHTML = `
                     <div class="entry-item-header">
@@ -2335,9 +2362,10 @@
         
         function updateJsonPreview() {
             // Create a clean version for export
+            const currentMetaForSave = { ...lorebook.meta, tags: Array.isArray(lorebook.meta.tags) ? lorebook.meta.tags : [] };
             const exportLorebook = {
                 entries: {},
-                meta: lorebook.meta
+                meta: currentMetaForSave
             };
             
             for (const [id, entry] of Object.entries(lorebook.entries)) {
@@ -2373,9 +2401,10 @@
             }
             
             // Create a clean version for export
+            const currentMetaForSave = { ...lorebook.meta, tags: Array.isArray(lorebook.meta.tags) ? lorebook.meta.tags : [] };
             const exportLorebook = {
                 entries: {},
-                meta: lorebook.meta
+                meta: currentMetaForSave
             };
             
             for (const [id, entry] of Object.entries(lorebook.entries)) {
@@ -2419,10 +2448,14 @@
                         entries: {},
                         meta: {
                             name: loadedLorebook.meta?.name || 'Imported Lorebook',
-                            description: loadedLorebook.meta?.description || ''
+                            description: loadedLorebook.meta?.description || '',
+                            tags: Array.isArray(loadedLorebook.meta?.tags) ? loadedLorebook.meta.tags : [] // Lade Tags
                         }
                     };
                     
+                    lorebookTagsList = [...lorebook.meta.tags]; // Synchronisiere lorebookTagsList
+                    updateLorebookTagDisplay(); // Aktualisiere die Anzeige der Tags
+
                     // Load entries
                     for (const [id, entry] of Object.entries(loadedLorebook.entries)) {
                         // Add name field for UI
@@ -2444,6 +2477,7 @@
                     // Update UI
                     lorebookNameInput.value = lorebook.meta.name;
                     lorebookDescInput.value = lorebook.meta.description;
+                    // updateLorebookTagDisplay() wird bereits oben aufgerufen beim Setzen von lorebookTagsList
                     resetEntryForm();
                     updateEntryList();
                     updateJsonPreview();
@@ -2456,4 +2490,114 @@
             reader.readAsText(file);
             
             // Reset the file input
-            e.target
+            e.target.value = '';
+        });
+        
+        // Upload to Proxy button and modal
+        const uploadModal = document.getElementById('upload-modal');
+        const modalCloseButtons = document.querySelectorAll('.modal-close, .modal-cancel-button');
+        const modalUploadButton = document.querySelector('.modal-upload-button');
+        const modalPublicToggle = document.getElementById('modal-public-toggle');
+        
+        uploadToProxyButton.addEventListener('click', () => {
+            if (Object.keys(lorebook.entries).length === 0) {
+                alert('Your lorebook is empty. Please add at least one entry.');
+                return;
+            }
+            
+            // Sync the public toggle with the main form
+            modalPublicToggle.checked = publicToggle.checked;
+            
+            // Update the JSON preview in the modal
+            updateJsonPreview();
+            
+            // Show the modal
+            uploadModal.style.display = 'flex';
+        });
+        
+        modalCloseButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // General close for all modals that use this class
+                if (uploadModal) uploadModal.style.display = 'none';
+                
+                const usedLorebookModal = document.getElementById('used-lorebook-modal');
+                if (usedLorebookModal) usedLorebookModal.style.display = 'none';
+                
+                if (lorebookDetailsModal) lorebookDetailsModal.style.display = 'none';
+            });
+        });
+        
+        // Ensure the specific close button for used-lorebook-modal still works
+        const usedLorebookModalCloseButton = document.querySelector('#used-lorebook-modal .modal-close-button');
+        if (usedLorebookModalCloseButton) {
+            usedLorebookModalCloseButton.addEventListener('click', () => {
+                const usedLorebookModal = document.getElementById('used-lorebook-modal');
+                if (usedLorebookModal) usedLorebookModal.style.display = 'none';
+            });
+        }
+         // Ensure the specific close button for details-modal still works
+        const detailsModalCloseButton = document.querySelector('#lorebook-details-modal .modal-close-button');
+        if (detailsModalCloseButton) {
+            detailsModalCloseButton.addEventListener('click', () => {
+                if (lorebookDetailsModal) lorebookDetailsModal.style.display = 'none';
+            });
+        }
+
+        modalUploadButton.addEventListener('click', () => {
+            // Create a clean version for export
+            const exportLorebook = {
+                entries: {},
+                meta: {
+                    ...lorebook.meta,
+                    public: modalPublicToggle.checked
+                }
+            };
+            
+            for (const [id, entry] of Object.entries(lorebook.entries)) {
+                // Create a copy without the 'name' field (for UI only)
+                const exportEntry = {...entry};
+                if ('name' in exportEntry) {
+                    delete exportEntry.name;
+                }
+                exportLorebook.entries[id] = exportEntry;
+            }
+            
+            // In a real implementation, we would send a POST request to the server here
+            // For now, we'll simulate success with a random code
+            const mockCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+            
+            fetch('/api/lorebook', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(exportLorebook)
+            })
+            .then(response => response.json())
+            .then(data => {
+                uploadModal.style.display = 'none';
+                
+                // Show the success modal
+                document.getElementById('used-lorebook-code').innerHTML = `<LORE:${mockCode}>`; // Zeigt <LORE:CODE> an
+                document.getElementById('used-lorebook-modal').style.display = 'flex';
+                
+                // If it was made public, we'd want to refresh the list on the home page
+                if (modalPublicToggle.checked) {
+                    loadPublicLorebooks(); // Refresh the public lorebooks list
+                }
+            })
+            .catch(error => {
+                alert(`Error uploading lorebook: ${error.message}`);
+            });
+        });
+        
+        // Initialize the UI
+        updateEntryList();
+        updateJsonPreview();
+        
+        // Initial load
+        showPage('home-page'); // Show home page by default
+        loadPublicLorebooks(); // Load public lorebooks on initial page load
+    </script>
+</body>
+</html>
