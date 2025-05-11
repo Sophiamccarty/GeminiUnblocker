@@ -1030,6 +1030,27 @@
             border-bottom-right-radius: var(--border-radius);
             flex-shrink: 0; /* Verhindert Schrumpfen des Footers */
         }
+        .code-display-block {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 15px 0;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--medium-gray);
+        }
+        .code-display-block span {
+            color: var(--accent-color);
+            word-break: break-all; /* Um lange URLs umzubrechen */
+        }
+        .code-display-block .copy-button {
+            padding: 6px 12px;
+            font-size: 13px;
+            margin-left: 15px; /* Abstand zum Text */
+        }
     </style>
 </head>
 <body>
@@ -1040,6 +1061,9 @@
             <nav class="header-nav">
                 <a href="#" class="active" id="nav-home">Home</a>
                 <a href="#" id="nav-creator">Creator</a>
+                <a href="#" id="nav-proxy-info">Proxy Info</a>
+                <a href="https://colab.research.google.com/drive/1Yo2EE1wH5RA7ZDWTinpX5EJggtoNftKo?usp=sharing#scrollTo=MivdkgP7jYSb" target="_blank">OpenRouter Colab</a>
+                <a href="https://colab.research.google.com/drive/13xEzZjlxJb7P6ro1akrq-UAhuUDgbC2A?usp=sharing" target="_blank">AI Studio Colab</a>
                 <a href="#" id="nav-help">Help</a>
             </nav>
         </div>
@@ -1368,6 +1392,55 @@
             <h2>Admin - All Lorebooks</h2>
             <div class="search-container">
                 <input type="search" id="admin-lorebook-search" placeholder="Search all lorebooks..." style="width: 100%; margin-bottom: 15px;">
+<!-- Proxy Info Page -->
+        <div id="proxy-info-page" class="main-content" style="display: none;">
+            <h2>Proxy Server Information</h2>
+            <p>This page provides details on how to use the proxy server with different AI model providers.</p>
+
+            <div class="info-box">
+                <h3><i class="fa fa-cogs"></i> Google AI Studio Models</h3>
+                <p>To use models via Google AI Studio, configure your application (e.g., JanitorAI, SillyTavern) with the following API endpoint:</p>
+                <div class="code-display-block">
+                    <span id="aistudio-url">/aistudio</span>
+                    <button class="button copy-button" onclick="copyToClipboard('aistudio-url')"><i class="fa fa-copy"></i> Copy URL</button>
+                </div>
+                <p>Select one of the following models in your application's settings. The proxy will then route your requests to the appropriate Google AI model.</p>
+                <h4>Available Models:</h4>
+                <ul>
+                    <li>gemini-2.5-pro-preview-05-06</li>
+                    <li>gemini-2.5-pro-exp-03-25</li>
+                    <li>gemini-2.5-flash-preview-04-17</li>
+                    <li>gemini-2.0-flash</li>
+                    <li>gemini-2.0-flash-lite</li>
+                    <li>gemini-2.0-flash-live-001</li>
+                    <li>gemini-1.5-pro</li>
+                </ul>
+                <p class="help-text">Ensure your API key for Google AI Studio is correctly set up in the proxy's environment variables.</p>
+            </div>
+
+            <div class="info-box">
+                <h3><i class="fa fa-rocket"></i> OpenRouter Models</h3>
+                <p>To use models via OpenRouter, configure your application with the following API endpoint:</p>
+                <div class="code-display-block">
+                    <span id="openrouter-url">/openrouter</span>
+                    <button class="button copy-button" onclick="copyToClipboard('openrouter-url')"><i class="fa fa-copy"></i> Copy URL</button>
+                </div>
+                <p>You can select any model available on OpenRouter. Specify the model string either in your application (e.g., JanitorAI settings) or directly on the OpenRouter platform if your application forwards the model choice. The proxy will pass this model identifier to OpenRouter.</p>
+                <h4>Example Models (check OpenRouter for the full list and latest identifiers):</h4>
+                <ul>
+                    <li>google/gemini-2.5-pro-preview</li>
+                    <li>google/gemini-2.5-pro-exp-03-25</li>
+                    <li>google/gemini-2.5-flash-preview</li>
+                    <li>google/gemini-2.0-flash</li>
+                    <li>google/gemini-2.0-flash-lite</li>
+                    <li>google/gemini-2.0-flash-exp</li>
+                    <li>google/gemini-2.0-flash-preview-image</li>
+                    <li>google/gemini-2.0-flash-live</li>
+                    <li>google/gemini-pro-1.5</li>
+                </ul>
+                <p class="help-text">Ensure your OpenRouter API key is correctly set up in the proxy's environment variables.</p>
+            </div>
+        </div>
             </div>
             <div id="admin-lorebook-list">
                 <!-- Lorebooks will be listed here -->
@@ -1483,10 +1556,12 @@
         const homePage = document.getElementById('home-page');
         const creatorPage = document.getElementById('creator-page');
         const helpPage = document.getElementById('help-page');
+        const proxyInfoPage = document.getElementById('proxy-info-page'); // Neue Seite
         
         const navHome = document.getElementById('nav-home');
         const navCreator = document.getElementById('nav-creator');
         const navHelp = document.getElementById('nav-help');
+        const navProxyInfo = document.getElementById('nav-proxy-info'); // Neuer Nav-Link
 
         // Admin Page Elements
         const adminPage = document.getElementById('admin-page');
@@ -1502,42 +1577,56 @@
         
         // Navigation
         function showPage(pageId) {
-            [homePage, creatorPage, helpPage].forEach(page => {
-                page.style.display = 'none';
+            [homePage, creatorPage, helpPage, proxyInfoPage, adminPage].forEach(page => { // adminPage auch hier einbeziehen
+                if (page) page.style.display = 'none';
             });
             
-            document.getElementById(pageId).style.display = 'block';
+            const pageToShow = document.getElementById(pageId);
+            if (pageToShow) pageToShow.style.display = 'block';
             
-            [navHome, navCreator, navHelp].forEach(nav => {
-                nav.classList.remove('active');
+            [navHome, navCreator, navHelp, navProxyInfo].forEach(nav => {
+                if (nav) nav.classList.remove('active');
             });
+            const adminNavLink = document.getElementById('nav-admin'); // Admin-Link separat behandeln
+            if (adminNavLink) adminNavLink.classList.remove('active');
             
             switch (pageId) {
                 case 'home-page':
-                    navHome.classList.add('active');
+                    if (navHome) navHome.classList.add('active');
                     break;
                 case 'creator-page':
-                    navCreator.classList.add('active');
+                    if (navCreator) navCreator.classList.add('active');
                     break;
                 case 'help-page':
-                    navHelp.classList.add('active');
+                    if (navHelp) navHelp.classList.add('active');
+                    break;
+                case 'proxy-info-page':
+                    if (navProxyInfo) navProxyInfo.classList.add('active');
+                    break;
+                case 'admin-page':
+                    if (adminNavLink) adminNavLink.classList.add('active');
                     break;
             }
         }
         
-        navHome.addEventListener('click', (e) => {
+        if (navHome) navHome.addEventListener('click', (e) => {
             e.preventDefault();
             showPage('home-page');
         });
         
-        navCreator.addEventListener('click', (e) => {
+        if (navCreator) navCreator.addEventListener('click', (e) => {
             e.preventDefault();
             showPage('creator-page');
         });
         
-        navHelp.addEventListener('click', (e) => {
+        if (navHelp) navHelp.addEventListener('click', (e) => {
             e.preventDefault();
             showPage('help-page');
+        });
+
+        if (navProxyInfo) navProxyInfo.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPage('proxy-info-page');
         });
 
         // Admin page functionality
@@ -2890,6 +2979,16 @@ async function handleRating(code, ratingType) {
         updateEntryList();
         updateJsonPreview();
         
+        function copyToClipboard(elementId) {
+            const textToCopy = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Copied to clipboard: ' + textToCopy);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy text. Please try manually.');
+            });
+        }
+
         // Initial load
         function checkInitialAdminState() {
             const token = localStorage.getItem('adminToken');
