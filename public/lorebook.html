@@ -1240,6 +1240,21 @@
     </div>
 
     <!-- Font Awesome for icons -->
+<!-- Modal for Lorebook Details -->
+    <div id="lorebook-details-modal" class="modal-background">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="details-modal-title">Lorebook Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="details-modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <!-- Content will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button class="button modal-close-button">Close</button>
+            </div>
+        </div>
+    </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     
     <script>
@@ -1352,15 +1367,20 @@
         
         // Use Lorebook buttons (event delegation for dynamically added cards)
         document.getElementById('lorebook-grid').addEventListener('click', function(event) {
-            const target = event.target.closest('.use-lorebook-button');
-            if (target) {
-                const code = target.getAttribute('data-code');
+            const useButton = event.target.closest('.use-lorebook-button');
+            const detailsButton = event.target.closest('.view-details-button');
+
+            if (useButton) {
+                const code = useButton.getAttribute('data-code');
                 document.getElementById('used-lorebook-code').textContent = 'LORE:' + code;
                 document.getElementById('used-lorebook-modal').style.display = 'flex';
                 
                 // Optional: Ping server to mark as used (if needed for stats, etc.)
                 // fetch('/api/use-lorebook/' + code, { method: 'GET' })
                 // .catch(error => console.error('Error pinging use-lorebook:', error));
+            } else if (detailsButton) {
+                const code = detailsButton.getAttribute('data-code');
+                showLorebookDetails(code);
             }
         });
         
@@ -1402,6 +1422,65 @@
 
         async function loadPublicLorebooks() {
             try {
+// Modal elements for details
+        const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
+        const detailsModalTitle = document.getElementById('details-modal-title');
+        const detailsModalBody = document.getElementById('details-modal-body');
+
+        async function showLorebookDetails(code) {
+            try {
+                const response = await fetch(`/api/lorebook/${code}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.lorebook) {
+                    const lb = data.lorebook;
+                    detailsModalTitle.textContent = lb.meta?.name || `Lorebook ${lb.code || code}`; // Use lb.code as fallback
+                    
+                    let entriesHtml = '<p><strong>Description:</strong> ' + (lb.meta?.description || 'N/A') + '</p>';
+                    entriesHtml += '<h4>Entries:</h4>';
+                    
+                    if (lb.entries && Object.keys(lb.entries).length > 0) {
+                        entriesHtml += '<ul style="list-style-type: none; padding-left: 0;">';
+                        for (const [entryId, entry] of Object.entries(lb.entries)) {
+                            entriesHtml += `<li style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">`;
+                            // Assuming entry.name was added for UI in creator, if not, fallback to entryId or comment
+                            let entryDisplayName = entry.name || entry.comment;
+                            if (!entryDisplayName) { // Fallback if name and comment are missing
+                                const firstKey = entry.key && entry.key.length > 0 ? entry.key[0] : '';
+                                entryDisplayName = firstKey || `Entry ${entryId}`;
+                            }
+                            entriesHtml += `<strong>${entryDisplayName}</strong> (${entry.constant ? 'Always Active' : 'Keyword-based'}) ${entry.disable ? '<span class="badge badge-warning">Disabled</span>' : ''}<br>`;
+                            if (!entry.constant && entry.key && entry.key.length > 0) {
+                                entriesHtml += `<em>Keywords:</em> ${entry.key.join(', ')}<br>`;
+                            }
+                            if (!entry.constant && entry.keysecondary && entry.keysecondary.length > 0) {
+                                entriesHtml += `<em>Secondary Keywords:</em> ${entry.keysecondary.join(', ')}<br>`;
+                            }
+                            entriesHtml += `<div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 5px; border-radius: 3px; margin-top: 5px;">${entry.content}</div>`;
+                            entriesHtml += `</li>`;
+                        }
+                        entriesHtml += '</ul>';
+                    } else {
+                        entriesHtml += '<p>This lorebook has no entries.</p>';
+                    }
+                    detailsModalBody.innerHTML = entriesHtml;
+                    lorebookDetailsModal.style.display = 'flex';
+                } else {
+                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error fetching lorebook details:', error);
+                alert('Error fetching lorebook details. See console for more info.');
+            }
+        }
+
+        // Event delegation for "View Details" buttons on the lorebook grid
+        // This listener is already attached to lorebookGrid for "Use Lorebook" button,
+        // we can add the "View Details" logic to the same delegated event listener.
+        // The existing listener is at line 1354. I will modify it.
                 const response = await fetch('/api/lorebooks/public');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
