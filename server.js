@@ -138,13 +138,20 @@ class LorebookManager {
             const lorebook = JSON.parse(data);
             const code = file.replace('.json', '');
             
-            // Stelle sicher, dass Bewertungsfelder vorhanden sind
+            // Stelle sicher, dass Bewertungsfelder und Sortierfelder vorhanden sind
             lorebook.meta = lorebook.meta || {};
             lorebook.meta.upvotes = lorebook.meta.upvotes || 0;
             lorebook.meta.downvotes = lorebook.meta.downvotes || 0;
+            lorebook.meta.useCount = lorebook.meta.useCount || 0; // useCount initialisieren
+
+            // createdAt ist auf der obersten Ebene des lorebook-Objekts.
+            // Wenn es fehlt (sehr alte Datei), wird es undefined sein, was bei der Sortierung zu 0 wird.
+            // Für eine robustere Lösung könnte man hier ein Fallback-Datum setzen, z.B. Date.now() oder file mtime.
+            // Aber da es beim Erstellen gesetzt wird, sollte es für die meisten Fälle vorhanden sein.
+            // lorebook.createdAt = lorebook.createdAt || Date.now(); // Optional: Fallback für sehr alte Dateien
 
             this.lorebooks[code] = lorebook;
-            // logMessage(`* Lorebook '${code}' geladen (Up: ${lorebook.meta.upvotes}, Down: ${lorebook.meta.downvotes})`, "info");
+            // logMessage(`* Lorebook '${code}' geladen (Up: ${lorebook.meta.upvotes}, Down: ${lorebook.meta.downvotes}, Use: ${lorebook.meta.useCount}, Created: ${new Date(lorebook.createdAt || 0).toISOString()})`, "info");
           } catch (err) {
             // logMessage(`* Fehler beim Laden des Lorebooks ${file}: ${err.message}`, "error");
           }
@@ -360,7 +367,7 @@ class LorebookManager {
   }
 
   // Hole alle öffentlichen Lorebooks
-  getPublicLorebooks() {
+  getPublicLorebooks(sortBy = 'useCount') { // sortBy Standardwert ist 'useCount'
     const publicLorebooks = [];
     for (const code in this.lorebooks) {
       const lorebook = this.lorebooks[code];
@@ -370,17 +377,31 @@ class LorebookManager {
           code: code,
           name: lorebook.meta.name || 'Unbenanntes Lorebook',
           description: lorebook.meta.description || 'Keine Beschreibung.',
-          tags: lorebook.meta.tags || [], // Tags hinzufügen
-          // Weitere Meta-Daten könnten hier hinzugefügt werden, falls nötig
+          tags: lorebook.meta.tags || [],
+          meta: lorebook.meta, // Ganze Meta für Sortierung (enthält useCount, createdAt)
+          createdAt: lorebook.createdAt // createdAt für Sortierung hinzufügen
         });
       }
     }
-    // logMessage(`* [DEBUG] getPublicLorebooks: ${publicLorebooks.length} öffentliche Lorebooks gefunden.`, "debug");
+
+    // Sortiere basierend auf dem sortBy Parameter
+    if (sortBy === 'createdAt') {
+      publicLorebooks.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); // Neueste zuerst
+    } else { // Standardmäßig oder bei sortBy === 'useCount'
+      publicLorebooks.sort((a, b) => (b.meta?.useCount || 0) - (a.meta?.useCount || 0)); // Beliebteste zuerst
+    }
     
-    // Sortiere nach useCount absteigend
-    publicLorebooks.sort((a, b) => (b.meta?.useCount || 0) - (a.meta?.useCount || 0));
-    
-    return publicLorebooks;
+    // Entferne das temporär hinzugefügte 'meta' und 'createdAt' aus dem finalen Array, wenn es nicht benötigt wird
+    // oder passe das Frontend an, um damit umzugehen. Fürs Erste belassen wir es, da es nützlich sein kann.
+    // logMessage(`* [DEBUG] getPublicLorebooks: ${publicLorebooks.length} öffentliche Lorebooks gefunden, sortiert nach ${sortBy}.`, "debug");
+    return publicLorebooks.map(lb => ({ // Stelle sicher, dass nur die benötigten Felder zurückgegeben werden
+        code: lb.code,
+        name: lb.name,
+        description: lb.description,
+        tags: lb.tags
+        // Meta-Daten wie useCount und createdAt werden nicht direkt an den Client gesendet,
+        // es sei denn, sie werden explizit für die Anzeige benötigt. Die Sortierung ist serverseitig.
+    }));
   }
 
   // Hole alle Lorebooks (für Admin)
@@ -476,6 +497,20 @@ class LorebookManager {
       logMessage(`* Fehler beim Aktualisieren des Lorebooks ${code}: ${err.message}`, "error");
       return null;
     }
+  }
+
+  // Erhöhe den useCount eines Lorebooks
+  incrementUseCount(code) {
+    if (!this.lorebooks[code]) {
+      //logMessage(`* [WARN] incrementUseCount: Lorebook mit Code ${code} nicht gefunden.`, "warn");
+      return false;
+    }
+    this.lorebooks[code].meta = this.lorebooks[code].meta || {};
+    this.lorebooks[code].meta.useCount = (this.lorebooks[code].meta.useCount || 0) + 1;
+    this.lorebooks[code].lastUsed = Date.now(); // Auch lastUsed aktualisieren
+    this.saveLorebook(code);
+    //logMessage(`* Lorebook '${code}' useCount erhöht auf ${this.lorebooks[code].meta.useCount}`, "info");
+    return true;
   }
   
   // Prüfe, ob ein Lorebook-Code in der Nachricht enthalten ist
@@ -2016,10 +2051,12 @@ app.post('/api/lorebook/:code/use', (req, res) => {
 // API zum Abrufen aller öffentlichen Lorebooks
 app.get('/api/lorebooks/public', (req, res) => {
   try {
-    const publicLorebooks = lorebookManager.getPublicLorebooks();
+    const sortBy = req.query.sortBy || 'useCount'; // 'useCount' oder 'createdAt'
+    const publicLorebooks = lorebookManager.getPublicLorebooks(sortBy);
     res.status(200).json({
       success: true,
-      lorebooks: publicLorebooks
+      lorebooks: publicLorebooks,
+      sortBy: sortBy
     });
   } catch (err) {
     logMessage(`* API-Fehler beim Abrufen öffentlicher Lorebooks: ${err.message}`, "error");
