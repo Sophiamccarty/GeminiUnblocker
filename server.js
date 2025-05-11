@@ -78,8 +78,13 @@ class LorebookManager {
             const lorebook = JSON.parse(data);
             const code = file.replace('.json', '');
             
+            // Stelle sicher, dass Bewertungsfelder vorhanden sind
+            lorebook.meta = lorebook.meta || {};
+            lorebook.meta.upvotes = lorebook.meta.upvotes || 0;
+            lorebook.meta.downvotes = lorebook.meta.downvotes || 0;
+
             this.lorebooks[code] = lorebook;
-            logMessage(`* Lorebook '${code}' geladen`, "info");
+            logMessage(`* Lorebook '${code}' geladen (Up: ${lorebook.meta.upvotes}, Down: ${lorebook.meta.downvotes})`, "info");
           } catch (err) {
             logMessage(`* Fehler beim Laden des Lorebooks ${file}: ${err.message}`, "error");
           }
@@ -109,7 +114,11 @@ class LorebookManager {
       // Speichere das Lorebook
       this.lorebooks[code] = {
         entries: data.entries, // Enthält nur die validierten Einträge
-        meta: jsonContent.meta || {}, // Übernehme das komplette Meta-Objekt vom Request-Body
+        meta: {
+            ...(jsonContent.meta || {}), // Übernehme das komplette Meta-Objekt vom Request-Body
+            upvotes: 0, // Initialisiere Bewertungen
+            downvotes: 0
+        },
         createdAt: Date.now(),
         lastUsed: Date.now()
       };
@@ -306,6 +315,32 @@ class LorebookManager {
     }
     // logMessage(`* [DEBUG] getPublicLorebooks: ${publicLorebooks.length} öffentliche Lorebooks gefunden.`, "debug");
     return publicLorebooks;
+  }
+
+  // Bewerte ein Lorebook
+  rateLorebook(code, ratingType) {
+    if (!this.lorebooks[code]) {
+      logMessage(`* [WARN] rateLorebook: Lorebook mit Code ${code} nicht gefunden.`, "warn");
+      return null;
+    }
+    
+    this.lorebooks[code].meta = this.lorebooks[code].meta || {};
+    this.lorebooks[code].meta.upvotes = this.lorebooks[code].meta.upvotes || 0;
+    this.lorebooks[code].meta.downvotes = this.lorebooks[code].meta.downvotes || 0;
+
+    if (ratingType === 'up') {
+      this.lorebooks[code].meta.upvotes++;
+    } else if (ratingType === 'down') {
+      this.lorebooks[code].meta.downvotes++;
+    } else {
+      logMessage(`* [WARN] rateLorebook: Ungültiger ratingType '${ratingType}' für Code ${code}.`, "warn");
+      return this.lorebooks[code].meta; // Gebe aktuelle Werte zurück, ohne zu speichern
+    }
+    
+    this.lorebooks[code].lastUsed = Date.now(); // Aktualisiere auch lastUsed bei einer Bewertung
+    this.saveLorebook(code);
+    logMessage(`* Lorebook '${code}' bewertet: ${ratingType}. Up: ${this.lorebooks[code].meta.upvotes}, Down: ${this.lorebooks[code].meta.downvotes}`, "info");
+    return this.lorebooks[code].meta; // Gebe aktualisierte Meta-Daten zurück
   }
   
   // Prüfe, ob ein Lorebook-Code in der Nachricht enthalten ist
@@ -1601,6 +1636,34 @@ app.delete('/api/lorebook/:code', (req, res) => {
       success: false,
       message: `Serverfehler: ${err.message}`
     });
+  }
+});
+
+// API zum Bewerten eines Lorebooks
+app.post('/api/lorebook/:code/rate', express.json(), (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    const { ratingType } = req.body; // Erwartet { "ratingType": "up" } oder { "ratingType": "down" }
+
+    if (!ratingType || (ratingType !== 'up' && ratingType !== 'down')) {
+      return res.status(400).json({ success: false, message: "Ungültiger ratingType. Muss 'up' oder 'down' sein." });
+    }
+
+    const updatedMeta = lorebookManager.rateLorebook(code, ratingType);
+
+    if (updatedMeta) {
+      return res.status(200).json({
+        success: true,
+        message: `Lorebook ${code} erfolgreich bewertet.`,
+        upvotes: updatedMeta.upvotes,
+        downvotes: updatedMeta.downvotes
+      });
+    } else {
+      return res.status(404).json({ success: false, message: "Lorebook nicht gefunden." });
+    }
+  } catch (err) {
+    logMessage(`* API-Fehler beim Bewerten des Lorebooks ${req.params.code}: ${err.message}`, "error");
+    res.status(500).json({ success: false, message: `Serverfehler: ${err.message}` });
   }
 });
 
