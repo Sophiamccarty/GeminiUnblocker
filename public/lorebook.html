@@ -1915,12 +1915,16 @@ async function handleRating(code, ratingType) {
 // Admin page functionality
         function createAdminLorebookItem(lorebook) {
             const item = document.createElement('div');
-            item.className = 'card'; // Reuse card style for consistency
+            item.className = 'card admin-lorebook-item'; // Reuse card style for consistency
             item.style.marginBottom = '15px';
+            item.dataset.code = lorebook.code; // Für einfachere Selektion
             item.innerHTML = `
                 <div class="card-header">
-                    <h4 class="card-title" style="font-size: 18px;">${lorebook.name || 'Unnamed Lorebook'} (Code: ${lorebook.code})</h4>
+                    <h4 class="card-title" style="font-size: 18px;">${lorebook.name || 'Unnamed Lorebook'} (<span class="code-display">${lorebook.code}</span>)</h4>
                     <div>
+                        <button class="button secondary-button edit-admin-lorebook-button" data-code="${lorebook.code}" style="padding: 6px 10px; font-size: 13px; margin-right: 5px;">
+                            <i class="fa fa-edit"></i> Edit
+                        </button>
                         <button class="button error-button delete-admin-lorebook-button" data-code="${lorebook.code}" style="padding: 6px 10px; font-size: 13px;">
                             <i class="fa fa-trash"></i> Delete
                         </button>
@@ -1928,11 +1932,19 @@ async function handleRating(code, ratingType) {
                 </div>
                 <div class="card-body" style="padding-top: 10px; padding-bottom: 10px;">
                     <p style="font-size: 14px; margin-bottom: 8px;"><strong>Description:</strong> ${lorebook.description || 'N/A'}</p>
-                    <p style="font-size: 14px; margin-bottom: 8px;"><strong>Public:</strong> ${lorebook.meta?.public ? 'Yes' : 'No'}</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;">
+                        <strong>Status:</strong> ${lorebook.meta?.public ? '<span class="badge badge-success">Public</span>' : '<span class="badge badge-warning">Private</span>'}
+                    </p>
                     <p style="font-size: 14px; margin-bottom: 8px;"><strong>Entries:</strong> ${Object.keys(lorebook.entries || {}).length}</p>
-                    <p style="font-size: 14px; margin-bottom: 0;"><strong>Tags:</strong> ${(lorebook.meta?.tags || []).join(', ') || 'N/A'}</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;"><strong>Tags:</strong> ${(lorebook.meta?.tags || []).map(tag => `<span class="tag">${tag}</span>`).join(' ') || 'N/A'}</p>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 4px;">Created: ${new Date(lorebook.createdAt).toLocaleString()}</p>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 0;">Last Used: ${new Date(lorebook.lastUsed).toLocaleString()}</p>
                 </div>
             `;
+            item.querySelector('.edit-admin-lorebook-button').addEventListener('click', (event) => {
+                const codeToEdit = event.currentTarget.dataset.code;
+                loadLorebookForEditing(codeToEdit);
+            });
             item.querySelector('.delete-admin-lorebook-button').addEventListener('click', async (event) => {
                 const button = event.currentTarget;
                 button.disabled = true;
@@ -2064,6 +2076,85 @@ async function handleRating(code, ratingType) {
             }
         }
         adminLorebookSearch.addEventListener('input', filterAdminLorebooks);
+
+        async function loadLorebookForEditing(code) {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                adminLogout();
+                adminLoginLink.click();
+                alert("Admin session expired. Please login again.");
+                return;
+            }
+            try {
+                // Da wir alle Lorebook-Daten bereits in `loadAdminLorebooks` laden,
+                // könnten wir sie clientseitig filtern, anstatt einen neuen API-Aufruf zu machen.
+                // Für Konsistenz und falls die Datenmenge groß wird, ist ein API-Aufruf besser.
+                // Hier gehen wir davon aus, dass die Daten bereits im `lorebookManager` (serverseitig) sind
+                // und der `/api/lorebook/:code` Endpunkt auch für Admins die vollen Daten liefert.
+                // WICHTIG: Der `/api/lorebook/:code` Endpunkt muss so angepasst werden,
+                // dass er für Admins IMMER das volle Lorebook zurückgibt, auch private.
+                // Dies ist in der server.js bereits berücksichtigt durch `req.session.isAdmin`.
+
+                const response = await fetch(`/api/lorebook/${code}`, {
+                     headers: { 'Authorization': `Bearer ${token}` } // Admin Token senden
+                });
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(`Failed to load lorebook for editing: ${errData.message || response.statusText}`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.lorebook) {
+                    const lbToEdit = data.lorebook;
+                    
+                    // Setze den Creator-Tab aktiv
+                    showPage('creator-page');
+                    navCreator.classList.add('active');
+                    navHome.classList.remove('active');
+                    navHelp.classList.remove('active');
+                    const adminNavLink = document.getElementById('nav-admin');
+                    if(adminNavLink) adminNavLink.classList.remove('active');
+
+
+                    // Lade Daten in den Creator
+                    lorebookNameInput.value = lbToEdit.meta?.name || '';
+                    lorebookDescInput.value = lbToEdit.meta?.description || '';
+                    publicToggle.checked = lbToEdit.meta?.public || false;
+                    
+                    lorebookTagsList = Array.isArray(lbToEdit.meta?.tags) ? [...lbToEdit.meta.tags] : [];
+                    updateLorebookTagDisplay();
+
+                    lorebook.entries = {}; // Reset current entries in creator
+                    for (const [id, entry] of Object.entries(lbToEdit.entries)) {
+                        lorebook.entries[id] = {
+                            ...entry,
+                            name: entry.name || entry.comment || `Entry ${id}` // UI 'name' hinzufügen
+                        };
+                    }
+                    
+                    // Setze den aktuellen Lorebook-Code für den Upload-Button, um ein Update zu signalisieren
+                    uploadToProxyButton.dataset.editingCode = code;
+                    uploadToProxyButton.innerHTML = '<i class="fa fa-cloud-upload"></i> Update Lorebook on Proxy';
+
+
+                    resetEntryForm(); // Formular für Einträge zurücksetzen
+                    updateEntryList(); // Eintragsliste aktualisieren
+                    updateJsonPreview(); // JSON-Vorschau aktualisieren
+
+                    // Scrolle zum Anfang der Creator-Seite
+                    window.scrollTo(0, 0);
+                    alert(`Lorebook "${lbToEdit.meta?.name || code}" loaded for editing.`);
+
+                } else {
+                    alert(`Could not load lorebook ${code} for editing: ${data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error loading lorebook for editing:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+
                 console.error('Error fetching lorebook details:', error);
                 alert('Error fetching lorebook details. See console for more info.');
             }
@@ -2637,52 +2728,93 @@ async function handleRating(code, ratingType) {
             });
         }
 
-        modalUploadButton.addEventListener('click', () => {
-            // Create a clean version for export
-            const exportLorebook = {
+        modalUploadButton.addEventListener('click', async () => {
+            const isEditing = uploadToProxyButton.dataset.editingCode;
+            const codeToUpdate = isEditing || null;
+
+            // Create a clean version for export/update
+            const payload = {
                 entries: {},
                 meta: {
-                    ...lorebook.meta,
-                    public: modalPublicToggle.checked
+                    ...lorebook.meta, // Nimmt Name, Beschreibung etc. aus dem Creator-Formular
+                    public: modalPublicToggle.checked, // Nimmt den Status aus dem Modal
+                    tags: [...lorebookTagsList] // Nimmt die aktuellen Tags
                 }
             };
             
             for (const [id, entry] of Object.entries(lorebook.entries)) {
-                // Create a copy without the 'name' field (for UI only)
                 const exportEntry = {...entry};
-                if ('name' in exportEntry) {
-                    delete exportEntry.name;
-                }
-                exportLorebook.entries[id] = exportEntry;
+                delete exportEntry.name; // UI-only 'name' entfernen
+                payload.entries[id] = exportEntry;
             }
-            
-            // In a real implementation, we would send a POST request to the server here
-            // For now, we'll simulate success with a random code
-            const mockCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-            
-            fetch('/api/lorebook', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(exportLorebook)
-            })
-            .then(response => response.json())
-            .then(data => {
-                uploadModal.style.display = 'none';
-                
-                // Show the success modal
-                document.getElementById('used-lorebook-code').innerHTML = `<LORE:${mockCode}>`; // Zeigt <LORE:CODE> an
-                document.getElementById('used-lorebook-modal').style.display = 'flex';
-                
-                // If it was made public, we'd want to refresh the list on the home page
-                if (modalPublicToggle.checked) {
-                    loadPublicLorebooks(); // Refresh the public lorebooks list
+
+            // UI Feedback für den Upload-Button
+            modalUploadButton.disabled = true;
+            modalUploadButton.innerHTML = `<i class="fa fa-spinner fa-spin"></i> ${isEditing ? 'Updating...' : 'Uploading...'}`;
+
+            try {
+                let response;
+                let apiUrl = '/api/lorebook';
+                let httpMethod = 'POST';
+
+                if (isEditing) {
+                    apiUrl = `/api/admin/lorebook/${codeToUpdate}`;
+                    httpMethod = 'PUT';
                 }
-            })
-            .catch(error => {
-                alert(`Error uploading lorebook: ${error.message}`);
-            });
+                
+                const token = localStorage.getItem('adminToken'); // Für PUT (Admin) erforderlich
+
+                response = await fetch(apiUrl, {
+                    method: httpMethod,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(isEditing && token && { 'Authorization': `Bearer ${token}` }) // Token nur für Admin-Update
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    uploadModal.style.display = 'none';
+                    
+                    if (isEditing) {
+                        alert(`Lorebook ${codeToUpdate} updated successfully!`);
+                        // Aktualisiere die Admin-Ansicht, um die Änderungen widerzuspiegeln
+                        loadAdminLorebooks();
+                        // Optional: Zurück zur Admin-Seite springen
+                        showPage('admin-page');
+                        const adminNavLink = document.getElementById('nav-admin');
+                        if(adminNavLink) adminNavLink.classList.add('active');
+
+                    } else {
+                        document.getElementById('used-lorebook-code').innerHTML = `<LORE:${data.code}>`;
+                        document.getElementById('used-lorebook-modal').style.display = 'flex';
+                    }
+                    
+                    if (modalPublicToggle.checked || (isEditing && payload.meta.public)) {
+                        loadPublicLorebooks(); // Öffentliche Liste aktualisieren
+                    }
+                     // Reset editing state
+                    uploadToProxyButton.removeAttribute('data-editing-code');
+                    uploadToProxyButton.innerHTML = '<i class="fa fa-cloud-upload"></i> Upload to Proxy';
+
+                } else {
+                    if (response.status === 401 && isEditing) {
+                        adminLogout();
+                        adminLoginLink.click();
+                        alert(`Failed to update lorebook: ${data.message || 'Session expired. Please login again.'}`);
+                    } else {
+                        alert(`Error ${isEditing ? 'updating' : 'uploading'} lorebook: ${data.message || 'Unknown server error'}`);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error ${isEditing ? 'updating' : 'uploading'} lorebook:`, error);
+                alert(`Error: ${error.message}`);
+            } finally {
+                modalUploadButton.disabled = false;
+                modalUploadButton.innerHTML = isEditing ? 'Update Lorebook on Proxy' : 'Upload to Proxy';
+            }
         });
         
         // Initialize the UI
