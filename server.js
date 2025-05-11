@@ -1903,12 +1903,6 @@ app.get('/api/admin/lorebooks', isAdminAuthenticated, (req, res) => {
 app.delete('/api/admin/lorebook/:code', isAdminAuthenticated, (req, res) => {
     try {
         const code = req.params.code.toUpperCase();
-        // Zusätzliche Sicherheitsüberprüfung: Ist der User wirklich Admin? (obwohl Middleware dies tun sollte)
-        // Dies ist redundant, wenn isAdminAuthenticated korrekt funktioniert.
-        if (!(req.session && req.session.isAdmin)) {
-             return res.status(403).json({ success: false, message: 'Forbidden: Admin access required for deletion.' });
-        }
-
         const deleted = lorebookManager.deleteLorebook(code);
         if (deleted) {
             logMessage(`* Admin hat Lorebook '${code}' gelöscht.`, "info");
