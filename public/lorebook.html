@@ -1372,6 +1372,7 @@
             card.className = 'card';
             // Add categories or tags if available in lorebook.meta
             card.setAttribute('data-category', lorebook.meta?.category || 'general');
+            card.setAttribute('data-code', lorebook.code); // Store code for easy access
         
             card.innerHTML = `
                 <div class="card-header">
@@ -1386,9 +1387,14 @@
                 </div>
                 <div class="card-footer">
                     <span class="code-display">Code: ${lorebook.code}</span>
-                    <button class="button outline-button use-lorebook-button" data-code="${lorebook.code}">
-                        <i class="fa fa-book"></i> Use Lorebook
-                    </button>
+                    <div>
+                        <button class="button outline-button view-details-button" data-code="${lorebook.code}" style="margin-right: 5px;">
+                            <i class="fa fa-eye"></i> View Details
+                        </button>
+                        <button class="button outline-button use-lorebook-button" data-code="${lorebook.code}">
+                            <i class="fa fa-book"></i> Use Lorebook
+                        </button>
+                    </div>
                 </div>
             `;
             return card;
@@ -1417,6 +1423,65 @@
                 lorebookGrid.innerHTML = '<p class="alert alert-error">Could not load public lorebooks. Please try again later.</p>';
             }
         }
+        
+        // Modal elements for details
+        const lorebookDetailsModal = document.getElementById('lorebook-details-modal');
+        const detailsModalTitle = document.getElementById('details-modal-title');
+        const detailsModalBody = document.getElementById('details-modal-body');
+
+        async function showLorebookDetails(code) {
+            try {
+                const response = await fetch(`/api/lorebook/${code}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.lorebook) {
+                    const lb = data.lorebook;
+                    detailsModalTitle.textContent = lb.meta?.name || `Lorebook ${lb.code || code}`; // Use lb.code as fallback
+                    
+                    let entriesHtml = '<p><strong>Description:</strong> ' + (lb.meta?.description || 'N/A') + '</p>';
+                    entriesHtml += '<h4>Entries:</h4>';
+                    
+                    if (lb.entries && Object.keys(lb.entries).length > 0) {
+                        entriesHtml += '<ul style="list-style-type: none; padding-left: 0;">';
+                        for (const [entryId, entry] of Object.entries(lb.entries)) {
+                            entriesHtml += `<li style="margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 4px;">`;
+                            // Assuming entry.name was added for UI in creator, if not, fallback to entryId
+                            entriesHtml += `<strong>${entry.name || entry.comment || `Entry ${entryId}`}</strong> (${entry.constant ? 'Always Active' : 'Keyword-based'}) ${entry.disable ? '<span class="badge badge-warning">Disabled</span>' : ''}<br>`;
+                            if (!entry.constant && entry.key && entry.key.length > 0) {
+                                entriesHtml += `<em>Keywords:</em> ${entry.key.join(', ')}<br>`;
+                            }
+                            if (!entry.constant && entry.keysecondary && entry.keysecondary.length > 0) {
+                                entriesHtml += `<em>Secondary Keywords:</em> ${entry.keysecondary.join(', ')}<br>`;
+                            }
+                            entriesHtml += `<div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 5px; border-radius: 3px; margin-top: 5px;">${entry.content}</div>`;
+                            entriesHtml += `</li>`;
+                        }
+                        entriesHtml += '</ul>';
+                    } else {
+                        entriesHtml += '<p>This lorebook has no entries.</p>';
+                    }
+                    detailsModalBody.innerHTML = entriesHtml;
+                    lorebookDetailsModal.style.display = 'flex';
+                } else {
+                    alert('Could not load lorebook details: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error fetching lorebook details:', error);
+                alert('Error fetching lorebook details. See console for more info.');
+            }
+        }
+
+        // Event delegation for "View Details" buttons on the lorebook grid
+        lorebookGrid.addEventListener('click', function(event) {
+            const target = event.target.closest('.view-details-button');
+            if (target) {
+                const code = target.getAttribute('data-code');
+                showLorebookDetails(code);
+            }
+        });
         
         // Creator functionality
         let lorebook = {
@@ -1820,15 +1885,32 @@
         
         modalCloseButtons.forEach(button => {
             button.addEventListener('click', () => {
-                uploadModal.style.display = 'none';
-                document.getElementById('used-lorebook-modal').style.display = 'none';
+                // General close for all modals that use this class
+                if (uploadModal) uploadModal.style.display = 'none';
+                
+                const usedLorebookModal = document.getElementById('used-lorebook-modal');
+                if (usedLorebookModal) usedLorebookModal.style.display = 'none';
+                
+                if (lorebookDetailsModal) lorebookDetailsModal.style.display = 'none';
             });
         });
         
-        document.querySelector('.modal-close-button').addEventListener('click', () => {
-            document.getElementById('used-lorebook-modal').style.display = 'none';
-        });
-        
+        // Ensure the specific close button for used-lorebook-modal still works
+        const usedLorebookModalCloseButton = document.querySelector('#used-lorebook-modal .modal-close-button');
+        if (usedLorebookModalCloseButton) {
+            usedLorebookModalCloseButton.addEventListener('click', () => {
+                const usedLorebookModal = document.getElementById('used-lorebook-modal');
+                if (usedLorebookModal) usedLorebookModal.style.display = 'none';
+            });
+        }
+         // Ensure the specific close button for details-modal still works
+        const detailsModalCloseButton = document.querySelector('#lorebook-details-modal .modal-close-button');
+        if (detailsModalCloseButton) {
+            detailsModalCloseButton.addEventListener('click', () => {
+                if (lorebookDetailsModal) lorebookDetailsModal.style.display = 'none';
+            });
+        }
+
         modalUploadButton.addEventListener('click', () => {
             // Create a clean version for export
             const exportLorebook = {
