@@ -98,7 +98,7 @@ class LorebookManager {
       logMessage(`* [DEBUG] createLorebook: Empfangene jsonContent: ${JSON.stringify(jsonContent)?.substring(0, 200)}`, "debug");
       const data = this.validateAndProcessLorebook(jsonContent);
       if (!data) {
-        logMessage(`* [DEBUG] createLorebook: Validierung fehlgeschlagen oder keine gültigen Einträge für jsonContent: ${JSON.stringify(jsonContent)?.substring(0, 200)}`, "warn");
+        logMessage(`* [DEBUG] createLorebook: Validierung fehlgeschlagen oder keine gültigen Einträge für jsonContent. Meta: ${JSON.stringify(jsonContent?.meta)}`, "warn");
         return null;
       }
       
@@ -108,12 +108,13 @@ class LorebookManager {
       
       // Speichere das Lorebook
       this.lorebooks[code] = {
-        entries: data.entries,
+        entries: data.entries, // Enthält nur die validierten Einträge
+        meta: jsonContent.meta || {}, // Übernehme das komplette Meta-Objekt vom Request-Body
         createdAt: Date.now(),
         lastUsed: Date.now()
       };
       
-      logMessage(`* [DEBUG] createLorebook: Versuche Lorebook zu speichern mit Code: ${code}, Daten: ${JSON.stringify(this.lorebooks[code])?.substring(0, 200)}`, "debug");
+      logMessage(`* [DEBUG] createLorebook: Versuche Lorebook zu speichern mit Code: ${code}. Meta-Objekt: ${JSON.stringify(this.lorebooks[code]?.meta)}. Erste Entry-Keys: ${Object.keys(this.lorebooks[code]?.entries || {}).slice(0,2)}`, "debug");
       // Speichere auf Festplatte
       this.saveLorebook(code);
       const filePath = path.join(LOREBOOK_DIR, `${code}.json`);
