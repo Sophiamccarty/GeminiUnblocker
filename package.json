@@ -1,0 +1,14 @@
+{
+  "name": "janitor-openrouter-proxy",
+  "version": "1.0.0",
+  "description": "Ein Proxy, um JanitorAI mit openrouter.ai zu verbinden und safety_settings anzupassen",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+"dependencies": {
+  "cors": "^2.8.5",
+  "axios": "^1.3.4",
+  "express": "^4.18.2"
+  }
+}
