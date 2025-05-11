@@ -471,12 +471,12 @@
             font-size: 13px; /* Etwas kleiner */
             color: var(--accent-color); /* Akzentfarbe für Code */
             border: 1px solid var(--medium-gray);
-            display: inline-block; /* Zurück zum ursprünglichen Display-Typ für besseres Breitenmanagement */
-            min-width: 120px; /* Etwas breiter als ursprünglich, um mehr Platz für den Code zu geben */
-            white-space: nowrap; /* Verhindert den Umbruch des "Code:" Textes, falls er kurz genug ist */
-            overflow: hidden; /* Verhindert Überlaufen, falls der Code doch zu lang ist */
-            text-overflow: ellipsis; /* Zeigt "..." an, wenn der Text überläuft */
-            vertical-align: middle; /* Stellt sicher, dass es gut mit den Buttons ausgerichtet ist */
+            display: inline-block; /* Behält das inline-block Verhalten bei */
+            min-width: 150px;  /* Erhöht die Mindestbreite weiter, um mehr Platz zu schaffen */
+            white-space: nowrap; /* Verhindert Textumbruch im Kasten */
+            overflow: hidden;    /* Versteckt überlaufenden Text */
+            text-overflow: ellipsis; /* Zeigt "..." für überlaufenden Text */
+            vertical-align: middle; /* Hilft bei der Ausrichtung mit benachbarten Elementen, wenn als inline-block behandelt */
         }
 
         .pagination {
