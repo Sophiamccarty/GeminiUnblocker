@@ -1568,8 +1568,12 @@
                     navContainer.appendChild(adminNavLink);
                     adminNavLink.addEventListener('click', (e) => {
                         e.preventDefault();
-                        if (isAdminLoggedIn) showPage('admin-page');
-                        else adminLoginLink.click();
+                        if (isAdminLoggedIn) {
+                            showPage('admin-page');
+                            loadAdminLorebooks(); // Lade Lorebooks beim Klick auf den Admin-Tab
+                        } else {
+                            adminLoginLink.click();
+                        }
                     });
                 }
 
@@ -1648,6 +1652,7 @@
                             e.preventDefault();
                             if (isAdminLoggedIn) { // Prüfe erneut, falls Token zwischenzeitlich entfernt wurde
                                 showPage('admin-page');
+                                loadAdminLorebooks(); // Auch hier laden
                             } else {
                                 adminLoginLink.click();
                             }
@@ -2050,13 +2055,20 @@ async function handleRating(code, ratingType) {
         function filterAdminLorebooks() {
             if (!adminPage.style.display || adminPage.style.display === 'none') return;
             const searchTerm = adminLorebookSearch.value.toLowerCase();
-            const items = adminLorebookList.querySelectorAll('.card');
+            const items = adminLorebookList.querySelectorAll('.card.admin-lorebook-item'); // Genauerer Selektor
             let visibleCount = 0;
+
             items.forEach(item => {
                 const title = item.querySelector('.card-title').textContent.toLowerCase();
-                const code = item.querySelector('.delete-admin-lorebook-button').getAttribute('data-code').toLowerCase();
-                const description = item.querySelector('p:nth-of-type(1)').textContent.toLowerCase(); // Description
-                const tagsText = item.querySelector('p:nth-of-type(4)').textContent.toLowerCase(); // Tags
+                // Korrekter Selektor für den Code, basierend auf der Struktur in createAdminLorebookItem
+                const codeElement = item.querySelector('.code-display');
+                const code = codeElement ? codeElement.textContent.toLowerCase().replace('code:','').trim() : '';
+                
+                const descriptionElement = item.querySelector('.card-body p:first-child'); // Annahme: Beschreibung ist das erste <p>
+                const description = descriptionElement ? descriptionElement.textContent.toLowerCase() : '';
+                
+                const tagsElements = item.querySelectorAll('.card-body .tag');
+                const tagsText = Array.from(tagsElements).map(tag => tag.textContent.toLowerCase()).join(' ');
 
                 if (title.includes(searchTerm) || code.includes(searchTerm) || description.includes(searchTerm) || tagsText.includes(searchTerm)) {
                     item.style.display = 'block';
@@ -2065,14 +2077,40 @@ async function handleRating(code, ratingType) {
                     item.style.display = 'none';
                 }
             });
-             const emptyState = adminLorebookList.querySelector('.empty-state');
-            if (visibleCount === 0 && !searchTerm && items.length > 0) { // Wenn keine Suchanfrage und trotzdem nichts sichtbar (z.B. alles gelöscht)
-                 if(emptyState) emptyState.innerHTML = '<p>No lorebooks match your search, or all have been deleted.</p>';
-            } else if (visibleCount === 0 && searchTerm) {
-                 if(emptyState) emptyState.innerHTML = '<p>No lorebooks match your search.</p>';
-                 else if (items.length > 0) adminLorebookList.innerHTML += '<div class="empty-state"><p>No lorebooks match your search.</p></div>'; // Hinzufügen, falls noch kein Empty State da ist
-            } else {
-                if(emptyState) emptyState.remove(); // Entferne Empty State wenn Ergebnisse da sind
+
+            let emptyState = adminLorebookList.querySelector('.empty-state');
+            
+            // Stelle sicher, dass ein emptyState-Div existiert, wenn es benötigt wird.
+            if (!emptyState && (items.length === 0 || (items.length > 0 && visibleCount === 0 && searchTerm))) {
+                emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                // Füge es am Anfang oder Ende der Liste hinzu, je nach Präferenz. Hier am Ende.
+                adminLorebookList.appendChild(emptyState);
+            }
+
+            if (emptyState) { // Nur fortfahren, wenn emptyState existiert oder erstellt wurde
+                emptyState.style.display = 'none'; // Standardmäßig ausblenden
+
+                if (items.length === 0 && !searchTerm) {
+                    // Keine Items von Anfang an UND keine Suche:
+                    // Der Text wurde von loadAdminLorebooks gesetzt (z.B. "No lorebooks found." oder spezifischer Fehler).
+                    // Stelle sicher, dass dieser Status angezeigt wird.
+                    // Wenn emptyState.innerHTML leer ist oder den Default-HTML-Text enthält, setze einen Fallback.
+                    const currentEmptyText = emptyState.querySelector('p')?.textContent || emptyState.textContent;
+                    if (!currentEmptyText || currentEmptyText.trim() === "" || currentEmptyText.includes("No lorebooks found or an error occurred.")) {
+                        emptyState.innerHTML = '<p>No lorebooks found.</p>';
+                    }
+                    emptyState.style.display = 'block';
+                } else if (items.length > 0 && visibleCount === 0 && searchTerm) {
+                    // Items vorhanden, aber keines passt zur Suche:
+                    emptyState.innerHTML = '<p>No lorebooks match your search.</p>';
+                    emptyState.style.display = 'block';
+                } else if (items.length === 0 && searchTerm) {
+                    // Keine Items von Anfang an UND es wird gesucht (unwahrscheinlich, aber zur Sicherheit):
+                    emptyState.innerHTML = '<p>No lorebooks match your search.</p>';
+                    emptyState.style.display = 'block';
+                }
+                // Wenn items.length > 0 und visibleCount > 0, bleibt der emptyState ausgeblendet.
             }
         }
         adminLorebookSearch.addEventListener('input', filterAdminLorebooks);
