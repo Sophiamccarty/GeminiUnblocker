@@ -349,6 +349,7 @@
             border-top: 1px solid var(--light-color);
             font-size: 14px;
             color: var(--dark-gray); /* Dunkleres Grau */
+            gap: 10px; /* Fügt einen kleinen Abstand zwischen Code und Buttons hinzu, falls sie direkt nebeneinander liegen */
         }
         .card-footer-actions {
             display: flex;
@@ -469,12 +470,13 @@
             border-radius: var(--border-radius);
             font-size: 13px; /* Etwas kleiner */
             color: var(--accent-color); /* Akzentfarbe für Code */
-            /* display: inline-block; */ /* Im Flex-Kontext nicht unbedingt nötig, Flex-Item verhält sich blockartig */
             border: 1px solid var(--medium-gray);
-            flex-shrink: 1; /* Erlaubt diesem Element zu schrumpfen, wenn nicht genug Platz ist */
-            min-width: 0; /* Wichtig in Kombination mit flex-shrink, um echtes Schrumpfen zu ermöglichen */
-            overflow-wrap: break-word; /* Bricht lange Wörter/Codes um */
-            word-break: break-all; /* Alternativ, für aggressiveren Umbruch */
+            display: inline-block; /* Zurück zum ursprünglichen Display-Typ für besseres Breitenmanagement */
+            min-width: 120px; /* Etwas breiter als ursprünglich, um mehr Platz für den Code zu geben */
+            white-space: nowrap; /* Verhindert den Umbruch des "Code:" Textes, falls er kurz genug ist */
+            overflow: hidden; /* Verhindert Überlaufen, falls der Code doch zu lang ist */
+            text-overflow: ellipsis; /* Zeigt "..." an, wenn der Text überläuft */
+            vertical-align: middle; /* Stellt sicher, dass es gut mit den Buttons ausgerichtet ist */
         }
 
         .pagination {
@@ -1071,7 +1073,7 @@
             <nav class="header-nav">
                 <a href="#" class="active" id="nav-home">Home</a>
                 <a href="#" id="nav-creator">Creator</a>
-                <a href="#" id="nav-proxy-info">Proxy Info</a>
+                <a href="#" id="nav-proxy-info">Proxy Server</a>
                 <a href="https://colab.research.google.com/drive/1Yo2EE1wH5RA7ZDWTinpX5EJggtoNftKo?usp=sharing#scrollTo=MivdkgP7jYSb" target="_blank">OpenRouter Colab</a>
                 <a href="https://colab.research.google.com/drive/13xEzZjlxJb7P6ro1akrq-UAhuUDgbC2A?usp=sharing" target="_blank">AI Studio Colab</a>
                 <a href="#" id="nav-help">Help</a>
@@ -1382,6 +1384,9 @@
                 <li><strong>Use in conversations</strong> - Include the code anywhere in your message to the AI.</li>
                 <li><strong>Activate entries</strong> - Use keywords from your lorebook in your messages to trigger the corresponding entries.</li>
             </ol>
+
+            <h3>Important Note on Usage</h3>
+            <p>Currently, JanitorAI does not natively support lorebooks. Therefore, to use the lorebooks created or found here, you <strong>must</strong> route your AI requests through one of the provided proxy server endpoints (see "Proxy Server" page) or use one of the linked Colab notebooks. These proxy services handle the injection of lorebook entries based on your prompts.</p>
             
             <h3>Lorebook Entry Settings</h3>
             <ul>
@@ -1413,14 +1418,14 @@
 
         <!-- Proxy Info Page (MOVED HERE) -->
         <div id="proxy-info-page" class="main-content" style="display: none;">
-            <h2>Proxy Server Information</h2>
+            <h2>Proxy Server Details</h2>
             <p>This page provides details on how to use the proxy server with different AI model providers.</p>
         
             <div class="info-box">
                 <h3><i class="fa fa-cogs"></i> Google AI Studio Models</h3>
-                <p>To use models via Google AI Studio, configure your application (e.g., JanitorAI, SillyTavern) with the following API endpoint:</p>
+                <p>To use models via Google AI Studio, configure your application (e.g., JanitorAI) with the following API endpoint:</p>
                 <div class="code-display-block">
-                    <span id="aistudio-url">/aistudio</span>
+                    <span id="aistudio-url">https://sophiasunblocker.onrender.com/aistudio</span>
                     <button class="button copy-button" onclick="copyToClipboard('aistudio-url')"><i class="fa fa-copy"></i> Copy URL</button>
                 </div>
                 <p>Select one of the following models in your application's settings. The proxy will then route your requests to the appropriate Google AI model.</p>
@@ -1441,10 +1446,17 @@
                 <h3><i class="fa fa-rocket"></i> OpenRouter Models</h3>
                 <p>To use models via OpenRouter, configure your application with the following API endpoint:</p>
                 <div class="code-display-block">
-                    <span id="openrouter-url">/openrouter</span>
+                    <span id="openrouter-url">https://sophiasunblocker.onrender.com/openrouter</span>
                     <button class="button copy-button" onclick="copyToClipboard('openrouter-url')"><i class="fa fa-copy"></i> Copy URL</button>
                 </div>
-                <p>You can select any model available on OpenRouter. Specify the model string either in your application (e.g., JanitorAI settings) or directly on the OpenRouter platform if your application forwards the model choice. The proxy will pass this model identifier to OpenRouter.</p>
+
+                <div class="alert alert-info" style="margin-top: 15px; padding: 15px;">
+                    <h4 style="margin-top: 0; color: var(--primary-dark);"><i class="fa fa-star"></i> Important OpenRouter Feature</h4>
+                    <p>Using the OpenRouter endpoint (<code>https://sophiasunblocker.onrender.com/openrouter</code>) allows you to use <strong>any model available on OpenRouter</strong> with your Lorebooks! This includes models like Claude, DeepSeek, Llama, and many more, not just Gemini models.</p>
+                    <p>Simply select your desired model in your JanitorAI settings when using this proxy URL.</p>
+                </div>
+
+                <p>You can select any model available on OpenRouter. Specify the model string in your application (e.g., JanitorAI settings). The proxy will pass this model identifier to OpenRouter.</p>
                 <h4>Example Models (check OpenRouter for the full list and latest identifiers):</h4>
                 <ul>
                     <li>google/gemini-2.5-pro-preview</li>
@@ -1465,7 +1477,14 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <div>Lorebook System for Google AI Proxy</div>
+            <div>
+                Lorebook System for Google AI Proxy
+                <p style="font-size: 0.8em; margin-top: 10px; color: var(--medium-gray);">
+                    <strong>Disclaimer:</strong> Your data is not stored or logged by this proxy service.
+                    The server is open-source and its code can be reviewed on
+                    <a href="https://github.com/Sophiamccarty/GeminiUnblocker" target="_blank" style="color: var(--secondary-color);">GitHub</a>.
+                </p>
+            </div>
             <div class="footer-links">
                 <a href="#" id="footer-privacy">Privacy</a>
                 <a href="#" id="footer-terms">Terms</a>
