@@ -1612,9 +1612,6 @@
                     </button>
                     <div class="collapsible-content">
                         <p style="margin-top:15px; margin-bottom:15px;">You can use the following commands directly in your prompt field in JanitorAI (or other compatible applications) to control the proxy's behavior for the current request:</p>
-                        <button class="button copy-all-commands-button" style="margin-bottom: 15px;">
-                            <i class="fa fa-clipboard"></i> Copy All Commands
-                        </button>
                         <dl class="command-list" id="server-command-list-dl">
                             <dt><JAILBREAK=on></dt>
                             <dd>Activates the jailbreak content for /AiStudio, /NonJailbreak and /OpenRouter requests. Overrides the default non-jailbreak behavior of these routes.</dd>
@@ -3230,6 +3227,62 @@
             });
         }
 
+        function setupIndividualCopyButtons() {
+            const commandListDL = document.getElementById('server-command-list-dl');
+            if (commandListDL) {
+                const dtElements = commandListDL.querySelectorAll('dt');
+                dtElements.forEach(dt => {
+                    // Prevent adding multiple buttons
+                    if (dt.querySelector('.individual-copy-button')) {
+                        return;
+                    }
+
+                    const commandText = dt.textContent.trim();
+                    if (commandText) {
+                        const copyButton = document.createElement('button');
+                        copyButton.innerHTML = '<i class="fa fa-copy"></i>'; // Nur Icon für Kompaktheit
+                        copyButton.className = 'button outline-button individual-copy-button';
+                        copyButton.title = 'Copy command';
+                        
+                        copyButton.style.marginLeft = '10px';
+                        copyButton.style.padding = '3px 8px'; // Etwas mehr Padding für Klickbarkeit
+                        copyButton.style.fontSize = '12px';
+                        copyButton.style.verticalAlign = 'middle';
+                        copyButton.style.lineHeight = '1'; // Verhindert zu hohe Buttons durch Icon
+
+                        copyButton.addEventListener('click', (event) => {
+                            event.stopPropagation(); // Verhindert, dass das Klicken des Buttons andere Events auslöst
+                            navigator.clipboard.writeText(commandText).then(() => {
+                                const originalText = copyButton.innerHTML;
+                                copyButton.innerHTML = '<i class="fa fa-check"></i>';
+                                copyButton.disabled = true;
+                                setTimeout(() => {
+                                    copyButton.innerHTML = originalText;
+                                    copyButton.disabled = false;
+                                }, 1500);
+                            }).catch(err => {
+                                console.error('Failed to copy command: ', err);
+                                alert('Failed to copy command. Please try manually.');
+                            });
+                        });
+
+                        // Den Text des dt-Elements in ein Span wrappen, um den Button daneben zu platzieren
+                        const commandSpan = document.createElement('span');
+                        commandSpan.textContent = commandText;
+                        
+                        dt.textContent = ''; // Leere ursprünglichen Text
+                        dt.appendChild(commandSpan);
+                        dt.appendChild(copyButton);
+                        
+                        // Style für dt, um Flexbox-Layout zu ermöglichen
+                        dt.style.display = 'flex';
+                        dt.style.justifyContent = 'space-between'; // Text links, Button rechts
+                        dt.style.alignItems = 'center';
+                    }
+                });
+            }
+        }
+
         // Collapsible menu functionality
         const collapsibles = document.querySelectorAll('.collapsible-header');
         collapsibles.forEach(collapsible => {
@@ -3240,31 +3293,13 @@
                     content.style.display = "none";
                 } else {
                     content.style.display = "block";
+                    // If this is the server commands menu, set up the copy buttons
+                    if (this.parentElement.classList.contains('server-commands-menu') || (this.parentElement.id && this.parentElement.id === 'server-commands-menu-direct-parent-check')) { // Add more specific check if needed
+                        setupIndividualCopyButtons();
+                    }
                 }
             });
         });
-
-        // Copy all server commands
-        const copyAllCommandsButton = document.querySelector('.copy-all-commands-button');
-        if (copyAllCommandsButton) {
-            copyAllCommandsButton.addEventListener('click', () => {
-                const commandListDL = document.getElementById('server-command-list-dl');
-                if (commandListDL) {
-                    const commands = [];
-                    const dtElements = commandListDL.querySelectorAll('dt');
-                    dtElements.forEach(dt => {
-                        commands.push(dt.textContent);
-                    });
-                    const allCommandsText = commands.join('\n');
-                    navigator.clipboard.writeText(allCommandsText).then(() => {
-                        alert('All server commands copied to clipboard!');
-                    }).catch(err => {
-                        console.error('Failed to copy all commands: ', err);
-                        alert('Failed to copy commands. Please try manually.');
-                    });
-                }
-            });
-        }
 
         // Initial load
         function checkInitialAdminState() {
@@ -3283,6 +3318,7 @@
         checkInitialAdminState();
         showPage('home-page'); // Show home page by default
         loadPublicLorebooks(); // Load public lorebooks on initial page load
+        setupIndividualCopyButtons(); // Initial call to set up buttons if the menu is already open or commands are visible
     </script>
 </body>
 </html>
