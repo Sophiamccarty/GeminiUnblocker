@@ -1407,7 +1407,11 @@
                 </div>
                 <div class="card-footer">
                     <span class="code-display">Code: ${lorebook.code}</span>
-                    <div>
+                    <div class="ratings" style="margin-left: auto; display: flex; align-items: center; gap: 5px;">
+                        <span class="upvotes" title="Upvotes"><i class="fa fa-thumbs-up"></i> ${lorebook.meta?.upvotes || 0}</span>
+                        <span class="downvotes" title="Downvotes"><i class="fa fa-thumbs-down"></i> ${lorebook.meta?.downvotes || 0}</span>
+                    </div>
+                    <div style="margin-left: 10px;">
                         <button class="button outline-button view-details-button" data-code="${lorebook.code}" style="margin-right: 5px;">
                             <i class="fa fa-eye"></i> View Details
                         </button>
@@ -1439,8 +1443,21 @@
                     const lb = data.lorebook;
                     detailsModalTitle.textContent = lb.meta?.name || `Lorebook ${lb.code || code}`; // Use lb.code as fallback
                     
-                    let entriesHtml = '<p><strong>Description:</strong> ' + (lb.meta?.description || 'N/A') + '</p>';
-                    entriesHtml += '<h4>Entries:</h4>';
+                    let entriesHtml = `
+                        <div style="margin-bottom: 15px;">
+                            <p><strong>Description:</strong> ${lb.meta?.description || 'N/A'}</p>
+                            <div class="ratings-modal" style="margin-top: 10px; display: flex; align-items: center; gap: 15px;">
+                                <span><strong>Ratings:</strong></span>
+                                <button class="button outline-button rate-button" data-code="${lb.code || code}" data-rating="up" title="Upvote">
+                                    <i class="fa fa-thumbs-up"></i> <span id="modal-upvotes-${lb.code || code}">${lb.meta?.upvotes || 0}</span>
+                                </button>
+                                <button class="button outline-button rate-button" data-code="${lb.code || code}" data-rating="down" title="Downvote">
+                                    <i class="fa fa-thumbs-down"></i> <span id="modal-downvotes-${lb.code || code}">${lb.meta?.downvotes || 0}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <h4>Entries:</h4>
+                    `;
                     
                     if (lb.entries && Object.keys(lb.entries).length > 0) {
                         entriesHtml += '<ul style="list-style-type: none; padding-left: 0;">';
@@ -1458,6 +1475,58 @@
                             }
                             if (!entry.constant && entry.keysecondary && entry.keysecondary.length > 0) {
                                 entriesHtml += `<em>Secondary Keywords:</em> ${entry.keysecondary.join(', ')}<br>`;
+async function handleRating(code, ratingType) {
+            try {
+                const response = await fetch(`/api/lorebook/${code}/rate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ratingType: ratingType }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Unknown error during rating.' }));
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorData.message}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update votes in the modal
+                    const modalUpvoteElem = document.getElementById(`modal-upvotes-${code}`);
+                    const modalDownvoteElem = document.getElementById(`modal-downvotes-${code}`);
+                    if (modalUpvoteElem) modalUpvoteElem.textContent = data.upvotes;
+                    if (modalDownvoteElem) modalDownvoteElem.textContent = data.downvotes;
+
+                    // Update votes in the card view (if visible)
+                    const cardElem = lorebookGrid.querySelector(`.card[data-code="${code}"]`);
+                    if (cardElem) {
+                        const cardUpvoteElem = cardElem.querySelector('.upvotes');
+                        const cardDownvoteElem = cardElem.querySelector('.downvotes');
+                        if (cardUpvoteElem) cardUpvoteElem.innerHTML = `<i class="fa fa-thumbs-up"></i> ${data.upvotes}`;
+                        if (cardDownvoteElem) cardDownvoteElem.innerHTML = `<i class="fa fa-thumbs-down"></i> ${data.downvotes}`;
+                    }
+                     // Potentially refresh the public lorebooks if sorting/filtering by rating is implemented later
+                    // loadPublicLorebooks(); 
+                } else {
+                    alert('Failed to submit rating: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                alert('Error submitting rating: ' + error.message);
+            }
+        }
+
+        // Event delegation for rating buttons within the details modal
+        detailsModalBody.addEventListener('click', function(event) {
+            const target = event.target.closest('.rate-button');
+            if (target) {
+                const code = target.getAttribute('data-code');
+                const ratingType = target.getAttribute('data-rating');
+                handleRating(code, ratingType);
+            }
+        });
                             }
                             entriesHtml += `<div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 5px; border-radius: 3px; margin-top: 5px;">${entry.content}</div>`;
                             entriesHtml += `</li>`;
