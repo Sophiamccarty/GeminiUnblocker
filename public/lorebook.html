@@ -1558,56 +1558,66 @@
                 return;
             }
             adminLoginError.style.display = 'none';
+            adminLoginSubmit.disabled = true; // Verhindere doppelte Klicks
+            adminLoginSubmit.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Logging in...';
 
-            // !!! WICHTIG: Dies ist nur eine clientseitige Simulation !!!
-            // In einer echten Anwendung MUSS die Passwortüberprüfung serverseitig erfolgen!
-            // const response = await fetch('/api/admin/login', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ password })
-            // });
-            // if (response.ok) {
-            //     isAdminLoggedIn = true;
-            //     adminPasswordModal.style.display = 'none';
-            //     showPage('admin-page'); // Zeige Admin-Seite
-            //     loadAdminLorebooks(); // Lade Lorebooks für Admin
-            // } else {
-            //     const errorData = await response.json().catch(() => ({ message: 'Login failed. Please try again.'}));
-            //     adminLoginError.textContent = errorData.message;
-            //     adminLoginError.style.display = 'block';
-            //     isAdminLoggedIn = false;
-            // }
 
-            // Temporäre clientseitige "Simulation" für Entwicklungszwecke:
-            // Ersetzen Sie "SUPER_SECRET_PASSWORD" durch das tatsächliche Passwort, das Sie in Render setzen würden.
-            // Dies ist NICHT sicher für eine Produktionsumgebung.
-            const MOCK_ADMIN_PASSWORD = "Admin_Password_Placeholder"; // Platzhalter!
-            if (password === MOCK_ADMIN_PASSWORD) {
-                isAdminLoggedIn = true;
-                adminPasswordModal.style.display = 'none';
-                navAdmin.classList.add('active'); // Nav-Link hervorheben (muss noch erstellt werden)
-                showPage('admin-page');
-                loadAdminLorebooks();
-                 // Add 'Admin' to navigation if not already there
-                if (!document.getElementById('nav-admin')) {
-                    const adminNavLink = document.createElement('a');
-                    adminNavLink.href = '#';
-                    adminNavLink.id = 'nav-admin';
-                    adminNavLink.textContent = 'Admin';
-                    adminNavLink.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        if (isAdminLoggedIn) {
-                            showPage('admin-page');
-                        } else {
-                            adminLoginLink.click(); // Zeige Login Modal wenn nicht eingeloggt
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    isAdminLoggedIn = true;
+                    adminPasswordModal.style.display = 'none';
+                    
+                    // Dynamisch Admin-Nav-Link hinzufügen/aktivieren
+                    let adminNavLink = document.getElementById('nav-admin');
+                    if (!adminNavLink) {
+                        adminNavLink = document.createElement('a');
+                        adminNavLink.href = '#';
+                        adminNavLink.id = 'nav-admin';
+                        adminNavLink.textContent = 'Admin';
+                        
+                        // Füge den Admin-Link zur Hauptnavigation hinzu (z.B. nach 'Help')
+                        const navContainer = navHelp.parentNode; // Annahme: navHelp existiert und ist im Container
+                        if (navContainer) {
+                             navContainer.appendChild(adminNavLink);
                         }
-                    });
-                    navHelp.parentNode.appendChild(adminNavLink); // Fügt es nach dem Hilfe-Link ein
+
+                        adminNavLink.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (isAdminLoggedIn) {
+                                showPage('admin-page');
+                            } else {
+                                // Sollte nicht passieren, wenn ausgeloggt, wird der Link entfernt oder deaktiviert
+                                adminLoginLink.click();
+                            }
+                        });
+                    }
+                    // Alle Nav-Links deselektieren und dann Admin aktivieren
+                    [navHome, navCreator, navHelp, adminNavLink].forEach(nav => nav?.classList.remove('active'));
+                    adminNavLink.classList.add('active');
+
+                    showPage('admin-page');
+                    loadAdminLorebooks();
+                } else {
+                    adminLoginError.textContent = data.message || 'Login failed. Please try again.';
+                    adminLoginError.style.display = 'block';
+                    isAdminLoggedIn = false;
                 }
-            } else {
-                adminLoginError.textContent = 'Incorrect password.';
+            } catch (error) {
+                console.error("Admin login error:", error);
+                adminLoginError.textContent = 'An error occurred during login. Please check console.';
                 adminLoginError.style.display = 'block';
                 isAdminLoggedIn = false;
+            } finally {
+                adminLoginSubmit.disabled = false;
+                adminLoginSubmit.innerHTML = 'Login';
             }
         });
         
@@ -1866,23 +1876,37 @@ async function handleRating(code, ratingType) {
                     <p style="font-size: 14px; margin-bottom: 0;"><strong>Tags:</strong> ${(lorebook.meta?.tags || []).join(', ') || 'N/A'}</p>
                 </div>
             `;
-            item.querySelector('.delete-admin-lorebook-button').addEventListener('click', async () => {
+            item.querySelector('.delete-admin-lorebook-button').addEventListener('click', async (event) => {
+                const button = event.currentTarget;
+                button.disabled = true;
+                button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Deleting...';
+
                 if (confirm(`Are you sure you want to delete the lorebook "${lorebook.name || lorebook.code}"? This action cannot be undone.`)) {
-                    // !!! WICHTIG: Serverseitige Löschlogik erforderlich !!!
-                    // const response = await fetch(`/api/admin/lorebook/${lorebook.code}`, { method: 'DELETE' });
-                    // if (response.ok) {
-                    //     alert('Lorebook deleted successfully.');
-                    //     loadAdminLorebooks(); // Refresh list
-                    // } else {
-                    //     alert('Failed to delete lorebook.');
-                    // }
-                    alert(`Simulated deletion of lorebook: ${lorebook.code}. Implement server-side deletion.`);
-                    // Temporär: Entferne Element aus der Liste für Demo
-                    item.remove();
-                    const listIsEmpty = adminLorebookList.querySelector('.card') === null;
-                    if (listIsEmpty && !adminLorebookList.querySelector('.empty-state')) {
-                         adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found or all have been deleted.</p></div>';
+                    try {
+                        const response = await fetch(`/api/admin/lorebook/${lorebook.code}`, { method: 'DELETE' });
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            alert('Lorebook deleted successfully.');
+                            item.remove(); // Entferne das Element direkt aus der Liste
+                            const listIsEmpty = adminLorebookList.querySelector('.card') === null;
+                            if (listIsEmpty && !adminLorebookList.querySelector('.empty-state')) {
+                                adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found or all have been deleted.</p></div>';
+                            }
+                            // loadAdminLorebooks(); // Alternativ: Liste neu laden, kann aber flackern
+                        } else {
+                            alert(`Failed to delete lorebook: ${data.message || 'Unknown server error'}`);
+                        }
+                    } catch (error) {
+                        console.error("Error deleting lorebook:", error);
+                        alert(`Error deleting lorebook: ${error.message}. Check console.`);
+                    } finally {
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fa fa-trash"></i> Delete';
                     }
+                } else {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fa fa-trash"></i> Delete';
                 }
             });
             return item;
@@ -1890,55 +1914,38 @@ async function handleRating(code, ratingType) {
 
         async function loadAdminLorebooks() {
             if (!isAdminLoggedIn) return;
-            adminLorebookList.innerHTML = '<div class="spinner"></div><p>Loading lorebooks...</p>';
+            adminLorebookList.innerHTML = '<div class="spinner"></div><p style="text-align:center;">Loading lorebooks...</p>';
 
-            // !!! WICHTIG: Serverseitiger Endpunkt zum Abrufen ALLER Lorebooks erforderlich !!!
-            // try {
-            //     const response = await fetch('/api/admin/lorebooks'); // Hypothetischer Endpunkt
-            //     if (!response.ok) throw new Error('Failed to fetch lorebooks');
-            //     const data = await response.json();
-            //     if (data.success && data.lorebooks) {
-            //         adminLorebookList.innerHTML = '';
-            //         if (data.lorebooks.length === 0) {
-            //             adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found.</p></div>';
-            //             return;
-            //         }
-            //         data.lorebooks.forEach(lb => {
-            //             adminLorebookList.appendChild(createAdminLorebookItem(lb));
-            //         });
-            //     } else {
-            //         adminLorebookList.innerHTML = '<div class="empty-state"><p>Could not load lorebooks: ' + (data.message || 'Unknown error') + '</p></div>';
-            //     }
-            // } catch (error) {
-            //     console.error('Error loading admin lorebooks:', error);
-            //     adminLorebookList.innerHTML = '<div class="empty-state"><p>Error loading lorebooks. Check console.</p></div>';
-            // }
-
-            // Temporäre Mock-Daten für Entwicklungszwecke:
-            setTimeout(() => { // Simuliere Netzwerkverzögerung
-                const mockLorebooks = [
-                    { code: 'XYZ123', name: 'Admin Test Lorebook 1', description: 'A test book.', meta: { public: true, tags: ['test', 'admin'] }, entries: { e1: {} } },
-                    { code: 'ABC789', name: 'Another Admin Book', description: 'With more details.', meta: { public: false, tags: ['private', 'important'] }, entries: { e1:{}, e2:{} } },
-                    { code: 'TLK421', name: 'Middle Earth Handbook (from public)', description: 'Comprehensive guide...', meta: { public: true, tags: ['Fantasy', 'Tolkien'] }, entries: {} },
-                ];
-                adminLorebookList.innerHTML = '';
-                 if (mockLorebooks.length === 0) {
+            try {
+                const response = await fetch('/api/admin/lorebooks');
+                if (!response.ok) {
+                    let errorMsg = `Failed to fetch lorebooks. Status: ${response.status}`;
+                    try {
+                        const errData = await response.json();
+                        errorMsg = errData.message || errorMsg;
+                    } catch (e) { /* ignore json parsing error */ }
+                    throw new Error(errorMsg);
+                }
+                const data = await response.json();
+                adminLorebookList.innerHTML = ''; // Clear spinner
+                if (data.success && data.lorebooks) {
+                    if (data.lorebooks.length === 0) {
                         adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found.</p></div>';
                         return;
                     }
-                mockLorebooks.forEach(lb => {
-                    // Erstelle eine vollständige Lorebook-Struktur für createAdminLorebookItem
-                    const fullLb = {
-                        code: lb.code,
-                        name: lb.name, // Name für Anzeige
-                        description: lb.description, // Beschreibung für Anzeige
-                        meta: lb.meta, // Meta-Objekt mit public und tags
-                        entries: lb.entries // Einträge-Objekt
-                    };
-                    adminLorebookList.appendChild(createAdminLorebookItem(fullLb));
-                });
-                filterAdminLorebooks(); // Filter nach dem Laden anwenden
-            }, 500);
+                    data.lorebooks.forEach(lb => {
+                        // Das lb-Objekt vom Server sollte bereits die benötigte Struktur haben
+                        // (code, name, description, meta, entries)
+                        adminLorebookList.appendChild(createAdminLorebookItem(lb));
+                    });
+                } else {
+                    adminLorebookList.innerHTML = `<div class="empty-state"><p>Could not load lorebooks: ${data.message || 'Unknown error from server'}</p></div>`;
+                }
+            } catch (error) {
+                console.error('Error loading admin lorebooks:', error);
+                adminLorebookList.innerHTML = `<div class="empty-state"><p>Error loading lorebooks: ${error.message}. Check console.</p></div>`;
+            }
+            filterAdminLorebooks(); // Filter auch nach dem Laden anwenden (oder wenn leer)
         }
 
         function filterAdminLorebooks() {
