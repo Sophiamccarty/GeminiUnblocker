@@ -2004,51 +2004,78 @@ async function handleRating(code, ratingType) {
         }
 
         async function loadAdminLorebooks() {
-            if (!isAdminLoggedIn) return;
-            adminLorebookList.innerHTML = '<div class="spinner"></div><p style="text-align:center;">Loading lorebooks...</p>';
+            console.log("loadAdminLorebooks called. isAdminLoggedIn:", isAdminLoggedIn);
+            if (!isAdminLoggedIn) {
+                adminLorebookList.innerHTML = '<div class="empty-state"><p>Please login as admin to view lorebooks.</p></div>';
+                return;
+            }
+            
+            adminLorebookList.innerHTML = '<div class="spinner"></div><p style="text-align:center;">Loading all lorebooks...</p>';
             const token = localStorage.getItem('adminToken');
+
             if (!token) {
-                adminLogout(); // Stellt sicher, dass der User ausgeloggt wird, falls kein Token da ist
-                adminLoginLink.click(); // Zeige Login Modal
+                console.log("Admin token not found in localStorage.");
+                adminLogout();
+                adminLoginLink.click();
                 adminLorebookList.innerHTML = '<div class="empty-state"><p>Admin token not found. Please login.</p></div>';
                 return;
             }
+            console.log("Admin token found:", token ? "Yes" : "No");
 
             try {
+                console.log("Fetching /api/admin/lorebooks...");
                 const response = await fetch('/api/admin/lorebooks', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                console.log("Response status:", response.status);
+
+                const responseText = await response.text(); // Erst Text lesen für Debugging
+                console.log("Response text:", responseText);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText); // Dann parsen
+                } catch (e) {
+                    console.error("Failed to parse response JSON:", e);
+                    throw new Error("Received invalid data from server.");
+                }
+                
+                console.log("Parsed data:", data);
+
                 if (!response.ok) {
                     let errorMsg = `Failed to fetch lorebooks. Status: ${response.status}`;
-                    if (response.status === 401) { // Unautorisiert, Token könnte abgelaufen/ungültig sein
+                    if (response.status === 401) {
+                        console.warn("Admin API returned 401, logging out.");
                         adminLogout();
                         adminLoginLink.click();
-                        errorMsg = 'Session expired or invalid. Please login again.';
+                        errorMsg = data.message || 'Session expired or invalid. Please login again.';
                     } else {
-                        try {
-                            const errData = await response.json();
-                            errorMsg = errData.message || errorMsg;
-                        } catch (e) { /* ignore json parsing error */ }
+                        errorMsg = data.message || errorMsg;
                     }
                     throw new Error(errorMsg);
                 }
-                const data = await response.json();
-                adminLorebookList.innerHTML = ''; // Clear spinner
+                
+                adminLorebookList.innerHTML = ''; // Clear spinner or previous message
+
                 if (data.success && data.lorebooks) {
+                    console.log("Lorebooks data received, count:", data.lorebooks.length);
                     if (data.lorebooks.length === 0) {
-                        adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found.</p></div>';
-                        return;
+                        adminLorebookList.innerHTML = '<div class="empty-state"><p>No lorebooks found in the system.</p></div>';
+                    } else {
+                        data.lorebooks.forEach(lb => {
+                            adminLorebookList.appendChild(createAdminLorebookItem(lb));
+                        });
                     }
-                    data.lorebooks.forEach(lb => {
-                        adminLorebookList.appendChild(createAdminLorebookItem(lb));
-                    });
                 } else {
-                    adminLorebookList.innerHTML = `<div class="empty-state"><p>Could not load lorebooks: ${data.message || 'Unknown error from server'}</p></div>`;
+                    console.warn("Could not load lorebooks, server indicated failure or no lorebooks field:", data.message);
+                    adminLorebookList.innerHTML = `<div class="empty-state"><p>Could not load lorebooks: ${data.message || 'Unknown error from server or no lorebooks data.'}</p></div>`;
                 }
             } catch (error) {
-                console.error('Error loading admin lorebooks:', error);
-                adminLorebookList.innerHTML = `<div class="empty-state"><p>Error loading lorebooks: ${error.message}. Check console.</p></div>`;
+                console.error('Error in loadAdminLorebooks:', error);
+                adminLorebookList.innerHTML = `<div class="empty-state"><p>Error loading lorebooks: ${error.message}. Check console for details.</p></div>`;
             }
+            // filterAdminLorebooks wird nun am Ende von loadAdminLorebooks aufgerufen,
+            // um sicherzustellen, dass es nach dem Setzen des Inhalts von adminLorebookList ausgeführt wird.
             filterAdminLorebooks();
         }
 
