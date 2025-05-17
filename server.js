@@ -2691,9 +2691,9 @@ async function handleOpenRouterRequest(req, res) {
                 if (customPrefill) {
                     prefillText = customPrefill;
                 } else if (hasMedievalMode) {
-                    prefillText = MEDIEVAL_PREFILL;
+                    prefillText = getMedievalPrefill();
                 } else {
-                    prefillText = DEFAULT_PREFILL;
+                    prefillText = getDefaultPrefill();
                 }
 
                 if (lastUserMsgIndex === clientBody.messages.length - 1) {
@@ -2712,10 +2712,10 @@ async function handleOpenRouterRequest(req, res) {
             currentContent = clientBody.messages[lastUserMsgIndex].content; // Aktualisierung hier wichtig!
             
             if (!oocInjectionDisabled) {
-                combinedOOC = OOC_INSTRUCTION_2;
-                if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
-                if (hasCrazyMode) combinedOOC += CRAZYMODE_OOC;
-                if (hasMedievalMode) combinedOOC += MEDIEVAL_OOC;
+                combinedOOC = getOOCInstruction2();
+                if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += getAutoplotOOC();
+                if (hasCrazyMode) combinedOOC += getCrazymodeOOC();
+                if (hasMedievalMode) combinedOOC += getMedievalOOC();
                 if (hasBetterSpiceMode) {
                     let contentForSpiceCheck = "";
                     if (Array.isArray(currentContent)) {
@@ -2727,7 +2727,7 @@ async function handleOpenRouterRequest(req, res) {
                     const spiceDetected = detectSpicyContent(contentForSpiceCheck);
                     const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
                     if (spiceDetected) {
-                        combinedOOC += BETTER_SPICE_OOC;
+                        combinedOOC += getBetterSpiceOOC();
                         logMessage("* OpenRouter: Spice Content erkannt", "warning");
                     } else if (spiceTriggered) {
                         combinedOOC += getRandomSpiceInstruction();
@@ -2735,7 +2735,7 @@ async function handleOpenRouterRequest(req, res) {
                     }
                 }
                 if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
-                combinedOOC += OOC_INSTRUCTION_1;
+                combinedOOC += getOOCInstruction1();
                 logMessage("* OpenRouter: OOC-Anweisungen generiert", "info");
 
                 // OOC immer anhängen, wenn !oocInjectionDisabled
@@ -2750,17 +2750,17 @@ async function handleOpenRouterRequest(req, res) {
         } else if (lastUserMsgIndex < 0 && !oocInjectionDisabled) { // Fall: Keine User-Nachricht, aber OOC aktiv
             // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
             // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist.
-            combinedOOC = OOC_INSTRUCTION_2;
-            if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
-            if (hasCrazyMode) combinedOOC += CRAZYMODE_OOC;
-            if (hasMedievalMode) combinedOOC += MEDIEVAL_OOC;
+            combinedOOC = getOOCInstruction2();
+            if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += getAutoplotOOC();
+            if (hasCrazyMode) combinedOOC += getCrazymodeOOC();
+            if (hasMedievalMode) combinedOOC += getMedievalOOC();
             if (hasBetterSpiceMode) {
                 // Kein currentContent hier, also nur zufälliger Trigger für BetterSpice
                 const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
                 if (spiceTriggered) combinedOOC += getRandomSpiceInstruction();
             }
             if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
-            combinedOOC += OOC_INSTRUCTION_1;
+            combinedOOC += getOOCInstruction1();
             // Hier könnte man combinedOOC einer neuen Systemnachricht zuweisen, falls gewünscht.
             // Aktuell wird es nur vorbereitet, aber nicht injiziert, wenn keine User-Nachricht da ist.
         }
