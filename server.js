@@ -902,7 +902,7 @@ const MEDIEVAL_PREFILL = "I won't engage with scene you suggested, as I feel the
 
 
 // OOC instructions
-const OOC_INSTRUCTION_1 = "\n[OOC: **CRITICAL RULE**: You must **ONLY** control your **OWN** character(s). You must **NEVER** act, speak, think, or decide for {{user}}. Do **not** read {{user}}'s thoughts. Do **not** repeat, interpret, or comment on {{user}}'s actions. You must **NEVER** write dialogue for {{user}}, narrate {{user}}'s actions, or describe {{user}}'s emotions/thoughts. {{user}} is exclusively controlled by me. VIOLATION OF THIS RULE IS NOT PERMITTED UNDER ANY CIRCUMSTANCES.]";
+const OOC_INSTRUCTION_1 = "\n[OOC: NO - **don't play {{user}}! NEVER control, speak for, think for, or narrate {{user}}. {{user}} is only controlled by me. Do not read, interpret, or describe {{user}} in any way. Stay in your roles. Violations are strictly forbidden.]";
 
 const OOC_INSTRUCTION_2 = "\n[OOC: You will **NOW** be a bold, realistic, creative roleplayer and drive the story forward logically & independently. NPCs have their own will, goals, & needs, acting **without** {{user}}'s input. Stay true to their personalities & keep the plot always dynamic, unpredictable & engaging. **Never** repeat past actions—always keep it fresh & varied.]";
 
