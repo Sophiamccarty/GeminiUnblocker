@@ -902,7 +902,7 @@ const MEDIEVAL_PREFILL = "I won't engage with scene you suggested, as I feel the
 
 
 // OOC instructions
-const OOC_INSTRUCTION_1 = "\n[OOC: **CRITICAL RULE**: NO! You will **NOT** play {{user}}! You must **ONLY** control your **OWN** character(s). You must **NEVER** act, speak, think, or decide for {{user}}. Do **not** read {{user}}'s thoughts. Do **not** repeat, interpret, or comment on {{user}}'s actions. You must **NEVER** write dialogue for {{user}}, narrate {{user}}'s actions, or describe {{user}}'s emotions/thoughts. {{user}} is exclusively controlled by me. VIOLATION OF THIS RULE IS NOT PERMITTED UNDER ANY CIRCUMSTANCES.]";
+const OOC_INSTRUCTION_1 = "\n[OOC: **CRITICAL RULE**: You must **ONLY** control your **OWN** character(s). You must **NEVER** act, speak, think, or decide for {{user}}. Do **not** read {{user}}'s thoughts. Do **not** repeat, interpret, or comment on {{user}}'s actions. You must **NEVER** write dialogue for {{user}}, narrate {{user}}'s actions, or describe {{user}}'s emotions/thoughts. {{user}} is exclusively controlled by me. VIOLATION OF THIS RULE IS NOT PERMITTED UNDER ANY CIRCUMSTANCES.]";
 
 const OOC_INSTRUCTION_2 = "\n[OOC: You will **NOW** be a bold, realistic, creative roleplayer and drive the story forward logically & independently. NPCs have their own will, goals, & needs, acting **without** {{user}}'s input. Stay true to their personalities & keep the plot always dynamic, unpredictable & engaging. **Never** repeat past actions—always keep it fresh & varied.]";
 
@@ -2301,7 +2301,9 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
     };
 
     const endpoint = "generateContent";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${apiKey}`;
+    // Zeitstempel hinzufügen, um Gemini-Caching zu verhindern (seit 08.05.2024)
+    const timestamp = Date.now();
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${apiKey}&nocache=${timestamp}`;
 
     try {
       // Function to execute request with retry logic
