@@ -2301,9 +2301,7 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
     };
 
     const endpoint = "generateContent";
-    // Zeitstempel hinzufügen, um Gemini-Caching zu verhindern (seit 08.05.2024)
-    const timestamp = Date.now();
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${apiKey}&nocache=${timestamp}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${apiKey}`;
 
     try {
       // Function to execute request with retry logic
