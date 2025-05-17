@@ -2185,7 +2185,6 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
     const hasCrazyMode = checkForTag(req.body, '<CRAZYMODE>');
     const hasMedievalMode = checkForTag(req.body, '<MEDIEVALMODE>');
     const hasBetterSpiceMode = checkForTag(req.body, '<BETTERSPICEMODE>');
-    const hasForceThinking = checkForTag(req.body, '<FORCETHINKING>');
 
     // NEUE FUNKTIONALITÄT: Prüfe auf Lorebook-Code in der letzten Benutzernachricht
     let lorebookCode = null;
@@ -2400,7 +2399,7 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
 
           combinedOOC += OOC_INSTRUCTION_1;
 
-} else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachricht (lastUserMsgIndex < 0), aber ForceThinking und OOC aktiv
+} else if (lastUserMsgIndex < 0 && !oocInjectionDisabled) { // Fall: Keine User-Nachricht, aber OOC aktiv
             // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
             // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist.
             combinedOOC = OOC_INSTRUCTION_2;
@@ -2426,28 +2425,39 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
                 combinedOOC += `\n[OOC: ${customOOC}]`;
             }
             combinedOOC += OOC_INSTRUCTION_1;
-          // OOC nur anhängen, wenn Force Thinking nicht aktiv ist
-          if (!hasForceThinking) {
+          // OOC immer anhängen, wenn !oocInjectionDisabled und eine User-Nachricht da war oder (keine User-Nachricht und OOC aktiv)
             let shouldAddOOC = true;
-            if (typeof originalContent === 'string') {
+            // Die Prüfung auf originalContent ist hier nicht relevant, da dieser Block nur ausgeführt wird, wenn lastUserMsgIndex < 0
+            // Stattdessen prüfen wir, ob combinedOOC überhaupt befüllt wurde (was es in diesem Block immer wird, wenn !oocInjectionDisabled)
+            // und fügen es dann einer neuen Systemnachricht hinzu oder an eine bestehende an.
+            // Für den Fall lastUserMsgIndex >= 0 (oben):
+            if (lastUserMsgIndex >=0 && typeof originalContent === 'string') { // originalContent ist nur definiert, wenn lastUserMsgIndex >= 0
                 shouldAddOOC = !originalContent.includes(OOC_INSTRUCTION_1) && !originalContent.includes(OOC_INSTRUCTION_2);
-            } else if (Array.isArray(originalContent)) {
+            } else if (lastUserMsgIndex >=0 && Array.isArray(originalContent)) { // originalContent ist nur definiert, wenn lastUserMsgIndex >= 0
                 shouldAddOOC = !originalContent.some(part => part.type === 'text' && (part.text.includes(OOC_INSTRUCTION_1) || part.text.includes(OOC_INSTRUCTION_2)));
             }
+            // Wenn lastUserMsgIndex < 0, ist shouldAddOOC immer true (da wir OOCs hinzufügen wollen, wenn keine User-Nachricht da ist und OOC aktiv ist)
 
             if (shouldAddOOC) {
-                if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
-                     // Ensure originalContent is an array before trying to push
-                    if (Array.isArray(originalContent)) {
-                        clientBody.messages[lastUserMsgIndex].content = [...originalContent, { type: 'text', text: combinedOOC }];
-                    } else { // If originalContent was a string, convert to array
-                        clientBody.messages[lastUserMsgIndex].content = [{type: 'text', text: originalContent}, { type: 'text', text: combinedOOC }];
+                if (lastUserMsgIndex >= 0) { // Nur an User-Nachricht anhängen, wenn eine existiert
+                    if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
+                        // Ensure originalContent is an array before trying to push
+                        if (Array.isArray(originalContent)) {
+                            clientBody.messages[lastUserMsgIndex].content = [...originalContent, { type: 'text', text: combinedOOC }];
+                        } else { // If originalContent was a string, convert to array
+                            clientBody.messages[lastUserMsgIndex].content = [{type: 'text', text: originalContent}, { type: 'text', text: combinedOOC }];
+                        }
+                    } else { // originalContent was a string
+                        clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
                     }
-                } else { // originalContent was a string
-                    clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
+                } else if (combinedOOC) { // Wenn keine User-Nachricht, aber OOCs generiert wurden (z.B. durch den oberen Block)
+                    // Hier könnte man eine neue Systemnachricht erstellen oder an eine bestehende anhängen.
+                    // Fürs Erste fügen wir es nicht hinzu, wenn keine User-Nachricht da ist,
+                    // da die ursprüngliche Logik mit `hasForceThinking` dies auch nicht tat.
+                    // Wenn OOCs auch ohne User-Nachricht injiziert werden sollen, muss hier die Logik angepasst werden.
+                    // logMessage("* OOCs generiert, aber keine User-Nachricht zum Anhängen gefunden.", "info");
                 }
             }
-          }
         }
 
         // Jetzt erst den Bypass anwenden, NACH dem Hinzufügen von OOC
@@ -2774,7 +2784,6 @@ async function handleOpenRouterRequest(req, res) {
     const hasCrazyMode = checkForTag(req.body, '<CRAZYMODE>');
     const hasMedievalMode = checkForTag(req.body, '<MEDIEVALMODE>');
     const hasBetterSpiceMode = checkForTag(req.body, '<BETTERSPICEMODE>');
-    const hasForceThinking = checkForTag(req.body, '<FORCETHINKING>');
 
     let lorebookCode = null;
     if (req.body && req.body.lorebook_code) {
@@ -2818,7 +2827,6 @@ async function handleOpenRouterRequest(req, res) {
     logMessage(`* Bypass Level: ${bypassLevel} ${bypassLevel === "NO" ? '(Standardmäßig deaktiviert)' : '(Aktiviert durch Befehl)'}`);
     if (lorebookCode) logMessage(`* Lorebook: Aktiviert (Code: ${lorebookCode})`);
     if (prefillDisabled) logMessage(`* Prefill: Deaktiviert`);
-    else if (hasForceThinking) logMessage(`* Prefill: Force Thinking (Überschreibt andere Prefills)`);
     else if (customPrefill) logMessage(`* Prefill: Eigener`);
     else if (hasMedievalMode) logMessage(`* Prefill: Mittelalter-Modus`);
     else logMessage(`* Prefill: Aktiviert`);
@@ -2831,7 +2839,6 @@ async function handleOpenRouterRequest(req, res) {
     if (hasMedievalMode) logMessage(`* Medieval Mode aktiv`);
     if (hasBetterSpiceMode) logMessage(`* Better Spice Mode aktiv (1:${betterSpiceChance})`);
     if (forceMarkdown) logMessage(`* Markdown-Prüfung aktiv`);
-    if (hasForceThinking) logMessage(`* Force Thinking: Aktiviert`);
 
 
     // Jailbreak anwenden, falls durch Befehl <JAILBREAK=on> aktiviert
@@ -2889,20 +2896,18 @@ async function handleOpenRouterRequest(req, res) {
                 if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
                 combinedOOC += OOC_INSTRUCTION_1;
 
-                // OOC nur anhängen, wenn Force Thinking nicht aktiv ist
-                if (!hasForceThinking) {
-                    let shouldAddOOC = true;
-                    if (typeof currentContent === 'string') {
-                        shouldAddOOC = !currentContent.includes(OOC_INSTRUCTION_1) && !currentContent.includes(OOC_INSTRUCTION_2);
-                    } else if (Array.isArray(currentContent)) {
-                        shouldAddOOC = !currentContent.some(part => part.type === 'text' && (part.text.includes(OOC_INSTRUCTION_1) || part.text.includes(OOC_INSTRUCTION_2)));
-                    }
-                    if (shouldAddOOC) {
-                        if (Array.isArray(currentContent)) {
-                            currentContent.push({ type: 'text', text: combinedOOC });
-                        } else {
-                            currentContent += combinedOOC;
-                        }
+                // OOC immer anhängen, wenn !oocInjectionDisabled
+                let shouldAddOOC = true;
+                if (typeof currentContent === 'string') {
+                    shouldAddOOC = !currentContent.includes(OOC_INSTRUCTION_1) && !currentContent.includes(OOC_INSTRUCTION_2);
+                } else if (Array.isArray(currentContent)) {
+                    shouldAddOOC = !currentContent.some(part => part.type === 'text' && (part.text.includes(OOC_INSTRUCTION_1) || part.text.includes(OOC_INSTRUCTION_2)));
+                }
+                if (shouldAddOOC) {
+                    if (Array.isArray(currentContent)) {
+                        currentContent.push({ type: 'text', text: combinedOOC });
+                    } else {
+                        currentContent += combinedOOC;
                     }
                 }
             }
@@ -2917,9 +2922,10 @@ async function handleOpenRouterRequest(req, res) {
                 } else if (typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
                     clientBody.messages[lastUserMsgIndex].content = applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
                 }
-else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachricht (lastUserMsgIndex < 0), aber ForceThinking und OOC aktiv
+            }
+        } else if (lastUserMsgIndex < 0 && !oocInjectionDisabled) { // Fall: Keine User-Nachricht, aber OOC aktiv
             // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
-            // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist, um currentContent für spicy check zu haben
+            // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist.
             combinedOOC = OOC_INSTRUCTION_2;
             if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
             if (hasCrazyMode) combinedOOC += CRAZYMODE_OOC;
@@ -2931,21 +2937,8 @@ else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachri
             }
             if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
             combinedOOC += OOC_INSTRUCTION_1;
-            }
-        } else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachricht (lastUserMsgIndex < 0), aber ForceThinking und OOC aktiv
-            // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
-            // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist, um currentContent für spicy check zu haben
-            combinedOOC = OOC_INSTRUCTION_2;
-            if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
-            if (hasCrazyMode) combinedOOC += CRAZYMODE_OOC;
-            if (hasMedievalMode) combinedOOC += MEDIEVAL_OOC;
-            if (hasBetterSpiceMode) {
-                // Kein currentContent hier, also nur zufälliger Trigger für BetterSpice
-                const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
-                if (spiceTriggered) combinedOOC += getRandomSpiceInstruction();
-            }
-            if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
-            combinedOOC += OOC_INSTRUCTION_1;
+            // Hier könnte man combinedOOC einer neuen Systemnachricht zuweisen, falls gewünscht.
+            // Aktuell wird es nur vorbereitet, aber nicht injiziert, wenn keine User-Nachricht da ist.
         }
 
             // Prefill
@@ -2969,7 +2962,6 @@ else if (hasForceThinking && !oocInjectionDisabled) { // Fall: Keine User-Nachri
                      }
                 }
             }
-        }
         // Bypass auf System- und Assistentennachrichten (außer User)
         if (bypassLevel !== "NO") {
             clientBody.messages = clientBody.messages.map(msg => {
