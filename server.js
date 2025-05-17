@@ -2353,8 +2353,36 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
         // Zuerst den originalen Content speichern, bevor Änderungen vorgenommen werden
         const originalContent = clientBody.messages[lastUserMsgIndex].content;
         
+        // Zuerst den Bypass anwenden, bevor wir etwas anderes tun
+        if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM" &&
+            typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
+          clientBody.messages[lastUserMsgIndex].content =
+            applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
+        }
+        
+        // Dann Prefill hinzufügen - vor den OOC-Anweisungen
+        if (!prefillDisabled) {
+          let prefillText;
+          if (customPrefill) {
+            prefillText = customPrefill;
+          } else if (hasMedievalMode) {
+            prefillText = MEDIEVAL_PREFILL;
+          } else {
+            prefillText = DEFAULT_PREFILL;
+          }
+
+          if (lastUserMsgIndex === clientBody.messages.length - 1) { // Wenn die letzte Nachricht vom Benutzer ist
+            clientBody.messages.push({
+              role: "assistant",
+              content: prefillText
+            });
+          } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") { // Wenn bereits eine Assistenten-Nachricht nach der Benutzer-Nachricht existiert
+            clientBody.messages[lastUserMsgIndex + 1].content += "\n" + prefillText;
+          }
+        }
+        
         // OOC-Anweisungen zur Nachricht hinzufügen (mit originalem Content)
-        if (!oocInjectionDisabled) { // typeof originalContent === 'string' hier entfernt, da es auch für Arrays gelten soll
+        if (!oocInjectionDisabled && typeof originalContent === 'string') {
           combinedOOC = OOC_INSTRUCTION_2; // Zuweisung, nicht Neudeklaration
 
           // Add AutoPlot instructions based on chance
@@ -2398,93 +2426,42 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
           }
 
           combinedOOC += OOC_INSTRUCTION_1;
-
-} else if (lastUserMsgIndex < 0 && !oocInjectionDisabled) { // Fall: Keine User-Nachricht, aber OOC aktiv
-            // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
-            // Befülle combinedOOC hier, da keine User-Nachricht vorhanden ist.
-            combinedOOC = OOC_INSTRUCTION_2;
-            if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
-                combinedOOC += AUTOPLOT_OOC;
-                logMessage("* AutoPlot Trigger (no user message context)", "warning");
-            }
-            if (hasCrazyMode) {
-                combinedOOC += CRAZYMODE_OOC;
-            }
-            if (hasMedievalMode) {
-                combinedOOC += MEDIEVAL_OOC;
-            }
-            if (hasBetterSpiceMode) {
-                // Kein originalContent hier, also nur zufälliger Trigger für BetterSpice
-                const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
-                if (spiceTriggered) {
-                    combinedOOC += getRandomSpiceInstruction();
-                    logMessage("* Random Spice Trigger (no user message context)", "warning");
-                }
-            }
-            if (customOOC) {
-                combinedOOC += `\n[OOC: ${customOOC}]`;
-            }
-            combinedOOC += OOC_INSTRUCTION_1;
-          // OOC immer anhängen, wenn !oocInjectionDisabled und eine User-Nachricht da war oder (keine User-Nachricht und OOC aktiv)
-            let shouldAddOOC = true;
-            // Die Prüfung auf originalContent ist hier nicht relevant, da dieser Block nur ausgeführt wird, wenn lastUserMsgIndex < 0
-            // Stattdessen prüfen wir, ob combinedOOC überhaupt befüllt wurde (was es in diesem Block immer wird, wenn !oocInjectionDisabled)
-            // und fügen es dann einer neuen Systemnachricht hinzu oder an eine bestehende an.
-            // Für den Fall lastUserMsgIndex >= 0 (oben):
-            if (lastUserMsgIndex >=0 && typeof originalContent === 'string') { // originalContent ist nur definiert, wenn lastUserMsgIndex >= 0
-                shouldAddOOC = !originalContent.includes(OOC_INSTRUCTION_1) && !originalContent.includes(OOC_INSTRUCTION_2);
-            } else if (lastUserMsgIndex >=0 && Array.isArray(originalContent)) { // originalContent ist nur definiert, wenn lastUserMsgIndex >= 0
-                shouldAddOOC = !originalContent.some(part => part.type === 'text' && (part.text.includes(OOC_INSTRUCTION_1) || part.text.includes(OOC_INSTRUCTION_2)));
-            }
-            // Wenn lastUserMsgIndex < 0, ist shouldAddOOC immer true (da wir OOCs hinzufügen wollen, wenn keine User-Nachricht da ist und OOC aktiv ist)
-
-            if (shouldAddOOC) {
-                if (lastUserMsgIndex >= 0) { // Nur an User-Nachricht anhängen, wenn eine existiert
-                    if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
-                        // Ensure originalContent is an array before trying to push
-                        if (Array.isArray(originalContent)) {
-                            clientBody.messages[lastUserMsgIndex].content = [...originalContent, { type: 'text', text: combinedOOC }];
-                        } else { // If originalContent was a string, convert to array
-                            clientBody.messages[lastUserMsgIndex].content = [{type: 'text', text: originalContent}, { type: 'text', text: combinedOOC }];
-                        }
-                    } else { // originalContent was a string
-                        clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
-                    }
-                } else if (combinedOOC) { // Wenn keine User-Nachricht, aber OOCs generiert wurden (z.B. durch den oberen Block)
-                    // Hier könnte man eine neue Systemnachricht erstellen oder an eine bestehende anhängen.
-                    // Fürs Erste fügen wir es nicht hinzu, wenn keine User-Nachricht da ist,
-                    // da die ursprüngliche Logik mit `hasForceThinking` dies auch nicht tat.
-                    // Wenn OOCs auch ohne User-Nachricht injiziert werden sollen, muss hier die Logik angepasst werden.
-                    // logMessage("* OOCs generiert, aber keine User-Nachricht zum Anhängen gefunden.", "info");
-                }
-            }
-        }
-
-        // Jetzt erst den Bypass anwenden, NACH dem Hinzufügen von OOC
-        if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM" &&
-            typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
-          clientBody.messages[lastUserMsgIndex].content =
-            applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
-        }
-
-        if (!prefillDisabled) {
-          let prefillText;
-          if (customPrefill) {
-            prefillText = customPrefill;
-          } else if (hasMedievalMode) {
-            prefillText = MEDIEVAL_PREFILL;
+          
+          // Überprüfen, ob die OOC-Anweisungen bereits vorhanden sind
+          let shouldAddOOC = true;
+          
+          if (Array.isArray(originalContent)) {
+            shouldAddOOC = !originalContent.some(part =>
+              part.type === 'text' && (
+                part.text.includes(OOC_INSTRUCTION_1) ||
+                part.text.includes(OOC_INSTRUCTION_2)
+              )
+            );
           } else {
-            prefillText = DEFAULT_PREFILL;
+            shouldAddOOC = !originalContent.includes(OOC_INSTRUCTION_1) &&
+                           !originalContent.includes(OOC_INSTRUCTION_2);
           }
-
-          if (lastUserMsgIndex === clientBody.messages.length - 1) { // Wenn die letzte Nachricht vom Benutzer ist
-            clientBody.messages.push({
-              role: "assistant",
-              content: prefillText
-            });
-          } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") { // Wenn bereits eine Assistenten-Nachricht nach der Benutzer-Nachricht existiert
-            clientBody.messages[lastUserMsgIndex + 1].content += "\n" + prefillText;
+          
+          // Füge die OOC-Anweisungen hinzu, wenn sie noch nicht vorhanden sind
+          if (shouldAddOOC) {
+            if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
+              // Für Array-basierte Nachrichteninhalte
+              clientBody.messages[lastUserMsgIndex].content = [
+                ...originalContent,
+                { type: 'text', text: combinedOOC }
+              ];
+            } else {
+              // Für String-basierte Nachrichteninhalte
+              clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
+            }
+            logMessage("* OOC-Anweisungen hinzugefügt", "info");
+          } else {
+            logMessage("* OOC-Anweisungen bereits vorhanden, werden nicht erneut hinzugefügt", "info");
           }
+        } else if (lastUserMsgIndex < 0 && !oocInjectionDisabled) {
+          // Fall: Keine User-Nachricht, aber OOC aktiv
+          // Diese Logik kann so bleiben wie sie ist, wird selten genutzt
+          logMessage("* Keine User-Nachricht gefunden für OOC-Injection", "info");
         }
       }
     }
@@ -2873,8 +2850,42 @@ async function handleOpenRouterRequest(req, res) {
         if (lastUserMsgIndex >= 0) {
             let currentContent = clientBody.messages[lastUserMsgIndex].content;
             
-            // OOC Injektion
-            // combinedOOC wurde bereits am Anfang der Funktion initialisiert: let combinedOOC = "";
+            // Zuerst Bypass auf User-Nachricht anwenden
+            if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM") {
+                if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
+                    clientBody.messages[lastUserMsgIndex].content = clientBody.messages[lastUserMsgIndex].content.map(part =>
+                        part.type === 'text' ? { ...part, text: applyBypassToText(part.text, bypassLevel) } : part
+                    );
+                } else if (typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
+                    clientBody.messages[lastUserMsgIndex].content = applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
+                }
+                // Aktualisieren der currentContent Variable nach dem Bypass
+                currentContent = clientBody.messages[lastUserMsgIndex].content;
+            }
+            
+            // Dann Prefill hinzufügen
+            if (!prefillDisabled) {
+                let prefillText;
+                if (customPrefill) {
+                    prefillText = customPrefill;
+                } else if (hasMedievalMode) {
+                    prefillText = MEDIEVAL_PREFILL;
+                } else {
+                    prefillText = DEFAULT_PREFILL;
+                }
+
+                if (lastUserMsgIndex === clientBody.messages.length - 1) {
+                    clientBody.messages.push({ role: "assistant", content: prefillText });
+                } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") {
+                     if (Array.isArray(clientBody.messages[lastUserMsgIndex + 1].content)) {
+                        clientBody.messages[lastUserMsgIndex + 1].content.push({ type: 'text', text: "\n" + prefillText });
+                     } else {
+                        clientBody.messages[lastUserMsgIndex + 1].content += "\n" + prefillText;
+                     }
+                }
+            }
+            
+            // Zuletzt OOC-Anweisungen zur Nachricht hinzufügen
             if (!oocInjectionDisabled) {
                 combinedOOC = OOC_INSTRUCTION_2;
                 if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
@@ -2910,18 +2921,7 @@ async function handleOpenRouterRequest(req, res) {
                         currentContent += combinedOOC;
                     }
                 }
-            }
-            clientBody.messages[lastUserMsgIndex].content = currentContent;
-
-            // Bypass auf User-Nachricht (nach OOC)
-            if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM") {
-                 if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
-                    clientBody.messages[lastUserMsgIndex].content = clientBody.messages[lastUserMsgIndex].content.map(part =>
-                        part.type === 'text' ? { ...part, text: applyBypassToText(part.text, bypassLevel) } : part
-                    );
-                } else if (typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
-                    clientBody.messages[lastUserMsgIndex].content = applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
-                }
+                clientBody.messages[lastUserMsgIndex].content = currentContent;
             }
         } else if (lastUserMsgIndex < 0 && !oocInjectionDisabled) { // Fall: Keine User-Nachricht, aber OOC aktiv
             // combinedOOC wurde bereits am Anfang der Funktion initialisiert (let combinedOOC = "";)
@@ -2940,28 +2940,6 @@ async function handleOpenRouterRequest(req, res) {
             // Hier könnte man combinedOOC einer neuen Systemnachricht zuweisen, falls gewünscht.
             // Aktuell wird es nur vorbereitet, aber nicht injiziert, wenn keine User-Nachricht da ist.
         }
-
-            // Prefill
-            if (!prefillDisabled) {
-                let prefillText;
-                if (customPrefill) {
-                    prefillText = customPrefill;
-                } else if (hasMedievalMode) {
-                    prefillText = MEDIEVAL_PREFILL;
-                } else {
-                    prefillText = DEFAULT_PREFILL;
-                }
-
-                if (lastUserMsgIndex === clientBody.messages.length - 1) {
-                    clientBody.messages.push({ role: "assistant", content: prefillText });
-                } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") {
-                     if (Array.isArray(clientBody.messages[lastUserMsgIndex + 1].content)) {
-                        clientBody.messages[lastUserMsgIndex + 1].content.push({ type: 'text', text: "\n" + prefillText });
-                     } else {
-                        clientBody.messages[lastUserMsgIndex + 1].content += "\n" + prefillText;
-                     }
-                }
-            }
         // Bypass auf System- und Assistentennachrichten (außer User)
         if (bypassLevel !== "NO") {
             clientBody.messages = clientBody.messages.map(msg => {
