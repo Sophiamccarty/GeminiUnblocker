@@ -2205,35 +2205,17 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
 
           combinedOOC += OOC_INSTRUCTION_1;
           
-          // Vereinfachte Überprüfung und Hinzufügung von OOC-Anweisungen
-          let shouldAddOOC = true;
-          
-          // Überprüfe nur für String-Inhalte, ob die Anweisungen bereits vorhanden sind
-          if (typeof originalContent === 'string') {
-            shouldAddOOC = !originalContent.includes(OOC_INSTRUCTION_1) &&
-                           !originalContent.includes(OOC_INSTRUCTION_2);
-          } else if (Array.isArray(originalContent)) {
-            shouldAddOOC = !originalContent.some(part =>
-              part.type === 'text' && (
-                part.text.includes(OOC_INSTRUCTION_1) ||
-                part.text.includes(OOC_INSTRUCTION_2)
-              ));
-          }
-          
-          if (shouldAddOOC) {
-            // Füge OOC-Anweisungen hinzu
-            if (Array.isArray(originalContent)) {
-              clientBody.messages[lastUserMsgIndex].content = [
-                ...originalContent,
-                { type: 'text', text: combinedOOC }
-              ];
-            } else {
-              clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
-            }
-            logMessage("* OOC-Anweisungen hinzugefügt", "info");
+          // IMMER OOC hinzufügen, unabhängig davon, ob es bereits vorhanden ist
+          // Keine Überprüfung, ob bereits vorhanden - immer anhängen
+          if (Array.isArray(originalContent)) {
+            clientBody.messages[lastUserMsgIndex].content = [
+              ...originalContent,
+              { type: 'text', text: combinedOOC }
+            ];
           } else {
-            logMessage("* OOC-Anweisungen bereits vorhanden, werden nicht erneut hinzugefügt", "info");
+            clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
           }
+          logMessage("* OOC-Anweisungen hinzugefügt", "info");
         }
 
         // 2. DANN Bypass anwenden auf bereits modifizierten Content (nach OOC-Hinzufügung)
@@ -2725,18 +2707,11 @@ async function handleOpenRouterRequest(req, res) {
                 logMessage("* OpenRouter: OOC-Anweisungen generiert", "info");
 
                 // OOC immer anhängen, wenn !oocInjectionDisabled
-                let shouldAddOOC = true;
-                if (typeof currentContent === 'string') {
-                    shouldAddOOC = !currentContent.includes(OOC_INSTRUCTION_1) && !currentContent.includes(OOC_INSTRUCTION_2);
-                } else if (Array.isArray(currentContent)) {
-                    shouldAddOOC = !currentContent.some(part => part.type === 'text' && (part.text.includes(OOC_INSTRUCTION_1) || part.text.includes(OOC_INSTRUCTION_2)));
-                }
-                if (shouldAddOOC) {
-                    if (Array.isArray(currentContent)) {
-                        currentContent.push({ type: 'text', text: combinedOOC });
-                    } else {
-                        currentContent += combinedOOC;
-                    }
+                // IMMER OOC hinzufügen, unabhängig davon, ob es bereits vorhanden ist
+                if (Array.isArray(currentContent)) {
+                    currentContent.push({ type: 'text', text: combinedOOC });
+                } else {
+                    currentContent += combinedOOC;
                 }
                 clientBody.messages[lastUserMsgIndex].content = currentContent;
             }
