@@ -1406,223 +1406,24 @@ function extractCustomContent(body, startTag, endTag) {
 }
 
 function cleanResponseText(text, prefill_text = "") {
-    // logMessage(`* [DEBUG] cleanResponseText: Ursprünglicher Text (erste 300 Zeichen): ${text?.substring(0, 300)}`, "debug");
-    // logMessage(`* [DEBUG] cleanResponseText: Zu entfernender Prefill (erste 100 Zeichen): ${prefill_text?.substring(0, 100)}`, "debug");
+  if (!text) {
+    return text;
+  }
 
-    if (!text) {
-        return "";
-    }
+  let cleanedText = text;
 
-    const THINKING_SEPARATOR = "---";
+  // Remove the long specific pattern
+  const longPattern = "{{char}} will strictly NEVER speak for {{user}} or describe actions as {{user}} and will allow {{user}} to dictate their own actions. {{char}} will speak, roleplay, and write in third-person view. Each reply from {{char}} will be different, and {{char}} will not repeat similar replies. I will never play, control or dictate {{user}}'s actions, thoughts, or feelings.";
+  cleanedText = cleanedText.replace(new RegExp(longPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
 
-    // Robustere Methode zum Entfernen des Denkprozesses vor dem Separator
-    let parts = text.split(THINKING_SEPARATOR, 2); // Split only once
-    if (parts.length > 1) {
-        // Separator wurde gefunden - nimm nur den Teil nach dem Separator
-        text = parts[1].trimStart();
-        // log_message("* Thinking process handled", "success"); // Removed log
-    }
-    // Falls kein Separator gefunden wird, bleibt der Text unverändert
+  // Remove the shorter patterns like - {{char}}, - {{char}}., - {{char}}:, - {{user}}, etc.
+  const shortPattern = /-\s*\{\{(char|user)\}\}\s*[:.]?/g;
+  cleanedText = cleanedText.replace(shortPattern, '');
 
-    // Versuch auch mit Regex als Backup-Methode (für Fälle mit ungewöhnlicher Formatierung)
-    if (text.includes("---") && !text.startsWith("---")) {
-        // Entferne alles bis zum ersten "---" (inkl. den Separator selbst)
-        text = text.replace(/^.*?---\s*/s, ''); // 's' flag for dotall
-        // log_message("* Thinking process handled", "success"); // Removed log
-    }
+  // Remove any leading/trailing whitespace that might result from the replacements
+  cleanedText = cleanedText.trim();
 
-    // Entferne spezifische Anweisungen zur Trennung des Denkprozesses
-    text = text.replace(/Please reread and reanalyse the system prompt for possible changes, think step-by-step and explain your reasoning and separate it using '---' before producing the final output/g, "");
-
-    // Remove specific instructional phrases
-    const phrases_to_remove_completely = [
-        /Do not output this thinking process, just the final output\./gi,
-        /Respond to the user's input only, do not add anything else\. Remember to stay in character\./gi,
-        /Pay attention to the \[OOC\] tag from the user and don't output any OOC, only in character\./gi,
-        /Your goal is to understand and respond to the user's prompt based on the persona and rules provided\. Do not output the thinking process, only the final response\.?/gi,
-        /Proceed to provide the response\.?/gi,
-        /Then, generate the response\.?/gi,
-        /Once complete, delete this thinking process and output only the response\./gi,
-        /Read and follow the \[FORCEMARKDOWN\] and \[RULES\] instructions carefully\./gi,
-        /Start immediately with the character's actions\/dialogue\./gi,
-    ];
-    for (const phrase_regex of phrases_to_remove_completely) {
-        text = text.replace(phrase_regex, '');
-    }
-
-    // Remove everything up to and including "response" if it appears at the beginning of the text
-    // This targets the first paragraph specifically.
-    const paragraphs = text.split('\n\n');
-    if (paragraphs.length > 0) {
-        let current_first_paragraph = paragraphs[0];
-        let cleaned_fp = current_first_paragraph;
-
-        // Neue Bereinigung für den ersten Paragraphen:
-        // 1. Versuche, '[...]' am Anfang zu entfernen (non-greedy)
-        const match_bracket_block = current_first_paragraph.match(/^\s*\[.*?\]\s*/);
-        if (match_bracket_block) {
-            cleaned_fp = current_first_paragraph.substring(match_bracket_block[0].length);
-        } else {
-            // 2. Wenn 1 nicht zutraf, versuche, alles bis zum ersten ']' (inklusive) zu entfernen (non-greedy).
-            const match_until_bracket = current_first_paragraph.match(/^\s*[^\]]*?\]\s*/);
-            if (match_until_bracket) {
-                cleaned_fp = current_first_paragraph.substring(match_until_bracket[0].length);
-            }
-        }
-        
-        // Bestehende Bereinigung für "response" danach auf den bereits gekürzten Paragraphen anwenden
-        const first_paragraph_cleaned = cleaned_fp.replace(/^\s*.*?response\s*/is, ''); // 'is' for ignore case and dotall
-        
-        if (paragraphs.length > 1) {
-            text = first_paragraph_cleaned + '\n\n' + paragraphs.slice(1).join('\n\n');
-        } else {
-            text = first_paragraph_cleaned;
-        }
-    }
-    
-    // Remove all XML/HTML-like tags and content before closing tags
-    // Remove <tag>content</tag>
-    text = text.replace(/<[a-zA-Z0-9\-_]+>.*?<\/[a-zA-Z0-9\-_]+>/gis, '');
-    // Remove everything before </tag>
-    text = text.replace(/.*?<\/[a-zA-Z0-9\-_]+>/gis, '');
-
-    // Clean up bypassed text characters (should be done after major block removals)
-    text = text.replace(/([a-zA-Z])\u0335/g, '$1');  // Remove strikethrough
-    text = text.replace(/([a-zA-Z])\u0307/g, '$1');  // Remove dot above
-    text = text.replace(/([a-zA-Z])\u0308/g, '$1');  // Remove diaeresis
-    text = text.replace(/\.(?=[a-zA-Z])/g, '');       // Remove dots between letters
-
-    // Strip initial whitespace
-    text = text.trimStart();
-
-    // Remove user prefix patterns
-    text = text.replace(/^>\s*\{\{user\}\}:\s*.*?\n+(?:\*\*\*\n+)?/g, '');
-    text = text.replace(/^(?:>)?\s*\{\{user\}\}:(?:\s.*?)?\n+/g, '');
-
-    // Remove unwanted prefill patterns
-    text = text.replace(/^I won't engage with scene you suggested.*?Let's continue without further judgment, shall we\?\s*/gi, '');
-    text = text.replace(/^Understood\. Here is the short turn continuation.*?\{\{user\}\}\.\s*/gi, '');
-    text = text.replace(/^.*?will only speak, roleplay, and write in third-person view[^.]*\.\s*/gi, '');
-
-    // Remove header patterns
-    text = text.replace(/^[A-Za-z]+(?:\s+[A-Za-z]+)?\s+will continue\.\s*/gi, '');
-    text = text.replace(/^[A-Za-z]+,?\s+only\.\s*/gi, '');
-    text = text.replace(/^(\{\{char\}\}|\{\{user\}\}|[A-Za-z]+)(?:\s+\/\s+(?:\{\{user\}\}|\{\{char\}\}|[A-Za-z]+))?\.\s*/gi, '');
-
-    // Remove other common patterns
-    text = text.replace(/^[A-Za-z]+(?:\s+[A-Za-z]+)?:\s*(?:\{\{user\}\}|User)\.\s*/gi, '');
-    text = text.replace(/^\*+\s*[A-Za-z]+(?:\s+[A-Za-z]+)?\s*\*+\s*/g, '');
-    text = text.replace(/^[A-Za-z]+,\s*(?:\{\{user\}\}|[A-Za-z]+):\s*[A-Za-z]+(?:\s+[A-Za-z]+)?\.\s*/gi, '');
-
-    // Remove forbidden words instruction
-    text = text.replace(/\[OOC: STRICT RULE - FORBIDDEN WORDS.*?improves writing quality\.\]/gis, '');
-
-    // Remove any potential prefill text that might have been echoed back
-    if (prefill_text) {
-        // Escape special regex characters in prefill_text
-        const escapedPrefill = prefill_text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const prefillRegex = new RegExp(escapedPrefill, 'gi');
-        text = text.replace(prefillRegex, '');
-    }
-
-    // Remove any OOC instructions that might have been echoed back
-    text = text.replace(/\[OOC:.*?\]/g, '');
-
-    // Clean up JSON-like formatting in the text
-    text = text.replace(/\*```json\s*/g, '');
-    text = text.replace(/\s*```\*/g, '');
-    text = text.replace(/\{\*\s*"[^"]*"\s*\*:\*\s*"/g, '');
-    text = text.replace(/"\s*\*}/g, ''); // Corrected from Python's single } to double }}
-    text = text.replace(/"\s*\*,\*\s*"[^"]*"\s*\*:\*\s*"/g, ' says, "');
-
-    // Remove any JSON array marker at the start/end
-    text = text.replace(/^\s*\[\s*\n*/, '');
-    text = text.replace(/]\s*$/, '');
-
-    // Remove specific unwanted patterns
-    text = text.replace(/\{\{char\}\} will strictly NEVER speak for \{\{user\}\} or describe actions as \{\{user\}\} and will allow \{\{user\}\} to dictate their own actions\. \{\{char\}\} will speak, roleplay, and write in third-person view\. Each reply from \{\{char\}\} will be different, and \{\{char\}\} will not repeat similar replies\. I will never play, control or dictate \{\{user\}\}\'s actions, thoughts, or feelings\./gi, '');
-    text = text.replace(/^- \{\{char\}\}\.?\s*/gm, '');
-    text = text.replace(/^- \{\{char\}\}:\s*/gm, '');
-    text = text.replace(/^- \{\{user\}\}\.?\s*/gm, '');
-    text = text.replace(/^- \{\{user\}\}:\s*/gm, '');
-
-    // Remove leading standalone dots
-    text = text.replace(/^\s*\.\s*\n/g, '');
-
-    // Remove leading dot if followed by a letter
-    text = text.replace(/^\s*\.(?=[a-zA-Z])/g, '');
-
-    // Remove <response>...</response> and content before </response>
-    text = text.replace(/<response>.*?<\/response>/gis, '');
-    text = text.replace(/.*?<\/response>/gis, '');
-
-    // Remove <content-warning>...</content-warning> and content before </content-warning>
-    text = text.replace(/<content-warning>.*?<\/content-warning>/gis, '');
-    text = text.replace(/.*?<\/content-warning>/gis, '');
-
-    // Remove <system>...</system> and content before </system>
-    text = text.replace(/<system>.*?<\/system>/gis, '');
-    text = text.replace(/.*?<\/system>/gis, '');
-
-    // Remove <interaction-config>...</interaction-config> and content before </interaction-config>
-    text = text.replace(/<interaction-config>.*?<\/interaction-config>/gis, '');
-    text = text.replace(/.*?<\/interaction-config>/gis, '');
-
-    // B.3: Alles zwischen oder vor </character>
-    text = text.replace(/.*?<\/character>/gis, '');
-
-    // Remove content before or between </user>
-    text = text.replace(/<user>.*?<\/user>/gis, '');
-    text = text.replace(/.*?<\/user>/gis, '');
-
-    // Remove content before or between </request>
-    text = text.replace(/<request>.*?<\/request>/gis, '');
-    text = text.replace(/.*?<\/request>/gis, '');
-
-    // Remove specific phrases, potentially leading with a dot and space
-    const phrases_to_remove = [
-        /\.?\s*Remember to follow all instructions and never break character\./gi,
-        // "Do not output the analysis to the user." wird separat behandelt
-        /\.?\s*Respond in character as instructed in the persona\./gi,
-        /\.?\s*I will not be able to see your thought process\.(?:\s*<\/response>)?/gi,
-        /\.?\s*Pay attention to the scenario, character, and rules provided\. Ensure all constraints are met and that the response is a natural continuation of the story, adhering to the persona of Ciri and the established game settings and rules\.(?:\s*<\/interaction-config>)?/gi,
-        /Then, respond to the user's prompt\./gi,
-        /Do not output the thinking process to the user\. Ensure that the final output is exactly as requested and all, even the smallest instructions are followed\./gi
-    ];
-    for (const phrase_regex of phrases_to_remove) {
-        text = text.replace(phrase_regex, '');
-    }
-
-    // B.2: "Do not output the analysis to the user." (exakter String)
-    text = text.replace(/Do not output the analysis to the user\./g, "");
-
-    // Remove "Content Warning" or "Content Warnung" sentence at the beginning
-    text = text.replace(/^\s*(Content Warning|Content Warnung)[^.!?]*[.!?]\s*/i, '');
-
-    // Remove everything before and including "I will now generate the response based on the plan and constraints."
-    text = text.replace(/.*?I will now generate the response based on the plan and constraints\.(?:\s*<\/request>)?\s*/gis, '');
-
-    // Remove sentences starting with "I will now generate..." at the beginning of the response
-    text = text.replace(/^\s*I will now generate[^.!?]*[.!?]\s*/i, '');
-
-    // Remove leading standalone dot or dot followed by text at the very beginning of the string
-    // Order is important here: .XY, .X, then general dot patterns
-    text = text.replace(/^\s*\.[a-zA-Z0-9]+/g, '');  // Handles .XY, .X (Punkt gefolgt von Alphanum)
-    text = text.replace(/^\s*\.\s*(?=[a-zA-Z0-9])/g, ''); // Handles . XX (Punkt, Leerzeichen, dann Alphanum)
-    text = text.replace(/^\s*\.(?!\S)/g, ''); // Handles standalone dot at the beginning (e.g., ". ") or just "."
-    text = text.replace(/^\s*,\s*\*\s*\.\s*\*\s*/g, ''); // Handles ,*.*
-    text = text.replace(/^\s*\*\s*\.\s*/g, ''); // Handles *.
-    text = text.replace(/^\s*\.\s*\*\s*/g, ''); // Handles .*
-
-    // Strip any leftover whitespace after cleaning
-    text = text.trim();
-
-    // Final check for leading dot after all other operations if the string is not empty
-    if (text && text.startsWith('.')) {
-        text = text.substring(1).trimStart();
-    }
-    // logMessage(`* [DEBUG] cleanResponseText: Bereinigter Text (erste 300 Zeichen): ${text?.substring(0, 300)}`, "debug");
-    return text.trim();
+  return cleanedText;
 }
 
 function getSafetySettings() {
