@@ -2350,17 +2350,25 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
       const lastUserMsgIndex = userMsgIndices.length > 0 ? userMsgIndices[userMsgIndices.length - 1] : -1;
 
       if (lastUserMsgIndex >= 0) {
-        // Zuerst den originalen Content speichern, bevor Änderungen vorgenommen werden
+        // Originalen Content speichern, bevor Änderungen vorgenommen werden
         const originalContent = clientBody.messages[lastUserMsgIndex].content;
+        let currentContent = originalContent; // Variable zum Verfolgen des aktuellen Inhalts
         
-        // Zuerst den Bypass anwenden, bevor wir etwas anderes tun
-        if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM" &&
-            typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
-          clientBody.messages[lastUserMsgIndex].content =
-            applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
+        // REIHENFOLGE WICHTIG:
+        // 1. Zuerst Bypass anwenden
+        if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM") {
+          if (Array.isArray(currentContent)) {
+            currentContent = currentContent.map(part =>
+              part.type === 'text' ? { ...part, text: applyBypassToText(part.text, bypassLevel) } : part
+            );
+          } else if (typeof currentContent === 'string') {
+            currentContent = applyBypassToText(currentContent, bypassLevel);
+          }
+          // Aktualisiere den Inhalt in der Message
+          clientBody.messages[lastUserMsgIndex].content = currentContent;
         }
         
-        // Dann Prefill hinzufügen - vor den OOC-Anweisungen
+        // 2. Dann Prefill hinzufügen
         if (!prefillDisabled) {
           let prefillText;
           if (customPrefill) {
@@ -2371,18 +2379,21 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
             prefillText = DEFAULT_PREFILL;
           }
 
-          if (lastUserMsgIndex === clientBody.messages.length - 1) { // Wenn die letzte Nachricht vom Benutzer ist
+          if (lastUserMsgIndex === clientBody.messages.length - 1) {
             clientBody.messages.push({
               role: "assistant",
               content: prefillText
             });
-          } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") { // Wenn bereits eine Assistenten-Nachricht nach der Benutzer-Nachricht existiert
+          } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") {
             clientBody.messages[lastUserMsgIndex + 1].content += "\n" + prefillText;
           }
         }
         
-        // OOC-Anweisungen zur Nachricht hinzufügen (mit originalem Content)
-        if (!oocInjectionDisabled && typeof originalContent === 'string') {
+        // 3. ALS ALLERLETZTES die OOC-Anweisungen hinzufügen
+        // Hole den aktuellsten Content nach allen bisherigen Änderungen
+        currentContent = clientBody.messages[lastUserMsgIndex].content;
+        
+        if (!oocInjectionDisabled) {
           combinedOOC = OOC_INSTRUCTION_2; // Zuweisung, nicht Neudeklaration
 
           // Add AutoPlot instructions based on chance
@@ -2885,7 +2896,10 @@ async function handleOpenRouterRequest(req, res) {
                 }
             }
             
-            // Zuletzt OOC-Anweisungen zur Nachricht hinzufügen
+            // ALS ALLERLETZTES die OOC-Anweisungen zur Nachricht hinzufügen
+            // Hole den absolut aktuellsten Content der Nachricht
+            currentContent = clientBody.messages[lastUserMsgIndex].content; // Aktualisierung hier wichtig!
+            
             if (!oocInjectionDisabled) {
                 combinedOOC = OOC_INSTRUCTION_2;
                 if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) combinedOOC += AUTOPLOT_OOC;
@@ -2901,11 +2915,17 @@ async function handleOpenRouterRequest(req, res) {
                     }
                     const spiceDetected = detectSpicyContent(contentForSpiceCheck);
                     const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
-                    if (spiceDetected) combinedOOC += BETTER_SPICE_OOC;
-                    else if (spiceTriggered) combinedOOC += getRandomSpiceInstruction();
+                    if (spiceDetected) {
+                        combinedOOC += BETTER_SPICE_OOC;
+                        logMessage("* OpenRouter: Spice Content erkannt", "warning");
+                    } else if (spiceTriggered) {
+                        combinedOOC += getRandomSpiceInstruction();
+                        logMessage("* OpenRouter: Random Spice Trigger", "warning");
+                    }
                 }
                 if (customOOC) combinedOOC += `\n[OOC: ${customOOC}]`;
                 combinedOOC += OOC_INSTRUCTION_1;
+                logMessage("* OpenRouter: OOC-Anweisungen generiert", "info");
 
                 // OOC immer anhängen, wenn !oocInjectionDisabled
                 let shouldAddOOC = true;
