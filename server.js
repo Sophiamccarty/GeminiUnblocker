@@ -940,6 +940,11 @@ function getBetterSpiceOOC() {
   return `\n${generateTimestamp()} [OOC: This is a spicy scene. More spice. Write intimate actions in more detail. Describe feelings more, taste, sounds, fluids. Be more creative. Make it varied and intensify it as if it were real intimacy, change positions and come up with something new.]`;
 }
 
+// Definiere die Konstanten für Prefills und OOC-Anweisungen
+const DEFAULT_PREFILL = getDefaultPrefill();
+const MEDIEVAL_PREFILL = getMedievalPrefill();
+const MEDIEVAL_OOC = getMedievalOOC();
+
 // Random spice instructions for Better Spice Mode with timestamp function
 function getSpiceInstructions() {
   const baseInstructions = [
