@@ -1336,36 +1336,64 @@ function generateCacheBusterId() {
   return `${timestamp}-${random}`;
 }
 
+// Generiert zufällige Unicode-Zeichen, die visuell unauffällig sind
+function generateInvisibleUnicode() {
+  const invisibleChars = [
+    '\u200B', // Zero-width space
+    '\u200C', // Zero-width non-joiner
+    '\u200D', // Zero-width joiner
+    '\u2060', // Word joiner
+    '\u200E', // Left-to-right mark
+    '\u200F'  // Right-to-left mark
+  ];
+  
+  let result = '';
+  const length = 5 + Math.floor(Math.random() * 10); // 5-15 Zeichen
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * invisibleChars.length);
+    result += invisibleChars[randomIndex];
+  }
+  
+  return result;
+}
+
 // Funktion, um Google API-Anfragen vor dem Caching zu schützen
 function applyCacheBusting(googleAIBody) {
   if (!googleAIBody || !googleAIBody.contents || !Array.isArray(googleAIBody.contents)) {
     return googleAIBody;
   }
 
-  // Füge einen unsichtbaren Cache-Busting-Kommentar zur letzten Nachricht hinzu
+  // Füge in JEDE Nachricht einen Cache-Buster ein, nicht nur in die letzte
   const cacheBustId = generateCacheBusterId();
-  const lastIndex = googleAIBody.contents.length - 1;
   
-  if (lastIndex >= 0) {
-    const lastContent = googleAIBody.contents[lastIndex];
+  for (let i = 0; i < googleAIBody.contents.length; i++) {
+    const content = googleAIBody.contents[i];
     
     // Stelle sicher, dass parts ein Array ist
-    if (!lastContent.parts) {
-      lastContent.parts = [];
-    } else if (!Array.isArray(lastContent.parts)) {
-      lastContent.parts = [lastContent.parts];
+    if (!content.parts) {
+      content.parts = [];
+    } else if (!Array.isArray(content.parts)) {
+      content.parts = [content.parts];
     }
     
-    // Füge einen einzigartigen, aber unsichtbaren Cache-Busting-Kommentar hinzu
-    // HTML-Kommentare werden von Gemini nicht als Teil des Inhalts betrachtet
-    const cacheBustComment = `<!-- Cache-Busting-ID: ${cacheBustId} -->`;
-    
-    if (lastContent.parts.length > 0 && typeof lastContent.parts[lastContent.parts.length - 1].text === 'string') {
-      // Füge den Kommentar zum vorhandenen Text hinzu
-      lastContent.parts[lastContent.parts.length - 1].text += cacheBustComment;
-    } else {
-      // Füge einen neuen Text-Teil mit dem Kommentar hinzu
-      lastContent.parts.push({ text: cacheBustComment });
+    // Verschiedene Cache-Busting-Techniken kombinieren
+    for (let j = 0; j < content.parts.length; j++) {
+      const part = content.parts[j];
+      if (typeof part.text === 'string') {
+        // 1. HTML-Kommentar
+        const cacheBustComment = `<!-- Cache-Busting-ID: ${cacheBustId}-${i}-${j} -->`;
+        
+        // 2. Unsichtbare Unicode-Zeichen
+        const invisibleUnicode = generateInvisibleUnicode();
+        
+        // 3. Einzigartiger Whitespace-Pattern
+        const whitespacePattern = ' '.repeat(1 + (cacheBustId.length % 3));
+        
+        // Kombiniere alle Techniken - am Anfang UND am Ende der Nachricht
+        part.text = invisibleUnicode + whitespacePattern + part.text +
+                    whitespacePattern + cacheBustComment + invisibleUnicode;
+      }
     }
   }
 
@@ -1377,7 +1405,8 @@ const CACHE_BUSTING_CONFIG = {
   enabled: true,              // Aktiviere Cache-Busting
   randomizeTemperature: true, // Leichte Variation der Temperatur
   forceUniqueRequests: true,  // Erzwinge einzigartige Anfragen
-  temperatureVariation: 0.03  // Maximale Temperaturvariation von ±0.03
+  temperatureVariation: 0.05, // Erhöhte Temperaturvariation von ±0.05
+  addRandomModel: true        // Optional zwischen verschiedenen Gemini-Modellvarianten wechseln
 };
 
 // Modifiziere die Google AI Anfragen, um Caching zu vermeiden
@@ -1390,34 +1419,54 @@ function modifyRequestForCacheBusting(googleAIBody, generationConfig) {
   const modifiedGoogleAIBody = JSON.parse(JSON.stringify(googleAIBody));
   const modifiedGenerationConfig = JSON.parse(JSON.stringify(generationConfig));
 
-  // 1. Cache-Busting-Kommentar zur Anfrage hinzufügen, wenn forceUniqueRequests aktiviert ist
+  // 1. Cache-Busting-Kommentar und unsichtbare Zeichen zur Anfrage hinzufügen
   if (CACHE_BUSTING_CONFIG.forceUniqueRequests) {
     applyCacheBusting(modifiedGoogleAIBody);
   }
 
-  // 2. Temperatur leicht randomisieren, wenn randomizeTemperature aktiviert ist
+  // 2. Temperatur stärker randomisieren
   if (CACHE_BUSTING_CONFIG.randomizeTemperature && modifiedGenerationConfig) {
     const variation = (Math.random() - 0.5) * 2 * CACHE_BUSTING_CONFIG.temperatureVariation;
     if (typeof modifiedGenerationConfig.temperature === 'number') {
       // Begrenze die Temperatur auf einen gültigen Bereich zwischen 0 und 1
-      modifiedGenerationConfig.temperature = Math.min(1, Math.max(0, 
+      modifiedGenerationConfig.temperature = Math.min(1, Math.max(0,
         modifiedGenerationConfig.temperature + variation));
+    }
+    
+    // 3. Optional auch andere Parameter leicht variieren
+    if (typeof modifiedGenerationConfig.topP === 'number') {
+      const topPVariation = (Math.random() - 0.5) * 0.02; // ±0.01 Variation
+      modifiedGenerationConfig.topP = Math.min(1, Math.max(0,
+        modifiedGenerationConfig.topP + topPVariation));
+    }
+    
+    // 4. Optional auch top_k variieren, falls vorhanden
+    if (typeof modifiedGenerationConfig.topK === 'number') {
+      // Variiere top_k um ±1
+      const topKVariation = Math.floor(Math.random() * 3) - 1; // -1, 0, oder 1
+      modifiedGenerationConfig.topK = Math.max(1, modifiedGenerationConfig.topK + topKVariation);
     }
   }
 
-  return { 
-    googleAIBody: modifiedGoogleAIBody, 
-    generationConfig: modifiedGenerationConfig 
+  return {
+    googleAIBody: modifiedGoogleAIBody,
+    generationConfig: modifiedGenerationConfig
   };
 }
 
 // Ergänze die Google API-URL für explizites Nicht-Caching (füge nach der URL-Konstruktion ein)
 function createGeminiNoCacheUrl(url) {
+  // Erzeuge eine wirklich einzigartige ID, die Microsekunden und 3 Zufallswerte kombiniert
+  const uniqueId = `${Date.now()}.${performance.now().toString().replace('.', '')}.${Math.random().toString(36).substring(2)}.${Math.random().toString(36).substring(2)}`;
+  
+  // Mehrere Parameter hinzufügen, um die Wahrscheinlichkeit zu erhöhen, dass die URL einzigartig ist
+  const cacheBustParams = `noCache=true&cacheBustId=${uniqueId}&ts=${Date.now()}&rand=${Math.random()}`;
+  
   // Wenn die URL bereits einen Query-Parameter enthält
   if (url.includes('?')) {
-    return `${url}&noCache=true&cacheBustId=${generateCacheBusterId()}`;
+    return `${url}&${cacheBustParams}`;
   } else {
-    return `${url}?noCache=true&cacheBustId=${generateCacheBusterId()}`;
+    return `${url}?${cacheBustParams}`;
   }
 }
 function stripInternalTagsFromMessages(messages) {
