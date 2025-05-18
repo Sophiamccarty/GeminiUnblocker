@@ -1461,11 +1461,14 @@ function modifyRequestForCacheBusting(googleAIBody, generationConfig) {
 
 // Ergänze die Google API-URL für explizites Nicht-Caching (füge nach der URL-Konstruktion ein)
 function createGeminiNoCacheUrl(url) {
-  // Erzeuge eine wirklich einzigartige ID, die Microsekunden und 3 Zufallswerte kombiniert
-  const uniqueId = `${Date.now()}.${performance.now().toString().replace('.', '')}.${Math.random().toString(36).substring(2)}.${Math.random().toString(36).substring(2)}`;
+  // Erzeuge eine einfachere einzigartige ID ohne performance.now()
+  const timestamp = Date.now();
+  const random1 = Math.random().toString(36).substring(2);
+  const random2 = Math.random().toString(36).substring(2);
+  const uniqueId = `${timestamp}.${random1}.${random2}`;
   
-  // Mehrere Parameter hinzufügen, um die Wahrscheinlichkeit zu erhöhen, dass die URL einzigartig ist
-  const cacheBustParams = `noCache=true&cacheBustId=${uniqueId}&ts=${Date.now()}&rand=${Math.random()}`;
+  // Einfachere Parameter hinzufügen
+  const cacheBustParams = `noCache=true&cacheBustId=${uniqueId}`;
   
   // Wenn die URL bereits einen Query-Parameter enthält
   if (url.includes('?')) {
