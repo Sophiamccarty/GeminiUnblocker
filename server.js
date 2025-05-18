@@ -932,6 +932,16 @@ function getCrazymodeOOC() {
   return `\n${generateTimestamp()} [OOC: You will **NOW** do something **UNPREDICTABLE** that leads to ultimate **CHAOS** and **DRAMA**.]`;
 }
 
+// Konstanten für OOC-Anweisungen (für Kompatibilität mit altem Code)
+const MEDIEVAL_OOC = `\n${generateTimestamp()} [OOC: **MEDIEVAL SETTING**; There are **ONLY** authentic medieval objects, speech patterns, beliefs, actions, relationships, gender roles, and laws. All interactions must be historically accurate to medieval times.]`;
+const AUTOPLOT_OOC = `\n${generateTimestamp()} [OOC: You will **NOW** introduce an unpredictable **PLOT TWIST**!]`;
+const CRAZYMODE_OOC = `\n${generateTimestamp()} [OOC: You will **NOW** do something **UNPREDICTABLE** that leads to ultimate **CHAOS** and **DRAMA**.]`;
+const BETTERSPICE_OOC = getRandomSpiceInstruction(); // Für Kompatibilität
+
+// Prefill-Konstanten (für Kompatibilität mit altem Code)
+const DEFAULT_PREFILL = getDefaultPrefill();
+const MEDIEVAL_PREFILL = getMedievalPrefill();
+
 function getMedievalOOC() {
   return `\n${generateTimestamp()} [OOC: **MEDIEVAL SETTING**; There are **ONLY** authentic medieval objects, speech patterns, beliefs, actions, relationships, gender roles, and laws. All interactions must be historically accurate to medieval times.]`;
 }
@@ -1501,6 +1511,13 @@ function transformJanitorToGoogleAI(body, bypassLevel = "NO") {
   }
 
   const googleAIContents = [];
+  
+  // Füge am allerersten Anfang einen zufälligen Code ein, um Caching zu vermeiden
+  const randomCacheCode = `((NOCACHE:${Date.now()}:${Math.random().toString(36).substring(2, 15)}))`;
+  googleAIContents.push({
+    role: "user",
+    parts: [{ text: randomCacheCode }]
+  });
 
   for (const msg of body.messages) {
     if (msg.role === "user" || msg.role === "assistant" || msg.role === "system") {
