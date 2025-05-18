@@ -1443,6 +1443,10 @@ function cleanResponseText(text, prefill_text = "") {
 
   let cleanedText = text;
 
+  // Entferne Zeitstempel im Format [TS:2025-05-18T10:04:29.431Z]
+  const timestampPattern = /\[TS:[^\]]+\]\s*/g;
+  cleanedText = cleanedText.replace(timestampPattern, '');
+
   // Remove the long specific pattern
   const longPattern = "{{char}} will strictly NEVER speak for {{user}} or describe actions as {{user}} and will allow {{user}} to dictate their own actions. {{char}} will speak, roleplay, and write in third-person view. Each reply from {{char}} will be different, and {{char}} will not repeat similar replies. I will never play, control or dictate {{user}}'s actions, thoughts, or feelings.";
   cleanedText = cleanedText.replace(new RegExp(longPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
@@ -2153,143 +2157,202 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
       logMessage(`* Markdown-Prüfung aktiv`);
     }
 
-    if (effectiveUseJailbreak) {
-      clientBody = addJailbreakToMessages(clientBody);
+    // Erstelle eine Kopie des originalen Nachrichtenarrays, um es besser zu verwalten
+    const originalMessages = [...(clientBody.messages || [])];
+    let processedMessages = [];
+    
+    // 1. Systemnachricht/Prompt aus Janitorai (falls vorhanden)
+    const systemIndex = originalMessages.findIndex(msg => msg.role === 'system');
+    if (systemIndex !== -1) {
+      // Starte mit der vorhandenen Systemnachricht
+      processedMessages.push(originalMessages[systemIndex]);
     }
-
-    // NEUE FUNKTIONALITÄT: Wende Lorebook auf die Nachrichten an
-    if (lorebookCode && clientBody.messages && Array.isArray(clientBody.messages)) {
+    
+    // 2. Jailbreak hinzufügen (falls aktiviert)
+    if (effectiveUseJailbreak) {
+      if (processedMessages.length > 0 && processedMessages[0].role === 'system') {
+        // Füge Jailbreak zur vorhandenen Systemnachricht hinzu
+        if (!processedMessages[0].content?.includes("## GAME SETTINGS")) {
+          processedMessages[0].content += "\n\n" + JAILBREAK_TEXT;
+        }
+      } else {
+        // Füge eine neue Systemnachricht mit Jailbreak hinzu
+        processedMessages.unshift({
+          role: "system",
+          content: JAILBREAK_TEXT
+        });
+      }
+      logMessage(`* Jailbreak zur Systemnachricht hinzugefügt`, "info");
+    }
+    
+    // 3. Lorebook hinzufügen (falls aktiviert)
+    if (lorebookCode && Array.isArray(originalMessages)) {
       const lorebookExists = lorebookManager.getLorebook(lorebookCode);
       if (lorebookExists) {
-        logMessage(`* Lorebook gefunden, wende es auf Nachrichten an (${Object.keys(lorebookExists.entries).length} Einträge)`, "info");
-        clientBody.messages = lorebookManager.applyLorebookToMessages(clientBody.messages, lorebookCode);
-        // Füge auch eine System-Nachricht hinzu, die den Lorebook-Einsatz bestätigt (optional)
-        if (clientBody.messages.length > 0 && clientBody.messages[0].role === 'system') {
-          clientBody.messages[0].content += `\n\n[Lorebook ${lorebookCode} mit ${Object.keys(lorebookExists.entries).length} Einträgen aktiviert]`;
+        logMessage(`* Lorebook gefunden (${Object.keys(lorebookExists.entries).length} Einträge)`, "info");
+        
+        // Füge Lorebook-Info zur Systemnachricht hinzu
+        if (processedMessages.length > 0 && processedMessages[0].role === 'system') {
+          processedMessages[0].content += `\n\n[Lorebook ${lorebookCode} mit ${Object.keys(lorebookExists.entries).length} Einträgen aktiviert]`;
+        }
+        
+        // Wende das Lorebook auf die Nachrichten an
+        const tempMessages = [...originalMessages];
+        const processedWithLorebook = lorebookManager.applyLorebookToMessages(tempMessages, lorebookCode);
+        
+        // Wir behalten nur die vom Lorebook eingefügten Nachrichten
+        // und fügen sie nach der Systemnachricht ein
+        const lorebookEntries = processedWithLorebook.filter(msg =>
+          msg.role === 'system' &&
+          msg.content &&
+          msg.content.includes('[LOREBOOK CONTEXT')
+        );
+        
+        if (lorebookEntries.length > 0) {
+          processedMessages = [
+            ...processedMessages,
+            ...lorebookEntries
+          ];
         }
       } else {
         logMessage(`* Lorebook mit Code ${lorebookCode} nicht gefunden`, "warning");
       }
     }
 
-    if (clientBody.messages && Array.isArray(clientBody.messages)) {
-      // FIX: Finde den Index der LETZTEN User-Nachricht statt der ersten
-      const userMsgIndices = [];
-      for (let i = 0; i < clientBody.messages.length; i++) {
-        if (clientBody.messages[i].role === 'user') {
-          userMsgIndices.push(i);
-        }
-      }
+    // Wende Bypass auf alle Nachrichten entsprechend den Regeln an
+    // None (standard) = aus / Kein bypass
+    // Just System = ALLE SYSTEMNACHRICHTEN
+    // Low = ALLE SYSTEMN; ASSISTANT UND USER IM LOW MODUS
+    // Medium= ALLE
+    // Strong= ALLE
+    
+    if (bypassLevel !== "NO") {
+      logMessage(`* Wende Bypass-Level '${bypassLevel}' auf Nachrichten an...`);
       
-      // Verwende den letzten Benutzer-Nachrichtenindex, wenn einer gefunden wurde
-      const lastUserMsgIndex = userMsgIndices.length > 0 ? userMsgIndices[userMsgIndices.length - 1] : -1;
-
-      if (lastUserMsgIndex >= 0) {
-        // Originalen Content speichern, bevor Änderungen vorgenommen werden
-        const originalContent = clientBody.messages[lastUserMsgIndex].content;
+      // Wende auf jede Nachricht entsprechend den Regeln an
+      for (let i = 0; i < processedMessages.length; i++) {
+        const msg = processedMessages[i];
+        let shouldApplyBypass = false;
+        let effectiveBypassLevel = bypassLevel;
         
-        // 1. ZUERST den Bypass anwenden
-        if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM") {
-          if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
-            clientBody.messages[lastUserMsgIndex].content = clientBody.messages[lastUserMsgIndex].content.map(part =>
-              part.type === 'text' ? { ...part, text: applyBypassToText(part.text, bypassLevel) } : part
+        if (bypassLevel === "SYSTEM") {
+          // Nur auf Systemnachrichten anwenden
+          shouldApplyBypass = msg.role === 'system';
+          effectiveBypassLevel = "STRONG"; // Für SYSTEM-Modus immer STRONG verwenden
+        } else {
+          // Für alle anderen Level auf alle Nachrichten anwenden
+          shouldApplyBypass = true;
+        }
+        
+        if (shouldApplyBypass) {
+          let content = msg.content;
+          
+          if (Array.isArray(content)) {
+            content = content.map(part =>
+              part.type === 'text' ? { ...part, text: applyBypassToText(part.text, effectiveBypassLevel) } : part
             );
-          } else if (typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
-            clientBody.messages[lastUserMsgIndex].content = applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
+          } else if (typeof content === 'string') {
+            content = applyBypassToText(content, effectiveBypassLevel);
           }
-          logMessage("* Bypass auf User-Nachricht angewendet", "info");
-        }
-        
-        // 2. DANN Prefill hinzufügen
-        if (!prefillDisabled) {
-          let prefillText;
-          if (customPrefill) {
-            prefillText = addTimestamp(customPrefill);
-          } else if (hasMedievalMode) {
-            prefillText = getMedievalPrefill();
-          } else {
-            prefillText = getDefaultPrefill();
-          }
-
-          if (lastUserMsgIndex === clientBody.messages.length - 1) {
-            clientBody.messages.push({
-              role: "assistant",
-              content: prefillText
-            });
-          } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") {
-            clientBody.messages[lastUserMsgIndex + 1].content += "\n" + prefillText;
-          }
-          logMessage("* Prefill hinzugefügt", "info");
-        }
-        
-        // 3. ALS ALLERLETZTES die OOC-Anweisungen hinzufügen
-        // Hole den absolut aktuellsten Content der Nachricht
-        let currentContent = clientBody.messages[lastUserMsgIndex].content;
-        
-        if (!oocInjectionDisabled && (Array.isArray(currentContent) || typeof currentContent === 'string')) {
-          let combinedOOC = getOOCInstruction2();
           
-          // Add AutoPlot instructions based on chance
-          if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
-            combinedOOC += getAutoplotOOC();
-            logMessage("* AutoPlot Trigger", "warning");
-          }
-
-          if (hasCrazyMode) {
-            combinedOOC += getCrazymodeOOC();
-          }
-
-          // Add Medieval Mode OOC if enabled
-          if (hasMedievalMode) {
-            combinedOOC += getMedievalOOC();
-          }
-
-          // Add Better Spice instructions if enabled
-          if (hasBetterSpiceMode) {
-            // Vereinfachte Spice-Erkennung
-            let contentForSpiceCheck = "";
-            if (Array.isArray(currentContent)) {
-              contentForSpiceCheck = currentContent
-                .filter(part => part.type === 'text')
-                .map(part => part.text)
-                .join(" ");
-            } else {
-              contentForSpiceCheck = currentContent;
-            }
-            const spiceDetected = detectSpicyContent(contentForSpiceCheck);
-            const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
-
-            if (spiceDetected) {
-              combinedOOC += getBetterSpiceOOC();
-              logMessage("* Spice Content erkannt", "warning");
-            } else if (spiceTriggered) {
-              combinedOOC += getRandomSpiceInstruction();
-              logMessage("* Random Spice Trigger", "warning");
-            }
-          }
-
-          if (customOOC) {
-            combinedOOC += `\n${generateTimestamp()} [OOC: ${customOOC}]`;
-          }
-
-          combinedOOC += getOOCInstruction1();
-          
-          // IMMER OOC hinzufügen, unabhängig davon, ob es bereits vorhanden ist
-          // Keine Überprüfung, ob bereits vorhanden - immer anhängen
-          if (Array.isArray(currentContent)) {
-            clientBody.messages[lastUserMsgIndex].content = [
-              ...currentContent,
-              { type: 'text', text: combinedOOC }
-            ];
-          } else {
-            clientBody.messages[lastUserMsgIndex].content = currentContent + combinedOOC;
-          }
-          logMessage("* OOC-Anweisungen als absolut letztes hinzugefügt", "info");
+          processedMessages[i].content = content;
+          logMessage(`* Bypass auf ${msg.role}-Nachricht angewendet (${effectiveBypassLevel}-Modus)`, "info");
         }
-        
-        // Der else-Fall für lastUserMsgIndex < 0 wurde entfernt, da er in der neuen Struktur nicht mehr benötigt wird
       }
     }
+    
+    // 4. Füge den gesamten Kontext von Assistant & User hinzu (ohne die Systemnachrichten)
+    // Bereits durch processedMessages abgedeckt
+    
+    // Finde den Index der letzten Benutzernachricht
+    const lastUserMsgIndex = processedMessages.findIndex(
+      (msg, idx, arr) => msg.role === 'user' &&
+      (idx === arr.length - 1 || arr[idx + 1].role !== 'user')
+    );
+    
+    // 5. OOC-Anweisungen zur letzten Benutzernachricht hinzufügen
+    if (lastUserMsgIndex !== -1 && !oocInjectionDisabled) {
+      // Originalen Content speichern, bevor weitere Änderungen vorgenommen werden
+      const processedContent = processedMessages[lastUserMsgIndex].content;
+      
+      // OOC-Anweisungen erstellen
+      let combinedOOC = getOOCInstruction2();
+      
+      if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
+        combinedOOC += getAutoplotOOC();
+        logMessage("* AutoPlot Trigger", "warning");
+      }
+
+      if (hasCrazyMode) {
+        combinedOOC += getCrazymodeOOC();
+      }
+
+      if (hasMedievalMode) {
+        combinedOOC += getMedievalOOC();
+      }
+
+      if (hasBetterSpiceMode) {
+        let contentForSpiceCheck = "";
+        if (Array.isArray(processedContent)) {
+          contentForSpiceCheck = processedContent
+            .filter(part => part.type === 'text')
+            .map(part => part.text)
+            .join(" ");
+        } else {
+          contentForSpiceCheck = processedContent;
+        }
+        
+        const spiceDetected = detectSpicyContent(contentForSpiceCheck);
+        const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
+
+        if (spiceDetected) {
+          combinedOOC += getBetterSpiceOOC();
+          logMessage("* Spice Content erkannt", "warning");
+        } else if (spiceTriggered) {
+          combinedOOC += getRandomSpiceInstruction();
+          logMessage("* Random Spice Trigger", "warning");
+        }
+      }
+
+      if (customOOC) {
+        combinedOOC += `\n${generateTimestamp()} [OOC: ${customOOC}]`;
+      }
+
+      combinedOOC += getOOCInstruction1();
+      
+      // OOC-Anweisungen zur Benutzernachricht hinzufügen
+      if (Array.isArray(processedContent)) {
+        processedMessages[lastUserMsgIndex].content = [
+          ...processedContent,
+          { type: 'text', text: combinedOOC }
+        ];
+      } else {
+        processedMessages[lastUserMsgIndex].content = processedContent + combinedOOC;
+      }
+      logMessage("* OOC-Anweisungen zur letzten User-Nachricht hinzugefügt", "info");
+    }
+    
+    // 6. Prefill als Assistant-Nachricht hinzufügen
+    if (!prefillDisabled) {
+      let prefillText;
+      if (customPrefill) {
+        prefillText = addTimestamp(customPrefill);
+      } else if (hasMedievalMode) {
+        prefillText = getMedievalPrefill();
+      } else {
+        prefillText = getDefaultPrefill();
+      }
+      
+      // Füge den Prefill als neue Assistant-Nachricht hinzu
+      processedMessages.push({
+        role: "assistant",
+        content: prefillText
+      });
+      logMessage("* Prefill als Assistant-Nachricht hinzugefügt", "info");
+    }
+    
+    // Aktualisiere clientBody.messages mit den neu strukturierten Nachrichten
+    clientBody.messages = processedMessages;
 
     const safetySettings = getSafetySettings();
 
