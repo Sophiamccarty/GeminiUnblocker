@@ -1501,13 +1501,6 @@ function transformJanitorToGoogleAI(body, bypassLevel = "NO") {
   }
 
   const googleAIContents = [];
-  
-  // Füge am allerersten Anfang einen zufälligen Code ein, um Caching zu vermeiden
-  const randomCacheCode = `((NOCACHE:${Date.now()}:${Math.random().toString(36).substring(2, 15)}))`;
-  googleAIContents.push({
-    role: "user",
-    parts: [{ text: randomCacheCode }]
-  });
 
   for (const msg of body.messages) {
     if (msg.role === "user" || msg.role === "assistant" || msg.role === "system") {
