@@ -1443,6 +1443,10 @@ function cleanResponseText(text, prefill_text = "") {
 
   let cleanedText = text;
 
+  // Entferne Zeitstempel im Format [TS:2025-05-18T10:04:29.431Z]
+  const timestampPattern = /\[TS:[^\]]+\]\s*/g;
+  cleanedText = cleanedText.replace(timestampPattern, '');
+
   // Remove the long specific pattern
   const longPattern = "{{char}} will strictly NEVER speak for {{user}} or describe actions as {{user}} and will allow {{user}} to dictate their own actions. {{char}} will speak, roleplay, and write in third-person view. Each reply from {{char}} will be different, and {{char}} will not repeat similar replies. I will never play, control or dictate {{user}}'s actions, thoughts, or feelings.";
   cleanedText = cleanedText.replace(new RegExp(longPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
@@ -2185,30 +2189,78 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
       const lastUserMsgIndex = userMsgIndices.length > 0 ? userMsgIndices[userMsgIndices.length - 1] : -1;
 
       if (lastUserMsgIndex >= 0) {
-        // Originalen Content speichern, bevor Änderungen vorgenommen werden
+        // Zuerst den originalen Content speichern, bevor Änderungen vorgenommen werden
         const originalContent = clientBody.messages[lastUserMsgIndex].content;
         
-        // 1. ZUERST den Bypass anwenden
-        if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM") {
-          if (Array.isArray(clientBody.messages[lastUserMsgIndex].content)) {
-            clientBody.messages[lastUserMsgIndex].content = clientBody.messages[lastUserMsgIndex].content.map(part =>
-              part.type === 'text' ? { ...part, text: applyBypassToText(part.text, bypassLevel) } : part
-            );
-          } else if (typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
-            clientBody.messages[lastUserMsgIndex].content = applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
+        // OOC-Anweisungen zur Nachricht hinzufügen (mit originalem Content)
+        if (!oocInjectionDisabled && typeof originalContent === 'string') {
+          let combinedOOC = OOC_INSTRUCTION_2;
+
+          // Add AutoPlot instructions based on chance
+          if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
+            combinedOOC += AUTOPLOT_OOC;
+            logMessage("* AutoPlot Trigger", "warning");
           }
-          logMessage("* Bypass auf User-Nachricht angewendet", "info");
+
+          if (hasCrazyMode) {
+            combinedOOC += CRAZYMODE_OOC;
+          }
+
+          // Add Medieval Mode OOC if enabled
+          if (hasMedievalMode) {
+            combinedOOC += MEDIEVAL_OOC;
+          }
+
+          // Add Better Spice instructions if enabled
+          if (hasBetterSpiceMode) {
+            const spiceDetected = detectSpicyContent(originalContent);
+            const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
+
+            if (spiceDetected) {
+              combinedOOC += BETTER_SPICE_OOC;
+              logMessage("* Spice Content erkannt", "warning");
+            } else if (spiceTriggered) {
+              combinedOOC += getRandomSpiceInstruction();
+              logMessage("* Random Spice Trigger", "warning");
+            }
+          }
+
+          if (customOOC) {
+            combinedOOC += `\n[OOC: ${customOOC}]`;
+          }
+
+          combinedOOC += OOC_INSTRUCTION_1;
+
+          // Überprüfen, ob die OOC-Anweisungen bereits vorhanden sind
+          if (!originalContent.includes(OOC_INSTRUCTION_1) &&
+              !originalContent.includes(OOC_INSTRUCTION_2)) {
+            // Füge die OOC-Anweisungen hinzu
+            clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
+            logMessage("* OOC-Anweisungen hinzugefügt");
+          } else {
+            logMessage("* OOC-Anweisungen bereits vorhanden, werden nicht erneut hinzugefügt");
+          }
         }
         
-        // 2. DANN Prefill hinzufügen
+        // Jetzt erst den Bypass anwenden, NACH dem Hinzufügen von OOC
+        if (bypassLevel !== "NO" && bypassLevel !== "SYSTEM" &&
+            typeof clientBody.messages[lastUserMsgIndex].content === 'string') {
+          // Apply bypass to the message content with OOC included
+          clientBody.messages[lastUserMsgIndex].content =
+            applyBypassToText(clientBody.messages[lastUserMsgIndex].content, bypassLevel);
+          logMessage("* Bypass auf User-Nachricht angewendet");
+        }
+
+        // Prefill hinzufügen
         if (!prefillDisabled) {
+          // Choose the appropriate prefill text
           let prefillText;
           if (customPrefill) {
-            prefillText = addTimestamp(customPrefill);
+            prefillText = customPrefill;
           } else if (hasMedievalMode) {
-            prefillText = getMedievalPrefill();
+            prefillText = MEDIEVAL_PREFILL;
           } else {
-            prefillText = getDefaultPrefill();
+            prefillText = DEFAULT_PREFILL;
           }
 
           if (lastUserMsgIndex === clientBody.messages.length - 1) {
@@ -2219,75 +2271,19 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
           } else if (clientBody.messages[lastUserMsgIndex + 1].role === "assistant") {
             clientBody.messages[lastUserMsgIndex + 1].content += "\n" + prefillText;
           }
-          logMessage("* Prefill hinzugefügt", "info");
+          logMessage("* Prefill hinzugefügt");
         }
-        
-        // 3. ALS ALLERLETZTES die OOC-Anweisungen hinzufügen
-        // Hole den absolut aktuellsten Content der Nachricht
-        let currentContent = clientBody.messages[lastUserMsgIndex].content;
-        
-        if (!oocInjectionDisabled && (Array.isArray(currentContent) || typeof currentContent === 'string')) {
-          let combinedOOC = getOOCInstruction2();
-          
-          // Add AutoPlot instructions based on chance
-          if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
-            combinedOOC += getAutoplotOOC();
-            logMessage("* AutoPlot Trigger", "warning");
-          }
+      }
+    }
 
-          if (hasCrazyMode) {
-            combinedOOC += getCrazymodeOOC();
-          }
-
-          // Add Medieval Mode OOC if enabled
-          if (hasMedievalMode) {
-            combinedOOC += getMedievalOOC();
-          }
-
-          // Add Better Spice instructions if enabled
-          if (hasBetterSpiceMode) {
-            // Vereinfachte Spice-Erkennung
-            let contentForSpiceCheck = "";
-            if (Array.isArray(currentContent)) {
-              contentForSpiceCheck = currentContent
-                .filter(part => part.type === 'text')
-                .map(part => part.text)
-                .join(" ");
-            } else {
-              contentForSpiceCheck = currentContent;
-            }
-            const spiceDetected = detectSpicyContent(contentForSpiceCheck);
-            const spiceTriggered = Math.floor(Math.random() * betterSpiceChance) === 0;
-
-            if (spiceDetected) {
-              combinedOOC += getBetterSpiceOOC();
-              logMessage("* Spice Content erkannt", "warning");
-            } else if (spiceTriggered) {
-              combinedOOC += getRandomSpiceInstruction();
-              logMessage("* Random Spice Trigger", "warning");
-            }
-          }
-
-          if (customOOC) {
-            combinedOOC += `\n${generateTimestamp()} [OOC: ${customOOC}]`;
-          }
-
-          combinedOOC += getOOCInstruction1();
-          
-          // IMMER OOC hinzufügen, unabhängig davon, ob es bereits vorhanden ist
-          // Keine Überprüfung, ob bereits vorhanden - immer anhängen
-          if (Array.isArray(currentContent)) {
-            clientBody.messages[lastUserMsgIndex].content = [
-              ...currentContent,
-              { type: 'text', text: combinedOOC }
-            ];
-          } else {
-            clientBody.messages[lastUserMsgIndex].content = currentContent + combinedOOC;
-          }
-          logMessage("* OOC-Anweisungen als absolut letztes hinzugefügt", "info");
+    // Wende Bypass auf alle System-Nachrichten an, wenn bypassLevel = SYSTEM
+    if (bypassLevel === "SYSTEM" && clientBody.messages && Array.isArray(clientBody.messages)) {
+      for (let i = 0; i < clientBody.messages.length; i++) {
+        if (clientBody.messages[i].role === 'system' &&
+            typeof clientBody.messages[i].content === 'string') {
+          clientBody.messages[i].content = applyBypassToText(clientBody.messages[i].content, "STRONG");
+          logMessage(`* Bypass auf System-Nachricht #${i+1} angewendet (SYSTEM-Modus)`, "info");
         }
-        
-        // Der else-Fall für lastUserMsgIndex < 0 wurde entfernt, da er in der neuen Struktur nicht mehr benötigt wird
       }
     }
 
