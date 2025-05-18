@@ -1516,9 +1516,12 @@ function transformJanitorToGoogleAI(body, bypassLevel = "NO") {
           }
         }
 
+        // Füge einen Zeitstempel zu JEDER Nachricht hinzu, unabhängig von der Rolle
+        const timestampedContent = `${generateTimestamp()} ${content}`;
+        
         googleAIContents.push({
           role: role,
-          parts: [{ text: content }]
+          parts: [{ text: timestampedContent }]
         });
       }
     }
