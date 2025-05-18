@@ -1329,6 +1329,97 @@ function decodeBypassedText(text) {
 
   return decodedText;
 }
+// Funktion zur Generierung einer zufälligen Cache-Busting-ID
+function generateCacheBusterId() {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000000);
+  return `${timestamp}-${random}`;
+}
+
+// Funktion, um Google API-Anfragen vor dem Caching zu schützen
+function applyCacheBusting(googleAIBody) {
+  if (!googleAIBody || !googleAIBody.contents || !Array.isArray(googleAIBody.contents)) {
+    return googleAIBody;
+  }
+
+  // Füge einen unsichtbaren Cache-Busting-Kommentar zur letzten Nachricht hinzu
+  const cacheBustId = generateCacheBusterId();
+  const lastIndex = googleAIBody.contents.length - 1;
+  
+  if (lastIndex >= 0) {
+    const lastContent = googleAIBody.contents[lastIndex];
+    
+    // Stelle sicher, dass parts ein Array ist
+    if (!lastContent.parts) {
+      lastContent.parts = [];
+    } else if (!Array.isArray(lastContent.parts)) {
+      lastContent.parts = [lastContent.parts];
+    }
+    
+    // Füge einen einzigartigen, aber unsichtbaren Cache-Busting-Kommentar hinzu
+    // HTML-Kommentare werden von Gemini nicht als Teil des Inhalts betrachtet
+    const cacheBustComment = `<!-- Cache-Busting-ID: ${cacheBustId} -->`;
+    
+    if (lastContent.parts.length > 0 && typeof lastContent.parts[lastContent.parts.length - 1].text === 'string') {
+      // Füge den Kommentar zum vorhandenen Text hinzu
+      lastContent.parts[lastContent.parts.length - 1].text += cacheBustComment;
+    } else {
+      // Füge einen neuen Text-Teil mit dem Kommentar hinzu
+      lastContent.parts.push({ text: cacheBustComment });
+    }
+  }
+
+  return googleAIBody;
+}
+
+// Konfiguration für expliziten Cache-Busting und Randomisierung
+const CACHE_BUSTING_CONFIG = {
+  enabled: true,              // Aktiviere Cache-Busting
+  randomizeTemperature: true, // Leichte Variation der Temperatur
+  forceUniqueRequests: true,  // Erzwinge einzigartige Anfragen
+  temperatureVariation: 0.03  // Maximale Temperaturvariation von ±0.03
+};
+
+// Modifiziere die Google AI Anfragen, um Caching zu vermeiden
+function modifyRequestForCacheBusting(googleAIBody, generationConfig) {
+  if (!CACHE_BUSTING_CONFIG.enabled) {
+    return { googleAIBody, generationConfig };
+  }
+
+  // Tiefe Kopie der Objekte erstellen, um die Originale nicht zu verändern
+  const modifiedGoogleAIBody = JSON.parse(JSON.stringify(googleAIBody));
+  const modifiedGenerationConfig = JSON.parse(JSON.stringify(generationConfig));
+
+  // 1. Cache-Busting-Kommentar zur Anfrage hinzufügen, wenn forceUniqueRequests aktiviert ist
+  if (CACHE_BUSTING_CONFIG.forceUniqueRequests) {
+    applyCacheBusting(modifiedGoogleAIBody);
+  }
+
+  // 2. Temperatur leicht randomisieren, wenn randomizeTemperature aktiviert ist
+  if (CACHE_BUSTING_CONFIG.randomizeTemperature && modifiedGenerationConfig) {
+    const variation = (Math.random() - 0.5) * 2 * CACHE_BUSTING_CONFIG.temperatureVariation;
+    if (typeof modifiedGenerationConfig.temperature === 'number') {
+      // Begrenze die Temperatur auf einen gültigen Bereich zwischen 0 und 1
+      modifiedGenerationConfig.temperature = Math.min(1, Math.max(0, 
+        modifiedGenerationConfig.temperature + variation));
+    }
+  }
+
+  return { 
+    googleAIBody: modifiedGoogleAIBody, 
+    generationConfig: modifiedGenerationConfig 
+  };
+}
+
+// Ergänze die Google API-URL für explizites Nicht-Caching (füge nach der URL-Konstruktion ein)
+function createGeminiNoCacheUrl(url) {
+  // Wenn die URL bereits einen Query-Parameter enthält
+  if (url.includes('?')) {
+    return `${url}&noCache=true&cacheBustId=${generateCacheBusterId()}`;
+  } else {
+    return `${url}?noCache=true&cacheBustId=${generateCacheBusterId()}`;
+  }
+}
 function stripInternalTagsFromMessages(messages) {
   if (!messages || !Array.isArray(messages)) {
     return messages;
@@ -2324,14 +2415,36 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
       generationConfig.presencePenalty = clientBody.presence_penalty;
     }
 
-    const googleAIBody = {
+    let googleAIBody = {
       contents: googleAIContents,
       safetySettings: safetySettings,
       generationConfig: generationConfig
     };
 
+    // Wende Cache-Busting auf die Anfrage an
+    const { googleAIBody: modifiedGoogleAIBody, generationConfig: modifiedGenerationConfig } =
+      modifyRequestForCacheBusting(googleAIBody, generationConfig);
+    
+    googleAIBody = modifiedGoogleAIBody;
+    
+    // Aktualisiere generationConfig
+    if (modifiedGenerationConfig) {
+      googleAIBody.generationConfig = modifiedGenerationConfig;
+      
+      // Aktualisiere den Log-Eintrag mit der möglicherweise geänderten Temperatur
+      if (typeof modifiedGenerationConfig.temperature === 'number') {
+        logMessage(`* Using modified temperature: ${modifiedGenerationConfig.temperature.toFixed(4)} (with anti-cache variation)`);
+      }
+    }
+
     const endpoint = "generateContent";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${apiKey}`;
+    let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:${endpoint}?key=${apiKey}`;
+    
+    // Wende Cache-Busting auf die URL an
+    if (CACHE_BUSTING_CONFIG.enabled && CACHE_BUSTING_CONFIG.forceUniqueRequests) {
+      url = createGeminiNoCacheUrl(url);
+      logMessage(`* Applying URL cache-busting parameters to prevent response caching`);
+    }
 
     try {
       // Function to execute request with retry logic
@@ -3109,6 +3222,13 @@ app.post('/test-apply-lorebook', express.json(), (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Google AI Proxy Server running on port ${PORT}`);
+  console.log(`${new Date().toISOString()} - Server started`);
+  console.log(`Cache-Busting enabled: ${CACHE_BUSTING_CONFIG.enabled ? 'YES' : 'NO'}`);
+  if (CACHE_BUSTING_CONFIG.enabled) {
+    console.log(`- Cache-Busting settings:
+    - Random temperature variation: ${CACHE_BUSTING_CONFIG.randomizeTemperature ? 'ON' : 'OFF'} (±${CACHE_BUSTING_CONFIG.temperatureVariation})
+    - Unique request forcing: ${CACHE_BUSTING_CONFIG.forceUniqueRequests ? 'ON' : 'OFF'}`);
+  }
   console.log(`${new Date().toISOString()} - Server started`);
 });
 
