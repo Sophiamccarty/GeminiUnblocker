@@ -937,6 +937,7 @@ const MEDIEVAL_OOC = `\n${generateTimestamp()} [OOC: **MEDIEVAL SETTING**; There
 const AUTOPLOT_OOC = `\n${generateTimestamp()} [OOC: You will **NOW** introduce an unpredictable **PLOT TWIST**!]`;
 const CRAZYMODE_OOC = `\n${generateTimestamp()} [OOC: You will **NOW** do something **UNPREDICTABLE** that leads to ultimate **CHAOS** and **DRAMA**.]`;
 const BETTERSPICE_OOC = getRandomSpiceInstruction(); // Für Kompatibilität
+const BETTER_SPICE_OOC = getRandomSpiceInstruction(); // Für Kompatibilität (alternativer Name)
 
 // Prefill-Konstanten (für Kompatibilität mit altem Code)
 const DEFAULT_PREFILL = getDefaultPrefill();
@@ -1464,6 +1465,10 @@ function cleanResponseText(text, prefill_text = "") {
   // Remove the shorter patterns like - {{char}}, - {{char}}., - {{char}}:, - {{user}}, etc.
   const shortPattern = /-\s*\{\{(char|user)\}\}\s*[:.]?/g;
   cleanedText = cleanedText.replace(shortPattern, '');
+
+  // Remove narration markers like (Narrating...)
+  const narrationPattern = /\(Narrating\.{3}\)/gi;
+  cleanedText = cleanedText.replace(narrationPattern, '');
 
   // Remove any leading/trailing whitespace that might result from the replacements
   cleanedText = cleanedText.trim();
