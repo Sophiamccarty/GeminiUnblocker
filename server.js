@@ -2194,7 +2194,7 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
         
         // OOC-Anweisungen zur Nachricht hinzufügen (mit originalem Content)
         if (!oocInjectionDisabled && typeof originalContent === 'string') {
-          let combinedOOC = OOC_INSTRUCTION_2;
+          let combinedOOC = getOOCInstruction2();
 
           // Add AutoPlot instructions based on chance
           if (hasAutoPlot && Math.floor(Math.random() * autoplotChance) === 0) {
@@ -2226,14 +2226,14 @@ async function handleProxyRequest(req, res, useJailbreak = false) {
           }
 
           if (customOOC) {
-            combinedOOC += `\n[OOC: ${customOOC}]`;
+            combinedOOC += `\n${generateTimestamp()} [OOC: ${customOOC}]`;
           }
 
-          combinedOOC += OOC_INSTRUCTION_1;
+          combinedOOC += getOOCInstruction1();
 
           // Überprüfen, ob die OOC-Anweisungen bereits vorhanden sind
-          if (!originalContent.includes(OOC_INSTRUCTION_1) &&
-              !originalContent.includes(OOC_INSTRUCTION_2)) {
+          if (!originalContent.includes("[OOC: **CRITICAL RULE**") &&
+              !originalContent.includes("[OOC: You will **NOW** be a bold")) {
             // Füge die OOC-Anweisungen hinzu
             clientBody.messages[lastUserMsgIndex].content = originalContent + combinedOOC;
             logMessage("* OOC-Anweisungen hinzugefügt");
