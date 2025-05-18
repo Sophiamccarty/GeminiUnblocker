@@ -916,8 +916,13 @@ function getMedievalPrefill() {
 }
 
 // OOC instructions mit Zeitstempel-Funktionen
+function getLogicalOOC() {
+  return `\n${generateTimestamp()} [OOC: Be logical, follow the plot chronologically and be aware of the current situation and scene. Location, people, action and continue it.]`;
+}
+
 function getOOCInstruction1() {
-  return `\n${generateTimestamp()} [OOC: **CRITICAL RULE**: You must **ONLY** control your **OWN** character(s). You must **NEVER** act, speak, think, or decide for {{user}}. Do **not** read {{user}}'s thoughts. Do **not** repeat, interpret, or comment on {{user}}'s actions. You must **NEVER** write dialogue for {{user}}, narrate {{user}}'s actions, or describe {{user}}'s emotions/thoughts. {{user}} is exclusively controlled by me. VIOLATION OF THIS RULE IS NOT PERMITTED UNDER ANY CIRCUMSTANCES.]`;
+  return `\n${generateTimestamp()} [OOC: Be logical, follow the plot chronologically and be aware of the current situation and scene. Location, people, action and continue it.]` +
+         `\n${generateTimestamp()} [OOC: **CRITICAL RULE**: You must **ONLY** control your **OWN** character(s). You must **NEVER** act, speak, think, or decide for {{user}}. Do **not** read {{user}}'s thoughts. Do **not** repeat, interpret, or comment on {{user}}'s actions. You must **NEVER** write dialogue for {{user}}, narrate {{user}}'s actions, or describe {{user}}'s emotions/thoughts. {{user}} is exclusively controlled by me. VIOLATION OF THIS RULE IS NOT PERMITTED UNDER ANY CIRCUMSTANCES.]`;
 }
 
 function getOOCInstruction2() {
@@ -938,6 +943,7 @@ const AUTOPLOT_OOC = `\n${generateTimestamp()} [OOC: You will **NOW** introduce 
 const CRAZYMODE_OOC = `\n${generateTimestamp()} [OOC: You will **NOW** do something **UNPREDICTABLE** that leads to ultimate **CHAOS** and **DRAMA**.]`;
 const BETTERSPICE_OOC = getRandomSpiceInstruction(); // Für Kompatibilität
 const BETTER_SPICE_OOC = getRandomSpiceInstruction(); // Für Kompatibilität (alternativer Name)
+const LOGICAL_OOC = getLogicalOOC(); // Für logische Fortsetzung der Handlung
 
 // Prefill-Konstanten (für Kompatibilität mit altem Code)
 const DEFAULT_PREFILL = getDefaultPrefill();
