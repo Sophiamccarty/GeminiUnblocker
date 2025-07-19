@@ -1,0 +1,74 @@
+Sophia's Lorebary - Source Available License
+
+Copyright (c) 2025 Dana Sophia Hylla (Sophiamccarty)
+
+TERMS AND CONDITIONS
+
+1. TRANSPARENCY AND INSPECTION RIGHTS
+   This source code is made available for transparency purposes only. Users and 
+   developers may view, inspect, and audit the code to verify:
+   - That API keys and user data are not stored or accessed improperly
+   - That chat conversations are not logged or retained by the service
+   - That user privacy and data protection measures are properly implemented
+   - The security and integrity of the application
+
+2. PROHIBITED USES
+   The following actions are strictly PROHIBITED without explicit written 
+   permission from the copyright holder:
+   - Copying, modifying, or distributing the code
+   - Creating derivative works based on this code
+   - Running your own instance of this server
+   - Hosting or deploying this application
+   - Using this code for commercial purposes
+   - Reverse engineering for competitive purposes
+   - Removing or modifying copyright notices
+
+3. RESERVED RIGHTS
+   All rights not expressly granted are reserved by the copyright holder.
+   This includes but is not limited to:
+   - Distribution rights
+   - Modification rights
+   - Commercial use rights
+   - Patent rights
+   - Trademark rights
+
+4. CONTRIBUTIONS
+   Any contributions, suggestions, or improvements submitted to this project
+   become the property of the copyright holder. By submitting contributions,
+   you agree to assign all rights to the copyright holder.
+
+5. PRIVACY AND DATA PROTECTION COMMITMENT
+   This code is made available to demonstrate our commitment to user privacy:
+   - No API keys are stored or logged by the service
+   - Chat conversations are not retained or monitored
+   - User data is handled according to our privacy policy
+   - All processing occurs in real-time without persistent storage
+
+6. DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+7. ENFORCEMENT
+   Violation of these terms may result in:
+   - Immediate termination of inspection rights
+   - Legal action for copyright infringement
+   - Cease and desist orders
+   - Monetary damages
+
+8. CONTACT
+   For permissions, licensing inquiries, or questions about this license,
+   contact: info@sophiamccarty.com
+
+9. JURISDICTION
+   This license is governed by the laws of Germany. Any disputes
+   will be resolved in the courts of Niedersachsen.
+
+This license allows transparency while protecting the intellectual property
+and business interests of Sophia's Lorebary.
+
+Last updated: July 2025 
